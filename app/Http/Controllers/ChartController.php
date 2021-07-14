@@ -13,6 +13,25 @@ class ChartController extends Controller
 {
 
     /**
+     * @OA\Get(
+     *     path="/api/chart/admin-dashboard",
+     *     tags={"Dashboard"},
+     *     summary="Get admin dashboard data",
+     *     operationId="getDashboardData",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return array
      */
     public function getDataForAdminDashboard()
@@ -65,6 +84,34 @@ class ChartController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/chart/country-admin-dashboard",
+     *     tags={"Dashboard"},
+     *     summary="Get country admin dashboard data",
+     *     operationId="getCountryDashboardData",
+     *     @OA\Parameter(
+     *         name="country_id",
+     *         in="query",
+     *         description="Country id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @return array
      */
@@ -107,6 +154,34 @@ class ChartController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/chart/clinic-admin-dashboard",
+     *     tags={"Dashboard"},
+     *     summary="Get clinic admin dashboard data",
+     *     operationId="getClinicDashboardData",
+     *     @OA\Parameter(
+     *         name="clinic_id",
+     *         in="query",
+     *         description="Clinic id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @return array
      */

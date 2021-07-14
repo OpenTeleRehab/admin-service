@@ -21,6 +21,34 @@ use Illuminate\Support\Facades\DB;
 class QuestionnaireController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/questionnaire",
+     *     tags={"Questionnaire"},
+     *     summary="Lists questionnaire",
+     *     operationId="questionnaireList",
+     *     @OA\Parameter(
+     *         name="page_size",
+     *         in="query",
+     *         description="Limit",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array
@@ -184,6 +212,34 @@ class QuestionnaireController extends Controller
     }
 
     /**
+     * @OA\Delete(
+     *     path="/api/questionnaire/{id}",
+     *     tags={"Questionnaire"},
+     *     summary="Create questionnaire",
+     *     operationId="createQuestionnaire",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \App\Models\Questionnaire $questionnaire
      *
      * @return array
@@ -298,6 +354,35 @@ class QuestionnaireController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/questionnaire/list/by-ids",
+     *     tags={"Questionnaire"},
+     *     summary="List questionnaire by ids",
+     *     operationId="listQuestionnaireByIds",
+     *     @OA\Parameter(
+     *         name="questionnaire_ids[]",
+     *         in="query",
+     *         description="Questionnaire id",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="array",
+     *              @OA\Items( type="integer"),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
@@ -310,6 +395,35 @@ class QuestionnaireController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/questionnaire/mark-as-used/by-ids",
+     *     tags={"Questionnaire"},
+     *     summary="Mark questionnaire as used by ids",
+     *     operationId="markQuestionnaireAsUsedByIds",
+     *     @OA\Parameter(
+     *         name="questionnaire_ids[]",
+     *         in="query",
+     *         description="Questionnaire id",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="array",
+     *              @OA\Items( type="integer"),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @return void
      */
@@ -322,6 +436,53 @@ class QuestionnaireController extends Controller
     }
 
     /**
+     * @OA\Post (
+     *     path="/api/questionnaire/updateFavorite/by-therapist/{questionnaire}",
+     *     tags={"Questionnaire"},
+     *     summary="Update favorite questionnaire",
+     *     operationId="updateFavoriteQuestionnaire",
+     *     @OA\Parameter(
+     *         name="questionnaire",
+     *         in="path",
+     *         description="Questionnaire id",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *     ),
+     *     @OA\Parameter(
+     *         name="is_favorite",
+     *         in="query",
+     *         description="Is favorite questionnaire",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="integer",
+     *              enum={0,1}
+     *          ),
+     *     ),
+     *     @OA\Parameter(
+     *         name="therapist_id",
+     *         in="query",
+     *         description="Therapist id",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Questionnaire $questionnaire
      *

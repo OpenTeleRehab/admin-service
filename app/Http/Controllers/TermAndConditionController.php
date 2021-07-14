@@ -11,6 +11,25 @@ use Illuminate\Support\Facades\Http;
 class TermAndConditionController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/term-condition",
+     *     tags={"Term condition"},
+     *     summary="Lists all term condition",
+     *     operationId="termConditionList",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return array
      */
     public function index()
@@ -21,6 +40,43 @@ class TermAndConditionController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/term-condition",
+     *     tags={"Term condition"},
+     *     summary="Create term condition",
+     *     operationId="createTermCondition",
+     *     @OA\Parameter(
+     *         name="version",
+     *         in="query",
+     *         description="Version",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="content",
+     *         in="query",
+     *         description="Content",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array
@@ -48,6 +104,52 @@ class TermAndConditionController extends Controller
     }
 
     /**
+     * @OA\Put(
+     *     path="/api/term-condition/{id}",
+     *     tags={"Term condition"},
+     *     summary="Update term condition",
+     *     operationId="updateTermCondition",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="version",
+     *         in="query",
+     *         description="Version",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="content",
+     *         in="query",
+     *         description="Content",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @param string $id
      *
@@ -65,6 +167,25 @@ class TermAndConditionController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/user-term-condition",
+     *     tags={"Term condition"},
+     *     summary="Get user term condition",
+     *     operationId="getUserTermCondition",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return \App\Http\Resources\TermAndConditionResource
      */
     public function getUserTermAndCondition()
@@ -77,6 +198,34 @@ class TermAndConditionController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/term-condition/publish/{id}",
+     *     tags={"Term condition"},
+     *     summary="Publish term condition",
+     *     operationId="publishUserTermCondition",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param string $id
      *
      * @return array
@@ -101,6 +250,25 @@ class TermAndConditionController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/page/term-condition",
+     *     tags={"Term condition"},
+     *     summary="Get term condition page",
+     *     operationId="getTermConditionPage",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return \Illuminate\View\View
      */
     public function getTermAndConditionPage()

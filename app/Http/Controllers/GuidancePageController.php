@@ -13,6 +13,25 @@ use App\Models\File;
 class GuidancePageController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/guidance-page",
+     *     tags={"Guidance Page"},
+     *     summary="Lists all pages",
+     *     operationId="guidancePageList",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return array
      */
     public function index()
@@ -23,6 +42,43 @@ class GuidancePageController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/guidance-page",
+     *     tags={"Guidance Page"},
+     *     summary="Create guidance page",
+     *     operationId="createGuidancePage",
+     *     @OA\Parameter(
+     *         name="title",
+     *         in="query",
+     *         description="Title",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *      @OA\Parameter(
+     *         name="content",
+     *         in="query",
+     *         description="Content",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array
@@ -51,6 +107,52 @@ class GuidancePageController extends Controller
     }
 
     /**
+     * @OA\Put(
+     *     path="/api/guidance-page/{id}",
+     *     tags={"Guidance Page"},
+     *     summary="Update guidance page",
+     *     operationId="updateGuidancePage",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="title",
+     *         in="query",
+     *         description="Title",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *      @OA\Parameter(
+     *         name="content",
+     *         in="query",
+     *         description="Content",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Guidance $guidancePage
      *

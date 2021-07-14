@@ -11,6 +11,34 @@ use Illuminate\Support\Facades\Http;
 class ProfessionController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/profession",
+     *     tags={"Profession"},
+     *     summary="Lists all profession",
+     *     operationId="professionList",
+     *     @OA\Parameter(
+     *         name="country_id",
+     *         in="query",
+     *         description="Country id",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array
@@ -28,6 +56,34 @@ class ProfessionController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/profession",
+     *     tags={"Profession"},
+     *     summary="Create profession",
+     *     operationId="createProfession",
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         description="Name",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array|void
@@ -53,6 +109,43 @@ class ProfessionController extends Controller
     }
 
     /**
+     * @OA\Put(
+     *     path="/api/profession/{id}",
+     *     tags={"Profession"},
+     *     summary="Update profession",
+     *     operationId="updateProfession",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         description="Name",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Profession $profession
      *
@@ -80,6 +173,34 @@ class ProfessionController extends Controller
     }
 
     /**
+     * @OA\Delete(
+     *     path="/api/profession/{id}",
+     *     tags={"Profession"},
+     *     summary="Delete profession",
+     *     operationId="deleteProfession",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \App\Models\Profession $profession
      *
      * @return array

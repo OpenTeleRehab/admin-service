@@ -13,6 +13,25 @@ use Illuminate\Support\Facades\Http;
 class PrivacyPolicyController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/privacy-policy",
+     *     tags={"Privacy Policy"},
+     *     summary="Lists all privacy policy",
+     *     operationId="PrivacyPolicyList",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return array
      */
     public function index()
@@ -23,6 +42,43 @@ class PrivacyPolicyController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/privacy-policy",
+     *     tags={"Privacy Policy"},
+     *     summary="Create privacy policy",
+     *     operationId="CreatePrivacyPolicy",
+     *     @OA\Parameter(
+     *         name="version",
+     *         in="query",
+     *         description="Version",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="content",
+     *         in="query",
+     *         description="Content",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array
@@ -49,6 +105,52 @@ class PrivacyPolicyController extends Controller
     }
 
     /**
+     * @OA\Put(
+     *     path="/api/privacy-policy/{id}",
+     *     tags={"Privacy Policy"},
+     *     summary="Update privacy policy",
+     *     operationId="UpdatePrivacyPolicy",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="version",
+     *         in="query",
+     *         description="Version",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="content",
+     *         in="query",
+     *         description="Content",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @param string $id
      *
@@ -66,6 +168,25 @@ class PrivacyPolicyController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/user-privacy-policy",
+     *     tags={"Privacy Policy"},
+     *     summary="Get user privacy policy",
+     *     operationId="getUserPrivacyPolicy",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return \App\Http\Resources\TermAndConditionResource
      */
     public function getUserPrivacyPolicy()
@@ -78,6 +199,34 @@ class PrivacyPolicyController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/privacy-policy/publish/{id}",
+     *     tags={"Privacy Policy"},
+     *     summary="Publish privacy policy",
+     *     operationId="publishPrivacyPolicy",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param string $id
      *
      * @return array
@@ -102,6 +251,25 @@ class PrivacyPolicyController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/page/privacy",
+     *     tags={"Privacy Policy"},
+     *     summary="Getprivacy page",
+     *     operationId="getPrivacyPage",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return \Illuminate\View\View
      */
     public function getPrivacyPage()
