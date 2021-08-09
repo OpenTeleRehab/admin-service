@@ -11,6 +11,25 @@ use App\Models\File;
 class StaticPageController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/static-page",
+     *     tags={"Static page"},
+     *     summary="Lists all static pages",
+     *     operationId="staticPageList",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @return array
      */
     public function index()
@@ -31,6 +50,101 @@ class StaticPageController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/static-page",
+     *     tags={"Static page"},
+     *     summary="Create static pages",
+     *     operationId="createStaticPage",
+     *     @OA\Parameter(
+     *         name="url",
+     *         in="query",
+     *         description="Url",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="platform",
+     *         in="query",
+     *         description="Platform",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     description="file to upload",
+     *                     property="file",
+     *                     type="file",
+     *                ),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="title",
+     *         in="query",
+     *         description="Title",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="content",
+     *         in="query",
+     *         description="Content",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="private",
+     *         in="query",
+     *         description="Private",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="boolean"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="background_color",
+     *         in="query",
+     *         description="Background color",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="text_color",
+     *         in="query",
+     *         description="Text color",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array
@@ -65,6 +179,110 @@ class StaticPageController extends Controller
     }
 
     /**
+     * @OA\Put(
+     *     path="/api/static-page/{id}",
+     *     tags={"Static page"},
+     *     summary="Update static pages",
+     *     operationId="updateStaticPage",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="url",
+     *         in="query",
+     *         description="Url",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="platform",
+     *         in="query",
+     *         description="Platform",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     description="file to upload",
+     *                     property="file",
+     *                     type="file",
+     *                ),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="title",
+     *         in="query",
+     *         description="Title",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="content",
+     *         in="query",
+     *         description="Content",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="private",
+     *         in="query",
+     *         description="Private",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="boolean"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="background_color",
+     *         in="query",
+     *         description="Background color",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="text_color",
+     *         in="query",
+     *         description="Text color",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\StaticPage $staticPage
      *
@@ -115,6 +333,43 @@ class StaticPageController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/page/static",
+     *     tags={"Static page"},
+     *     summary="get static page data",
+     *     operationId="getStaticPageData",
+     *     @OA\Parameter(
+     *         name="url-segment",
+     *         in="query",
+     *         description="Url",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="platform",
+     *         in="query",
+     *         description="Platform",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\View\View
@@ -130,6 +385,43 @@ class StaticPageController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/page/static-page-data",
+     *     tags={"Static page"},
+     *     summary="get static page data",
+     *     operationId="getStaticPageData",
+     *     @OA\Parameter(
+     *         name="url-segment",
+     *         in="query",
+     *         description="Url",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="platform",
+     *         in="query",
+     *         description="Platform",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array

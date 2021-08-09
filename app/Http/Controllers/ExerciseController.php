@@ -21,6 +21,34 @@ use Maatwebsite\Excel\Facades\Excel;
 class ExerciseController extends Controller
 {
     /**
+     * @OA\Get(
+     *     path="/api/exercise",
+     *     tags={"Exercise"},
+     *     summary="Lists exercise",
+     *     operationId="exerciseList",
+     *     @OA\Parameter(
+     *         name="page_size",
+     *         in="query",
+     *         description="Limit",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param \Illuminate\Http\Request $request
      *
      * @return array
@@ -211,6 +239,34 @@ class ExerciseController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/library/count/by-therapist",
+     *     tags={"Exercise"},
+     *     summary="Count therapist library",
+     *     operationId="therapistLibraryCount",
+     *     @OA\Parameter(
+     *         name="therapist_id",
+     *         in="query",
+     *         description="Therapist id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param Request $request
      * @return array
      */
@@ -234,6 +290,34 @@ class ExerciseController extends Controller
     }
 
     /**
+     * @OA\Post (
+     *     path="/api/library/delete/by-therapist",
+     *     tags={"Exercise"},
+     *     summary="Library delete by therapist",
+     *     operationId="deleteLibraryByTherapist",
+     *     @OA\Parameter(
+     *         name="therapist_id",
+     *         in="query",
+     *         description="Therapist id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
      * @param Request $request
      * @return array
      */
@@ -244,6 +328,33 @@ class ExerciseController extends Controller
     }
 
     /**
+     * @OA\Delete (
+     *     path="/api/exercise/{id}",
+     *     tags={"Exercise"},
+     *     summary="Delete exercise",
+     *     operationId="deleteExercise",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Exercise id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
      * @param \App\Models\Exercise $exercise
      *
      * @return array
@@ -259,6 +370,34 @@ class ExerciseController extends Controller
     }
 
     /**
+     * @OA\Get (
+     *     path="/api/exercise/list/by-ids",
+     *     tags={"Exercise"},
+     *     summary="Exercise list",
+     *     operationId="listExerciseByIds",
+     *     @OA\Parameter(
+     *         name="exercise_ids[]",
+     *         in="query",
+     *         description="Exercise id",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="array",
+     *              @OA\Items( type="integer"),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
@@ -271,6 +410,34 @@ class ExerciseController extends Controller
     }
 
     /**
+     * @OA\Post (
+     *     path="/api/exercise/mark-as-used/by-ids",
+     *     tags={"Exercise"},
+     *     summary="Mark exercise as used",
+     *     operationId="markExerciseAsUsedByIds",
+     *     @OA\Parameter(
+     *         name="exercise_ids[]",
+     *         in="query",
+     *         description="Exercise id",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="array",
+     *              @OA\Items( type="integer"),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
      * @param \Illuminate\Http\Request $request
      * @return void
      */
@@ -283,6 +450,52 @@ class ExerciseController extends Controller
     }
 
     /**
+     * @OA\Post (
+     *     path="/api/exercise/updateFavorite/by-therapist/{exercise}",
+     *     tags={"Exercise"},
+     *     summary="Update favorite exercise",
+     *     operationId="updateFavoriteExercise",
+     *     @OA\Parameter(
+     *         name="exercise",
+     *         in="path",
+     *         description="Exercise id",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *     ),
+     *     @OA\Parameter(
+     *         name="is_favorite",
+     *         in="query",
+     *         description="Is favorite exercise",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="integer",
+     *              enum={0,1}
+     *          ),
+     *     ),
+     *     @OA\Parameter(
+     *         name="therapist_id",
+     *         in="query",
+     *         description="Therapist id",
+     *         required=true,
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Exercise $exercise
      *
