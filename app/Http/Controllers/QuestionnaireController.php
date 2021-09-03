@@ -247,12 +247,9 @@ class QuestionnaireController extends Controller
      */
     public function destroy(Questionnaire $questionnaire)
     {
-        if (!$questionnaire->is_used) {
-            $questionnaire->delete();
+        $questionnaire->delete();
 
-            return ['success' => true, 'message' => 'success_message.questionnaire_delete'];
-        }
-        return ['success' => false, 'message' => 'error_message.questionnaire_delete'];
+        return ['success' => true, 'message' => 'success_message.questionnaire_delete'];
     }
 
     /**
@@ -390,7 +387,7 @@ class QuestionnaireController extends Controller
     public function getByIds(Request $request)
     {
         $questionnaireIds = $request->get('questionnaire_ids', []);
-        $questionnaires = Questionnaire::whereIn('id', $questionnaireIds)->get();
+        $questionnaires = Questionnaire::withTrashed()->whereIn('id', $questionnaireIds)->get();
         return QuestionnaireResource::collection($questionnaires);
     }
 

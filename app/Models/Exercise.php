@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
 
 class Exercise extends Model
 {
     use HasTranslations;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -22,7 +24,6 @@ class Exercise extends Model
         'reps',
         'include_feedback',
         'get_pain_level',
-        'is_used',
         'therapist_id',
     ];
 
@@ -76,9 +77,11 @@ class Exercise extends Model
 
         // Remove related objects.
         self::deleting(function ($exercise) {
-            $exercise->files()->each(function ($file) {
-                $file->delete();
-            });
+            if ($exercise->forceDeleting) {
+                $exercise->files()->each(function ($file) {
+                    $file->delete();
+                });
+            }
         });
     }
 

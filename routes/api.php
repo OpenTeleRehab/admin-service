@@ -84,7 +84,6 @@ Route::apiResource('disease', InternationalClassificationDiseaseController::clas
 
 Route::apiResource('exercise', ExerciseController::class);
 Route::get('exercise/list/by-ids', [ExerciseController::class, 'getByIds']);
-Route::post('exercise/mark-as-used/by-ids', [ExerciseController::class, 'markAsUsed']);
 Route::post('exercise/updateFavorite/by-therapist/{exercise}', [ExerciseController::class, 'updateFavorite']);
 Route::get('library/count/by-therapist', [ExerciseController::class, 'countTherapistLibrary']);
 Route::post('library/delete/by-therapist', [ExerciseController::class, 'deleteLibraryByTherapist']);
@@ -92,7 +91,6 @@ Route::post('library/delete/by-therapist', [ExerciseController::class, 'deleteLi
 
 Route::apiResource('education-material', EducationMaterialController::class);
 Route::get('education-material/list/by-ids', [EducationMaterialController::class, 'getByIds']);
-Route::post('education-material/mark-as-used/by-ids', [EducationMaterialController::class, 'markAsUsed']);
 Route::post('education-material/updateFavorite/by-therapist/{educationMaterial}', [EducationMaterialController::class, 'updateFavorite']);
 
 Route::apiResource('questionnaire', QuestionnaireController::class);

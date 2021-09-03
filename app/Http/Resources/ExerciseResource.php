@@ -24,7 +24,6 @@ class ExerciseResource extends JsonResource
             'include_feedback' => $this->include_feedback,
             'get_pain_level' => $this->get_pain_level,
             'files' => FileResource::collection($this->files()->orderBy('order')->get()),
-            'is_used' => $this->is_used,
             'categories' => $this->categories ? $this->categories->pluck('id') : [],
             'therapist_id' => $this->therapist_id,
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),

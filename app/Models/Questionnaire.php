@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Builder;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 class Questionnaire extends Model
 {
     use HasTranslations;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -49,9 +51,11 @@ class Questionnaire extends Model
 
         // Remove related objects.
         self::deleting(function ($questionnaire) {
-            $questionnaire->questions()->each(function ($question) {
-                $question->delete();
-            });
+            if ($questionnaire->forceDeleting) {
+                $questionnaire->questions()->each(function ($question) {
+                    $question->delete();
+                });
+            }
         });
     }
 
