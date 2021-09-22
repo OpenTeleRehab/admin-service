@@ -190,4 +190,46 @@ class GuidancePageController extends Controller
 
         return ['success' => true, 'message' => 'success_message.guidance.update'];
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/guidance-page/{id}",
+     *     tags={"Guidance Page"},
+     *     summary="Delete guidance page",
+     *     operationId="deleteGuidance",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Guidance id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
+     * @param \App\Models\Guidance $guidance
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function destroy(Guidance $guidancePage)
+    {
+        if ($guidancePage->delete()) {
+            return ['success' => true, 'message' => 'success_message.guidance.delete'];
+        }
+        return ['success' => true, 'message' => 'error_message.guidance.delete'];
+    }
 }
