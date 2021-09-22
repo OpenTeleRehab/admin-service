@@ -299,7 +299,7 @@ class ClinicController extends Controller
         if (!$clinic->is_used) {
             $country = Country::where('id', $clinic->country_id)->first();
 
-            // Remove clinic admin users
+            // Remove clinic admin users.
             $users = User::where('type', User::ADMIN_GROUP_CLINIC_ADMIN)
                 ->where('clinic_id', $clinic->id)->get();
 
@@ -320,12 +320,12 @@ class ClinicController extends Controller
                 }
             }
 
-            // Remove therapists of clinic
+            // Remove therapists of clinic.
             Http::post(env('THERAPIST_SERVICE_URL') . '/api/therapist/delete/by-clinic', [
                 'clinic_id' => $clinic->id,
             ]);
 
-            // Remove patients of clinic
+            // Remove patients of clinic.
             Http::withHeaders([
                 'country' => $country->iso_code,
             ])->post(env('PATIENT_SERVICE_URL') . '/api/patient/delete/by-clinic', [

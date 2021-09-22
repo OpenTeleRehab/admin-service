@@ -93,7 +93,7 @@ class ExerciseController extends Controller
         $copyId = $request->get('copy_id');
         if ($copyId) {
             // Clone exercise.
-            $exercise = Exercise::findOrFail($copyId)->replicate(['is_used']);
+            $exercise = Exercise::findOrFail($copyId)->replicate();
 
             // Append (copy) label to all title translations.
             $titleTranslations = $exercise->getTranslations('title');
@@ -362,11 +362,8 @@ class ExerciseController extends Controller
      */
     public function destroy(Exercise $exercise)
     {
-        if (!$exercise->is_used) {
-            $exercise->delete();
-            return ['success' => true, 'message' => 'success_message.exercise_delete'];
-        }
-        return ['success' => false, 'message' => 'error_message.exercise_delete'];
+        $exercise->delete();
+        return ['success' => true, 'message' => 'success_message.exercise_delete'];
     }
 
     /**
@@ -405,48 +402,8 @@ class ExerciseController extends Controller
     public function getByIds(Request $request)
     {
         $exerciseIds = $request->get('exercise_ids', []);
-        $exercises = Exercise::whereIn('id', $exerciseIds)->get();
+        $exercises = Exercise::withTrashed()->whereIn('id', $exerciseIds)->get();
         return ExerciseResource::collection($exercises);
-    }
-
-    /**
-     * @OA\Post (
-     *     path="/api/exercise/mark-as-used/by-ids",
-     *     tags={"Exercise"},
-     *     summary="Mark exercise as used",
-     *     operationId="markExerciseAsUsedByIds",
-     *     @OA\Parameter(
-     *         name="exercise_ids[]",
-     *         in="query",
-     *         description="Exercise id",
-     *         required=true,
-     *          @OA\Schema(
-     *              type="array",
-     *              @OA\Items( type="integer"),
-     *          ),
-     *     ),
-     *     @OA\Response(
-     *         response="200",
-     *         description="successful operation"
-     *     ),
-     *     @OA\Response(response=400, description="Bad request"),
-     *     @OA\Response(response=404, description="Resource Not Found"),
-     *     @OA\Response(response=401, description="Authentication is required"),
-     *     security={
-     *         {
-     *             "oauth2_security": {}
-     *         }
-     *     },
-     * )
-     * @param \Illuminate\Http\Request $request
-     * @return void
-     */
-    public function markAsUsed(Request $request)
-    {
-        $exerciseIds = $request->get('exercise_ids', []);
-        Exercise::where('is_used', false)
-            ->whereIn('id', $exerciseIds)
-            ->update(['is_used' => true]);
     }
 
     /**

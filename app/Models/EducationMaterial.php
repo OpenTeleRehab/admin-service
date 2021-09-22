@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
@@ -10,13 +11,14 @@ use Illuminate\Support\Facades\App;
 class EducationMaterial extends Model
 {
     use HasTranslations;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'file_id', 'is_used', 'therapist_id'];
+    protected $fillable = ['title', 'file_id', 'therapist_id'];
 
     /**
      * The attributes that are translatable
@@ -49,7 +51,9 @@ class EducationMaterial extends Model
 
         // Remove related objects.
         self::deleting(function ($educationMaterial) {
-            $educationMaterial->file()->delete();
+            if ($educationMaterial->forceDeleting) {
+                $educationMaterial->file()->delete();
+            }
         });
     }
 

@@ -180,7 +180,7 @@ class EducationMaterialController extends Controller
         $copyId = $request->get('copy_id');
         if ($copyId) {
             // Clone education material.
-            $educationMaterial = EducationMaterial::findOrFail($copyId)->replicate(['is_used']);
+            $educationMaterial = EducationMaterial::findOrFail($copyId)->replicate();
 
             // Append (copy) label to all title translations.
             $titleTranslations = $educationMaterial->getTranslations('title');
@@ -377,11 +377,8 @@ class EducationMaterialController extends Controller
      */
     public function destroy(EducationMaterial $educationMaterial)
     {
-        if (!$educationMaterial->is_used) {
-            $educationMaterial->delete();
-            return ['success' => true, 'message' => 'success_message.education_material_delete'];
-        }
-        return ['success' => false, 'message' => 'error_message.education_material_delete'];
+        $educationMaterial->delete();
+        return ['success' => true, 'message' => 'success_message.education_material_delete'];
     }
 
     /**
@@ -420,48 +417,8 @@ class EducationMaterialController extends Controller
     public function getByIds(Request $request)
     {
         $materialIds = $request->get('material_ids', []);
-        $materials = EducationMaterial::whereIn('id', $materialIds)->get();
+        $materials = EducationMaterial::withTrashed()->whereIn('id', $materialIds)->get();
         return EducationMaterialResource::collection($materials);
-    }
-
-    /**
-     * @OA\Post (
-     *     path="/api/education-material/mark-as-used/by-ids",
-     *     tags={"Education Material"},
-     *     summary="Mark education material as used",
-     *     operationId="markEducationMaterialAsUsedByIds",
-     *     @OA\Parameter(
-     *         name="material_ids[]",
-     *         in="query",
-     *         description="Material id",
-     *         required=true,
-     *          @OA\Schema(
-     *              type="array",
-     *              @OA\Items( type="integer"),
-     *          ),
-     *     ),
-     *     @OA\Response(
-     *         response="200",
-     *         description="successful operation"
-     *     ),
-     *     @OA\Response(response=400, description="Bad request"),
-     *     @OA\Response(response=404, description="Resource Not Found"),
-     *     @OA\Response(response=401, description="Authentication is required"),
-     *     security={
-     *         {
-     *             "oauth2_security": {}
-     *         }
-     *     },
-     * )
-     * @param \Illuminate\Http\Request $request
-     * @return void
-     */
-    public function markAsUsed(Request $request)
-    {
-        $materialIds = $request->get('material_ids', []);
-        EducationMaterial::where('is_used', false)
-            ->whereIn('id', $materialIds)
-            ->update(['is_used' => true]);
     }
 
     /**

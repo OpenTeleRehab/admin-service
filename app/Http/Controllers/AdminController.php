@@ -575,7 +575,6 @@ class AdminController extends Controller
             if ($isCanSend) {
                 return ['success' => true, 'message' => 'success_message.resend_email'];
             }
-
         }
 
         return ['success' => false, 'message' => 'error_message.cannot_resend_email'];

@@ -19,7 +19,7 @@ class ImportDisease implements OnEachRow, WithHeadingRow, WithEvents
      */
     public function onRow(Row $row)
     {
-        if(!App::isLocale('en')) {
+        if (!App::isLocale('en')) {
             App::setLocale('en');
         }
         if (isset($row['name'])) {

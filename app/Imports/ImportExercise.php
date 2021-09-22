@@ -69,7 +69,6 @@ class ImportExercise implements OnEachRow, WithHeadingRow, WithEvents, WithValid
 
             if ($exercise->wasRecentlyCreated) {
                 $this->newRecords++;
-                $exercise->is_used = false;
                 $exercise->save();
             } else {
                 $this->updatedRecords++;
