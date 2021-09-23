@@ -230,7 +230,7 @@ class AdminController extends Controller
         }
 
         try {
-            self::createKeycloakUser($user, $email, true, $type);
+            self::createKeycloakUser($user, $type);
         } catch (\Exception $e) {
             DB::rollBack();
             return ['success' => false, 'message' => $e->getMessage()];
@@ -470,7 +470,7 @@ class AdminController extends Controller
      * @return false|mixed|string
      * @throws \Exception
      */
-    private function createKeycloakUser($user, $password, $isTemporaryPassword, $userGroup)
+    private function createKeycloakUser($user, $userGroup)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
         if ($token) {
@@ -495,14 +495,6 @@ class AdminController extends Controller
                     $lintArray = explode('/', $createdUserUrl);
                     $userKeycloakUuid = end($lintArray);
                     $isCanSetPassword = true;
-                    if ($password) {
-                        $isCanSetPassword = KeycloakHelper::resetUserPassword(
-                            $token,
-                            $createdUserUrl,
-                            $password,
-                            $isTemporaryPassword
-                        );
-                    }
                     $isCanAssignUserToGroup = self::assignUserToGroup($token, $createdUserUrl, $userGroup);
                     if ($isCanSetPassword && $isCanAssignUserToGroup) {
                         self::sendEmailToNewUser($userKeycloakUuid);
