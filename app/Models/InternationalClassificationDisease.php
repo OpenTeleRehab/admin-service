@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Spatie\Translatable\HasTranslations;
 
@@ -60,7 +61,7 @@ class InternationalClassificationDisease extends Model
 
         // Set default order by name.
         static::addGlobalScope('order', function (Builder $builder) {
-            $builder->orderBy('name');
+            $builder->orderBy('name->' . App::getLocale());
         });
     }
 }
