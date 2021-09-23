@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
 
 class Category extends Model
@@ -47,7 +48,7 @@ class Category extends Model
 
         // Set default order by title.
         static::addGlobalScope('order', function (Builder $builder) {
-            $builder->orderBy('title');
+            $builder->orderBy('title->' . App::getLocale());
         });
 
         // Remove children objects.
@@ -57,6 +58,7 @@ class Category extends Model
             });
         });
     }
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
