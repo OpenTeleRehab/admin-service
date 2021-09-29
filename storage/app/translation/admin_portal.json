@@ -632,5 +632,7 @@
     "term.of.service.detail.link": "View Hi humanity & inclusion Terms of Services",
     "privacy.policy.agree": "I agree to Privacy Policy.",
     "privacy.policy.detail.link": "View Hi humanity & inclusion Privacy Policy",
-    "term.of.service.accept": "Accept"
+    "term.of.service.accept": "Accept",
+    "success_message.file_upload": "File uploaded successfully",
+    "error_message.file_upload": "File upload failed"
 }
