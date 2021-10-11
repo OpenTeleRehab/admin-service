@@ -131,6 +131,7 @@
     "activity.additional_information": "Additional Information",
     "appointment": "Appointment",
     "appointment.request_appointment": "Request appointment",
+    "appointment.request_new_appointment": "Request new appointment",
     "appointment.edit_appointment": "Edit appointment",
     "appointment.appointment_with": "Appointment with",
     "appointment.invitation.accept": "Accept",
