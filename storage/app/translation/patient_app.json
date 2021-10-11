@@ -69,7 +69,6 @@
     "phone.number.header": "Mobile Number",
     "phone.enter.number": "Enter your mobile number",
     "phone.verify": "Verify Phone",
-    "phone.verify.description": "We sent you a code to verify your phone number. Please input it below.",
     "phone.send.to": "Send to",
     "phone.dont.receive.code": "I didn't receive a code!",
     "phone.resend.code": "Resend Code",
@@ -239,5 +238,12 @@
     "tts.question.answered": "You answered",
     "appointment.status.accept": "Accepted",
     "appointment.status.pending": "Pending acceptation",
-    "appointment.status.cancel": "Cancelled"
+    "appointment.status.cancel": "Cancelled",
+    "register.phone.label": "Enter phone number",
+    "register.language.label": "Choose language",
+    "register.placeholder.phone": "xx-xxx-xxx",
+    "register.intro_text": "Choose language which you feels comfortable with to start our mobile application",
+    "phone.verify_discription": "Pincode has been sent to ${phone}, please enter the code recieved from SMS.",
+    "home.activity.completed": "You have done ${number} tasks today",
+    "common.start": "Start"
 }
