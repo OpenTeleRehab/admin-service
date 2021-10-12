@@ -244,7 +244,7 @@
     "register.language.label": "Choose language",
     "register.placeholder.phone": "xx-xxx-xxx",
     "register.intro_text": "Choose language which you feels comfortable with to start our mobile application",
-    "phone.verify_discription": "Pincode has been sent to ${phone}, please enter the code recieved from SMS.",
+    "phone.verify_description": "Pincode has been sent to ${phone}, please enter the code recieved from SMS.",
     "home.activity.completed": "You have done ${number} tasks today",
     "achievement.tasks.bronze.title": "[Bronze] Daily tasks",
     "achievement.tasks.silver.title": "[Silver] Daily tasks",
@@ -269,5 +269,16 @@
     "achievement.answers.bronze.subtitle": "Complete 2 questionnaires",
     "achievement.answers.silver.subtitle": "Complete 5 questionnaires",
     "achievement.answers.gold.subtitle": "Complete 8 questionnaires",
-    "achievement.answers.diamond.subtitle": "Complete 11 questionnaires"
+    "achievement.answers.diamond.subtitle": "Complete 11 questionnaires",
+    "common.start": "Start",
+    "activity.step": "Step ${step}",
+    "activity.pain_level.description": "Rate your painfulness after you did the activity from scale of 1 to 10",
+    "activity.sets_reps.completed_description" : "Number of sets and reps you have done.",
+    "activity.sets_reps.recommend" : "Recommend ${number}",
+    "activity.completed.title" : "You have completed the task!",
+    "activity.completed.description": "Just a few more tasks, you can do it.",
+    "activity.completed.button_title": "Got that",
+    "activity.completed.kid_title" : "Yay! You have completed the task!",
+    "activity.completed.kid_description": "Just a few more tasks, you will earn badges as the reward.",
+    "activity.completed.kid_button_title": "Got that"
 }
