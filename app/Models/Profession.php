@@ -31,7 +31,7 @@ class Profession extends Model
     public function isUsed()
     {
         $isUsed = false;
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/api/therapist/get-used-profession?profession_id=' . $this->id);
+        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/therapist/get-used-profession?profession_id=' . $this->id);
 
         if (!empty($response) && $response->successful()) {
             $isUsed = $response->json();

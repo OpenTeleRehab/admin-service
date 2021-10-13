@@ -41,7 +41,7 @@ class InternationalClassificationDisease extends Model
     public function isUsed()
     {
         $isUsed = false;
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/api/treatment-plan/get-used-disease?disease_id=' . $this->id);
+        $response = Http::get(env('PATIENT_SERVICE_URL') . '/treatment-plan/get-used-disease?disease_id=' . $this->id);
 
         if (!empty($response) && $response->successful()) {
             $isUsed = $response->json();

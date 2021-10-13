@@ -302,7 +302,7 @@ class CountryController extends Controller
         $clinics = Clinic::where('country_id', $country->id)->get();
         foreach ($clinics as $clinic) {
             // Remove clinics and related objects of country.
-            Http::delete(env("ADMIN_SERVICE_URL") . "/api/clinic/$clinic->id");
+            Http::delete(env("ADMIN_SERVICE_URL") . "/clinic/$clinic->id");
         }
 
         $country->delete();

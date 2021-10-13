@@ -218,7 +218,7 @@ class InternationalClassificationDiseaseController extends Controller
     public function destroy(InternationalClassificationDisease $disease)
     {
         $isUsed = false;
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/api/treatment-plan/get-used-disease?disease_id=' . $disease->id);
+        $response = Http::get(env('PATIENT_SERVICE_URL') . '/treatment-plan/get-used-disease?disease_id=' . $disease->id);
 
         if (!empty($response) && $response->successful()) {
             $isUsed = $response->json();

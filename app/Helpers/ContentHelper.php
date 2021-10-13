@@ -92,19 +92,19 @@ class ContentHelper
         }
 
         if ($exerciseIds) {
-            Http::post(env('PATIENT_SERVICE_URL') . '/api/activities/delete/by-ids', [
+            Http::post(env('PATIENT_SERVICE_URL') . '/activities/delete/by-ids', [
                 'activity_ids' => $exerciseIds,
                 'type' => 'exercise'
             ]);
         }
         if ($materialIds) {
-            Http::post(env('PATIENT_SERVICE_URL') . '/api/activities/delete/by-ids', [
+            Http::post(env('PATIENT_SERVICE_URL') . '/activities/delete/by-ids', [
                 'activity_ids' => $materialIds,
                 'type' => 'material'
             ]);
         }
         if ($questionnaireIds) {
-            Http::post(env('PATIENT_SERVICE_URL') . '/api/activities/delete/by-ids', [
+            Http::post(env('PATIENT_SERVICE_URL') . '/activities/delete/by-ids', [
                 'activity_ids' => $questionnaireIds,
                 'type' => 'questionnaire'
             ]);

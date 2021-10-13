@@ -209,7 +209,7 @@ class ProfessionController extends Controller
     public function destroy(Profession $profession)
     {
         $isUsed = false;
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/api/therapist/get-used-profession?profession_id=' . $profession->id);
+        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/therapist/get-used-profession?profession_id=' . $profession->id);
 
         if (!empty($response) && $response->successful()) {
             $isUsed = $response->json();

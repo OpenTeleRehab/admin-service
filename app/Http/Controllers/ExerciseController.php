@@ -274,7 +274,7 @@ class ExerciseController extends Controller
     {
         $therapistId = $request->get('therapist_id');
         $treatmentPresets = 0;
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/api/treatment-plan/count/by-therapist?therapist_id=' . $therapistId);
+        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/treatment-plan/count/by-therapist?therapist_id=' . $therapistId);
 
         if (!empty($response) && $response->successful()) {
             $treatmentPresets = $response->json();
