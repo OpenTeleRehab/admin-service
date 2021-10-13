@@ -59,13 +59,13 @@ class ChartController extends Controller
         $patientData = [];
         $therapistData = [];
 
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/api/chart/get-data-for-global-admin');
+        $response = Http::get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-global-admin');
 
         if (!empty($response) && $response->successful()) {
             $patientData = $response->json();
         }
 
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/api/chart/get-data-for-global-admin');
+        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-global-admin');
 
         if (!empty($response) && $response->successful()) {
             $therapistData = $response->json();
@@ -129,7 +129,7 @@ class ChartController extends Controller
         $patientData = [];
         $therapistData = [];
 
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/api/chart/get-data-for-country-admin', [
+        $response = Http::get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-country-admin', [
             'country_id' => [$country_id]
         ]);
 
@@ -137,7 +137,7 @@ class ChartController extends Controller
             $patientData = $response->json();
         }
 
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/api/chart/get-data-for-country-admin', [
+        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-country-admin', [
             'country_id' => [$country_id]
         ]);
 
@@ -192,7 +192,7 @@ class ChartController extends Controller
         $therapistData = [];
         $therapistLimit = Clinic::find($clinicId);
 
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/api/chart/get-data-for-clinic-admin', [
+        $response = Http::get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
             'clinic_id' => [$clinicId]
         ]);
 
@@ -200,7 +200,7 @@ class ChartController extends Controller
             $patientData = $response->json();
         }
 
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/api/chart/get-data-for-clinic-admin', [
+        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
             'clinic_id' => [$clinicId]
         ]);
 

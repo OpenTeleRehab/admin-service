@@ -321,14 +321,14 @@ class ClinicController extends Controller
             }
 
             // Remove therapists of clinic.
-            Http::post(env('THERAPIST_SERVICE_URL') . '/api/therapist/delete/by-clinic', [
+            Http::post(env('THERAPIST_SERVICE_URL') . '/therapist/delete/by-clinic', [
                 'clinic_id' => $clinic->id,
             ]);
 
             // Remove patients of clinic.
             Http::withHeaders([
                 'country' => $country->iso_code,
-            ])->post(env('PATIENT_SERVICE_URL') . '/api/patient/delete/by-clinic', [
+            ])->post(env('PATIENT_SERVICE_URL') . '/patient/delete/by-clinic', [
                 'clinic_id' => $clinic->id,
             ]);
 
@@ -424,7 +424,7 @@ class ClinicController extends Controller
         $clinicId = $request->get('clinic_id');
 
         $therapistData = [];
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/api/chart/get-data-for-clinic-admin', [
+        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
             'clinic_id' => [$clinicId]
         ]);
 

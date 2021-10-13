@@ -245,7 +245,7 @@ class PrivacyPolicyController extends Controller
             ]);
 
         // Add required action to all users.
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/api/term-condition/send-re-consent');
+        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/term-condition/send-re-consent');
 
         return ['success' => true, 'message' => 'success_message.privacy_policy_publish'];
     }
