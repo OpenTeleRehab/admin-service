@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 
 class ChartController extends Controller
 {
+    const MIN_AGE = 0;
+    const MAX_AGE = 80;
+    const AGE_GAP = 10;
 
     /**
      * @OA\Get(
@@ -56,14 +59,9 @@ class ChartController extends Controller
             ->groupBy('country_id')
             ->get();
 
-        $patientData = [];
         $therapistData = [];
 
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-global-admin');
-
-        if (!empty($response) && $response->successful()) {
-            $patientData = $response->json();
-        }
+        $patientData = $this->getDataForGlobalAdmin();
 
         $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-global-admin');
 
@@ -118,6 +116,7 @@ class ChartController extends Controller
     public function getDataForCountryAdminDashboard(Request $request)
     {
         $country_id = $request->get('country_id');
+        $country = Country::find($country_id);
         $clinicAdminTotal = DB::table('users')
             ->select(DB::raw('
                 COUNT(*) AS total
@@ -125,11 +124,13 @@ class ChartController extends Controller
             ->where('country_id', $country_id)
             ->where('enabled', '=', 1)
             ->get();
-        $therapistLimit = Country::find($country_id);
+
         $patientData = [];
         $therapistData = [];
 
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-country-admin', [
+        $response = Http::withHeaders([
+            'country' => $country ? $country->iso_code : null
+        ])->get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-country-admin', [
             'country_id' => [$country_id]
         ]);
 
@@ -144,7 +145,7 @@ class ChartController extends Controller
         if (!empty($response) && $response->successful()) {
             $therapistData = $response->json();
         }
-        $therapistData['therapistLimit'] = $therapistLimit->therapist_limit;
+        $therapistData['therapistLimit'] = $country->therapist_limit;
         $data = [
             'clinicAdminTotal' => $clinicAdminTotal,
             'patientData' => $patientData,
@@ -188,11 +189,14 @@ class ChartController extends Controller
     public function getDataForClinicAdminDashboard(Request $request)
     {
         $clinicId = $request->get('clinic_id');
+        $clinic = Clinic::find($clinicId);
+        $country = Country::find($clinic->country_id);
         $patientData = [];
         $therapistData = [];
-        $therapistLimit = Clinic::find($clinicId);
 
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
+        $response = Http::withHeaders([
+            'country' => $country ? $country->iso_code : null
+        ])->get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
             'clinic_id' => [$clinicId]
         ]);
 
@@ -208,12 +212,140 @@ class ChartController extends Controller
             $therapistData = $response->json();
         }
 
-        $therapistData['therapistLimit'] = $therapistLimit->therapist_limit;
+        $therapistData['therapistLimit'] = $clinic->therapist_limit;
 
         $data = [
             'patientData' => $patientData,
             'therapistData' => $therapistData,
         ];
         return ['success' => true, 'data' => $data];
+    }
+
+    /**
+     * @return array
+     */
+    public function getDataForGlobalAdmin() {
+        $patientsByGenderGroupedByCountry = DB::table('global_patients')
+            ->select(DB::raw('
+                country_id,
+                SUM(CASE WHEN gender = "male" THEN 1 ELSE 0 END) AS male,
+                SUM(CASE WHEN gender = "female" THEN 1 ELSE 0 END) AS female,
+                SUM(CASE WHEN gender = "other" THEN 1 ELSE 0 END) AS other
+            '))
+            ->where('global_patients.enabled', '=', 1)
+            ->where('global_patients.deleted_at', '=', null)
+            ->groupBy('global_patients.country_id')
+            ->get();
+        $onGoingTreatmentsByGenderGroupedByCountry = DB::table('global_patients')
+            ->select(DB::raw('
+            global_patients.country_id,
+            SUM(CASE WHEN gender = "male" AND start_date <= CURDATE() AND end_date >= CURDATE() THEN 1 ELSE 0 END) AS male,
+            SUM(CASE WHEN gender = "female" AND start_date <= CURDATE() AND end_date >= CURDATE() THEN 1 ELSE 0 END) AS female,
+            SUM(CASE WHEN gender = "other" AND start_date <= CURDATE() AND end_date >= CURDATE() THEN 1 ELSE 0 END) AS other
+        '))
+            ->join('global_treatment_plans',function($q) {
+                $q->on('global_treatment_plans.patient_id', 'global_patients.patient_id');
+                $q->on('global_treatment_plans.country_id', 'global_patients.country_id');
+            })
+            ->where('global_patients.enabled', '=', 1)
+            ->where('global_patients.deleted_at', '=', null)
+            ->groupBy('global_patients.country_id')
+            ->get();
+
+
+        $treatmentsByGender = DB::table('global_treatment_plans')
+            ->select(DB::raw('
+            global_patients.country_id,
+            SUM(CASE WHEN gender = "male" THEN 1 ELSE 0 END) AS male,
+            SUM(CASE WHEN gender = "female" THEN 1 ELSE 0 END) AS female,
+            SUM(CASE WHEN gender = "other" THEN 1 ELSE 0 END) AS other
+        '))
+            ->leftJoin('global_patients',function($q) {
+                $q->on('global_treatment_plans.patient_id', 'global_patients.patient_id');
+                $q->on('global_treatment_plans.country_id', 'global_patients.country_id');
+            })
+            ->where('global_patients.enabled', '=', 1)
+            ->where('global_patients.deleted_at', '=', null)
+            ->groupBy('global_patients.country_id')
+            ->get();
+
+        $patientsByAgeGapGroupedByCountryColumns = '';
+        $onGoingTreatmentsByAgeGapGroupedByCountryColumns = '';
+
+        for ($i = self::MIN_AGE; $i <= self::MAX_AGE; ($i += self::AGE_GAP)) {
+            if ($i === self::MIN_AGE) {
+                $patientsByAgeGapGroupedByCountryColumns .= '
+                SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= ' . $i .
+                    ' AND TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) < ' . ($i + 10) .
+                    ' THEN 1 ELSE 0 END) AS `< ' . ($i + self::AGE_GAP) . '`,';
+
+                $onGoingTreatmentsByAgeGapGroupedByCountryColumns .= '
+                SUM(CASE WHEN start_date <= CURDATE() AND end_date >= CURDATE()
+                AND TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= ' . $i .
+                    ' AND TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) < ' . ($i + 10) .
+                    ' THEN 1 ELSE 0 END) AS `< ' . ($i + self::AGE_GAP) . '`,';
+            } elseif ($i < self::MAX_AGE) {
+                $patientsByAgeGapGroupedByCountryColumns .= '
+                SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= ' . $i .
+                    ' AND TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) < ' . ($i + 10) .
+                    ' THEN 1 ELSE 0 END) AS `' . $i . ' - ' . ($i + self::AGE_GAP) . '`,';
+
+                $onGoingTreatmentsByAgeGapGroupedByCountryColumns .= '
+                SUM(CASE WHEN start_date <= CURDATE() AND end_date >= CURDATE()
+                AND TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= ' . $i .
+                    ' AND TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) < ' . ($i + 10) .
+                    ' THEN 1 ELSE 0 END) AS `' . $i . ' - ' . ($i + self::AGE_GAP) . '`,';
+            } else {
+                $patientsByAgeGapGroupedByCountryColumns .= '
+                SUM(CASE WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= ' . $i .
+                    ' THEN 1 ELSE 0 END) AS `>=' . $i . '`';
+
+                $onGoingTreatmentsByAgeGapGroupedByCountryColumns .= '
+                SUM(CASE WHEN start_date <= CURDATE() AND end_date >= CURDATE()
+                AND TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= ' . $i .
+                    ' THEN 1 ELSE 0 END) AS `>=' . $i . '`';
+            }
+        }
+
+        $patientsByAgeGapGroupedByCountry = DB::table('global_patients')
+            ->select(DB::raw('
+            country_id, ' . $patientsByAgeGapGroupedByCountryColumns))
+            ->where('global_patients.enabled', '=', 1)
+            ->where('global_patients.deleted_at', '=', null)
+            ->groupBy('global_patients.country_id')
+            ->get();
+
+        $onGoingTreatmentsByAgeGapGroupedByCountry = DB::table('global_patients')
+            ->select(DB::raw('
+            global_patients.country_id, ' . $onGoingTreatmentsByAgeGapGroupedByCountryColumns))
+            ->where('global_patients.enabled', '=', 1)
+            ->where('global_patients.deleted_at', '=', null)
+            ->groupBy('global_patients.country_id')
+            ->join('global_treatment_plans',function($q) {
+                $q->on('global_treatment_plans.patient_id', 'global_patients.patient_id');
+                $q->on('global_treatment_plans.country_id', 'global_patients.country_id');
+            })
+            ->get();
+
+        $treatmentsByAgeGapGroupedByCountry = DB::table('global_treatment_plans')
+            ->select(DB::raw('
+            global_patients.country_id, ' . $patientsByAgeGapGroupedByCountryColumns))
+            ->where('global_patients.enabled', '=', 1)
+            ->where('global_patients.deleted_at', '=', null)
+            ->groupBy('global_patients.country_id')
+            ->join('global_patients', function($q) {
+                $q->on('global_treatment_plans.patient_id', 'global_patients.patient_id');
+                $q->on('global_treatment_plans.country_id', 'global_patients.country_id');
+            })
+            ->get();
+
+        return [
+            'patientsByGenderGroupedByCountry' => $patientsByGenderGroupedByCountry,
+            'onGoingTreatmentsByGenderGroupedByCountry' => $onGoingTreatmentsByGenderGroupedByCountry,
+            'treatmentsByGender' => $treatmentsByGender,
+            'patientsByAgeGapGroupedByCountry' => $patientsByAgeGapGroupedByCountry,
+            'onGoingTreatmentsByAgeGapGroupedByCountry' => $onGoingTreatmentsByAgeGapGroupedByCountry,
+            'treatmentsByAgeGapGroupedByCountry' => $treatmentsByAgeGapGroupedByCountry,
+        ];
     }
 }
