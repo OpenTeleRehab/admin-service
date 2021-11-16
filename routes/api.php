@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\GlobalPatientController;
 use App\Http\Controllers\GuidancePageController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\LanguageController;
@@ -60,6 +61,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::post('import/exercises', [ImportController::class, 'importExercises']);
     Route::post('import/diseases', [ImportController::class, 'importDiseases']);
+    Route::apiResource('global-patients', GlobalPatientController::class);
 });
 
 // Todo: apply for Admin, Therapist, Patient APPs

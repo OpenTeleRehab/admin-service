@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class GlobalPatient extends Model
 {
-
+    const ADMIN_GROUP_GLOBAL_ADMIN = 'global_admin';
+    const ADMIN_GROUP_COUNTRY_ADMIN = 'country_admin';
+    const ADMIN_GROUP_CLINIC_ADMIN = 'clinic_admin';
+    const FINISHED_TREATMENT_PLAN = 1;
+    const PLANNED_TREATMENT_PLAN = 2;
+    const SECONDARY_TERAPIST = 2;
     /**
      * The attributes that are mass assignable.
      *
