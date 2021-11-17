@@ -133,13 +133,13 @@ class SyncPatientData extends Command
                 [
                     'treatment_id' => $treatmentPlan->id,
                     'patient_id' => $treatmentPlan->patient_id,
-                    'country_id' => $patient->country_id,
+                    'country_id' => $patient && is_object($patient) ? $patient->country_id : $patient,
                 ],
                 [
                     'treatment_id' => $treatmentPlan->id,
                     'name' => $treatmentPlan->name,
                     'patient_id' => $treatmentPlan->patient_id,
-                    'country_id' => $patient->country_id,
+                    'country_id' => $patient && is_object($patient) ? $patient->country_id : $patient,
                     'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
                     'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
                     'status' => $treatmentPlan->status,
