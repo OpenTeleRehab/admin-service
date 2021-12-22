@@ -195,7 +195,7 @@ class ChartController extends Controller
         $therapistData = [];
 
         $response = Http::withHeaders([
-            'country' => $country ? $country->iso_code : null
+            'country' => $country ? strtoupper($country->iso_code) : null
         ])->get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
             'clinic_id' => [$clinicId]
         ]);
