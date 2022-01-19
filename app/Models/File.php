@@ -15,6 +15,7 @@ class File extends Model
     const EDUCATION_MATERIAL_THUMBNAIL_PATH = self::EDUCATION_MATERIAL_PATH . '/thumbnail';
     const STATIC_PAGE_PATH = 'static_page';
     const FILE_PATH = 'file';
+    const ORG_LOGO_PATH = 'org_logo';
 
     /**
      * The attributes that are mass assignable.

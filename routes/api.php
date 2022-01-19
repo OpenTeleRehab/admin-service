@@ -6,6 +6,7 @@ use App\Http\Controllers\GlobalPatientController;
 use App\Http\Controllers\GuidancePageController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\LogoAndColorSchemeController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
@@ -45,6 +46,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('privacy-policy/publish/{id}', [PrivacyPolicyController::class, 'publish']);
     Route::apiResource('static-page', StaticPageController::class);
     Route::apiResource('partner-logo', PartnerLogoController::class);
+    Route::apiResource('logo-color-scheme', LogoAndColorSchemeController::class);
     Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus']);
     Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser']);
 

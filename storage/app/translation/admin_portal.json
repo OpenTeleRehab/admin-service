@@ -636,5 +636,10 @@
     "success_message.file_upload": "File uploaded successfully",
     "error_message.file_upload": "File upload failed",
     "login.error_message.invalid_user": "Incorrect E-mail or Password. Please try again.",
-    "login.error_message.time_out": "Your login attempt timed out. Login will start from the beginning."
+    "login.error_message.time_out": "Your login attempt timed out. Login will start from the beginning.",
+    "setting.logo_and_color_scheme": "Logo and color scheme",
+    "common.web_logo": "Web logo",
+    "common.mobile_logo": "Mobile logo",
+    "common.favicon": "Favicon",
+    "common.color": "color"
 }
