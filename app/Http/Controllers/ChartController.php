@@ -39,7 +39,7 @@ class ChartController extends Controller
      */
     public function getDataForAdminDashboard()
     {
-        $globalAdminTotal = User::where('type', User::ADMIN_GROUP_GLOBAL_ADMIN)->where('enabled', '=', 1)->count();
+        $globalAdminTotal = User::where('type', User::ADMIN_GROUP_ORG_ADMIN)->where('enabled', '=', 1)->count();
         $countryAdminTotal = User::where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)->where('enabled', '=', 1)->count();
         $clinicAdminTotal = User::where('type', User::ADMIN_GROUP_CLINIC_ADMIN)->where('enabled', '=', 1)->count();
         $clinicAdminsByCountry = DB::table('users')
