@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class GlobalPatient extends Model
 {
+    const ADMIN_GROUP_ORG_ADMIN = 'organization_admin';
     const ADMIN_GROUP_GLOBAL_ADMIN = 'global_admin';
     const ADMIN_GROUP_COUNTRY_ADMIN = 'country_admin';
     const ADMIN_GROUP_CLINIC_ADMIN = 'clinic_admin';

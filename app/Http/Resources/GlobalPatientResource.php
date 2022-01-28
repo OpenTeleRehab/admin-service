@@ -42,7 +42,7 @@ class GlobalPatientResource extends JsonResource
             'lastTreatmentPlan' => $lastTreatmentPlan
         ];
 
-        if ($request->get('type') !== User::ADMIN_GROUP_GLOBAL_ADMIN) {
+        if ($request->get('type') !== User::ADMIN_GROUP_ORG_ADMIN) {
             $responseData = array_merge($responseData, [
                 'first_name' => $this->first_name,
                 'last_name' => $this->last_name,

@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -17,11 +16,11 @@ class UserSeeder extends Seeder
     public function run()
     {
         DB::table('users')->insert([
-            'first_name' => 'Global',
+            'first_name' => 'Organization',
             'last_name' => 'Admin',
-            'type' => 'global_admin',
-            'email' => 'global-admin@we.co',
-            'password' => bcrypt('global-admin@we.co'),
+            'type' => User::ADMIN_GROUP_ORG_ADMIN,
+            'email' => 'organization-admin@we.co',
+            'password' => bcrypt('organization-admin@we.co'),
         ]);
 
         DB::table('users')->insert([

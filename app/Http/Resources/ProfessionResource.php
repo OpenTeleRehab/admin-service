@@ -18,7 +18,6 @@ class ProfessionResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'country_id' => $this->country_id,
-            'isUsed' => $this->isUsed()
         ];
     }
 }

@@ -35,7 +35,7 @@ class GlobalPatientController extends Controller
             }
 
             if (isset($data['search_value'])) {
-                if ($request->get('type') === GlobalPatient::ADMIN_GROUP_GLOBAL_ADMIN) {
+                if ($request->get('type') === GlobalPatient::ADMIN_GROUP_ORG_ADMIN) {
                     $query->where(function ($query) use ($data) {
                         $query->where('identity', 'like', '%' . $data['search_value'] . '%');
                     });
