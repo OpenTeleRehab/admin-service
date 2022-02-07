@@ -6,6 +6,7 @@ use App\Http\Controllers\GlobalPatientController;
 use App\Http\Controllers\GuidancePageController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
@@ -47,6 +48,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('partner-logo', PartnerLogoController::class);
     Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus']);
     Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser']);
+    Route::apiResource('organization', OrganizationController::class);
 
     Route::get('user/profile', [ProfileController::class, 'getUserProfile']);
     Route::put('user/update-password', [ProfileController::class, 'updatePassword']);
