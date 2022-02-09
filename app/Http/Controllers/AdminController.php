@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
-define("KEYCLOAK_USERS", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
-define("KEYCLOAK_EXECUTE_EMAIL", '/execute-actions-email?client_id=' . env('KEYCLOAK_BACKEND_CLIENT') . '&redirect_uri=' . env('REACT_APP_BASE_URL'));
-
 class AdminController extends Controller
 {
     /**
@@ -384,12 +381,12 @@ class AdminController extends Controller
         try {
             $enabled = $request->boolean('enabled');
             $token = KeycloakHelper::getKeycloakAccessToken();
-            $userUrl = KEYCLOAK_USERS . '?email=' . $user->email;
+            $userUrl = KEYCLOAK_USER_URL . '?email=' . $user->email;
             $user->update(['enabled' => $enabled]);
 
             $response = Http::withToken($token)->get($userUrl);
             $keyCloakUsers = $response->json();
-            $url = KEYCLOAK_USERS . '/' . $keyCloakUsers[0]['id'];
+            $url = KEYCLOAK_USER_URL . '/' . $keyCloakUsers[0]['id'];
 
             $userUpdated = Http::withToken($token)
                 ->put($url, ['enabled' => $enabled]);
@@ -443,13 +440,13 @@ class AdminController extends Controller
             $user = User::findOrFail($id);
             $token = KeycloakHelper::getKeycloakAccessToken();
 
-            $userUrl = KEYCLOAK_USERS . '?email=' . $user->email;
+            $userUrl = KEYCLOAK_USER_URL . '?email=' . $user->email;
             $response = Http::withToken($token)->get($userUrl);
 
             if ($response->successful()) {
                 $keyCloakUsers = $response->json();
 
-                $isDeleted = KeycloakHelper::deleteUser($token, KEYCLOAK_USERS . '/' . $keyCloakUsers[0]['id']);
+                $isDeleted = KeycloakHelper::deleteUser($token, KEYCLOAK_USER_URL . '/' . $keyCloakUsers[0]['id']);
                 if ($isDeleted) {
                     $user->delete();
                     return ['success' => true, 'message' => 'success_message.user_delete'];
@@ -479,7 +476,7 @@ class AdminController extends Controller
                 $languageCode = $language ? $language->code : '';
                 $response = Http::withToken($token)->withHeaders([
                     'Content-Type' => 'application/json'
-                ])->post(KEYCLOAK_USERS, [
+                ])->post(KEYCLOAK_USER_URL, [
                     'username' => $user->email,
                     'email' => $user->email,
                     'enabled' => true,
@@ -556,7 +553,7 @@ class AdminController extends Controller
 
         $response = Http::withToken($token)->withHeaders([
             'Content-Type' => 'application/json'
-        ])->get(KEYCLOAK_USERS, [
+        ])->get(KEYCLOAK_USER_URL, [
             'username' => $user->email,
         ]);
 
