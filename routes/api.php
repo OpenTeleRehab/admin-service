@@ -118,3 +118,4 @@ Route::get('user-term-condition', [TermAndConditionController::class, 'getUserTe
 Route::get('user-privacy-policy', [PrivacyPolicyController::class, 'getUserPrivacyPolicy']);
 Route::get('partnerLogo', [PartnerLogoController::class, 'getPartnerLogo']);
 Route::get('disease/get-name/by-id', [InternationalClassificationDiseaseController::class, 'getDiseaseNameById']);
+Route::get('get-org-by-name', [OrganizationController::class, 'getOrganizationByName']);

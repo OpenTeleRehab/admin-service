@@ -71,9 +71,8 @@ class OrganizationController extends Controller
             return ['success' => false, 'message' => 'error_message.organization_add'];
         }
 
-        // Todo: cloning all services for new org
-
-        // Store user data
+        // Todo: cloning all services for new org.
+        // Store user data.
         $user = User::create([
             'email' => $adminEmail,
             'first_name' => $adminEmail,
@@ -126,9 +125,7 @@ class OrganizationController extends Controller
     }
 
     /**
-     * @param \App\Models\User $user
-     * @param string $password
-     * @param bool $isTemporaryPassword
+     * @param object $user
      * @param string $userGroup
      *
      * @return false|mixed|string
@@ -207,5 +204,13 @@ class OrganizationController extends Controller
         $response = Http::withToken($token)->put($url, ['UPDATE_PASSWORD']);
 
         return $response;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOrganizationByName()
+    {
+        return Organization::where('name', env('APP_NAME'))->firstOrFail();
     }
 }
