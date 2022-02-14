@@ -111,6 +111,7 @@ Route::apiResource('system-limit', SystemLimitController::class);
 Route::get('system-limit/list/by-type', [SystemLimitController::class, 'getSystemLimitByType']);
 Route::get('setting/library-limit', [SystemLimitController::class, 'getContentLimitForLibrary']);
 Route::apiResource('settings', SettingController::class);
+Route::get('org/org-therapist-and-treatment-limit', [OrganizationController::class, 'getTherapistAndTreatmentLimit']);
 
 // Public access
 Route::get('translation/i18n/{platform}', [TranslationController::class, 'getI18n']);
