@@ -22,7 +22,9 @@ class Organization extends Model
         'name',
         'type',
         'admin_email',
-        'sub_domain_name'
+        'sub_domain_name',
+        'max_number_of_therapist',
+        'max_ongoing_treatment_plan'
     ];
 
     /**

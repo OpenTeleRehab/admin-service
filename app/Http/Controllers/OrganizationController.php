@@ -48,6 +48,8 @@ class OrganizationController extends Controller
         $name = $request->get('name');
         $adminEmail = $request->get('admin_email');
         $subDomainName = $request->get('sub_domain_name');
+        $maxNumberOfTherapist = $request->get('max_number_of_therapist');
+        $maxOngoingTreatmentPlan = $request->get('max_ongoing_treatment_plan');
 
         $availableEmail = User::where('email', $adminEmail)->count();
         if ($availableEmail) {
@@ -60,11 +62,19 @@ class OrganizationController extends Controller
             return abort(409, 'error_message.organization_exists');
         }
 
+        $existSubDomain = Organization::where('sub_domain_name', $subDomainName)->count();
+
+        if ($existSubDomain) {
+            return abort(409, 'error_message.organization_sub_domain_exists');
+        }
+
         $org = Organization::create([
             'name' => $name,
             'type' => Organization::NON_HI_TYPE,
             'admin_email' => $adminEmail,
             'sub_domain_name' => $subDomainName,
+            'max_number_of_therapist' => $maxNumberOfTherapist,
+            'max_ongoing_treatment_plan' => $maxOngoingTreatmentPlan,
         ]);
 
         if (!$org) {
@@ -105,8 +115,8 @@ class OrganizationController extends Controller
     public function update(Request $request, Organization $organization)
     {
         $organization->update([
-            'name' => $request->get('name'),
-            'sub_domain_name' => $request->get('sub_domain_name'),
+            'max_number_of_therapist' => $request->get('max_number_of_therapist'),
+            'max_ongoing_treatment_plan' => $request->get('max_ongoing_treatment_plan'),
         ]);
 
         return ['success' => true, 'message' => 'success_message.organization.update'];
@@ -207,10 +217,29 @@ class OrganizationController extends Controller
     }
 
     /**
+     * @param \Illuminate\Http\Request $request
+     *
      * @return mixed
      */
-    public function getOrganizationByName()
+    public function getOrganizationByName(Request $request)
     {
-        return Organization::where('name', env('APP_NAME'))->firstOrFail();
+        return Organization::where('name', $request->get('orgName'))->firstOrFail();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function getTherapistAndTreatmentLimit (Request $request) {
+        $orgName = $request->get('org_name');
+        $org = Organization::where('name', $orgName)->firstOrFail();
+        return [
+            'success' => true,
+            'data' => [
+                'max_therapist' => $org->max_number_of_therapist,
+                'max_ongoing_treatment_plan' => $org->max_ongoing_treatment_plan,
+            ],
+        ];
     }
 }

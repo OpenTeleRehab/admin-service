@@ -660,6 +660,13 @@
     "organization.sub_domain_name": "Sub domain name",
     "placeholder.organization.sub_domain_name": "Please enter sub domain name",
     "error.organization.sub_domain_name": "Please fill the sub domain name",
-    "error_message.organization_exists": "Organization already exist"
-
+    "error_message.organization_exists": "Organization already exist",
+    "organization.max_number_of_therapist": "Max number of therapist",
+    "organization.max_ongoing_treatment_plan": "Max ongoing treatment plan",
+    "placeholder.organization.max_number_of_therapist": "Enter number of therapist",
+    "error.organization.max_number_of_therapist": "Please fill the number of therapist",
+    "placeholder.organization.max_ongoing_treatment_plan": "Enter number of ongoing treatment plan",
+    "error.organization.max_ongoing_treatment_plan": "Please fill the number of ongoing treatment plan",
+    "error.country.therapist_limit.more_than.org_therapist_limit": "The therapist limit can not set more than total therapist limit of organization",
+    "error_message.organization_sub_domain_exists": "Organization sub domain name already exist"
 }
