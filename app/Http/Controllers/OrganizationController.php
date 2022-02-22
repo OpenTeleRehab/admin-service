@@ -75,6 +75,8 @@ class OrganizationController extends Controller
             'sub_domain_name' => $subDomainName,
             'max_number_of_therapist' => $maxNumberOfTherapist,
             'max_ongoing_treatment_plan' => $maxOngoingTreatmentPlan,
+            'status' => Organization::ONGOING_ORG_STATUS,
+            'created_by' => Auth::id()
         ]);
 
         if (!$org) {
@@ -168,7 +170,6 @@ class OrganizationController extends Controller
                     $isCanSetPassword = true;
                     $isCanAssignUserToGroup = self::assignUserToGroup($token, $createdUserUrl, $userGroup);
                     if ($isCanSetPassword && $isCanAssignUserToGroup) {
-                        self::sendEmailToNewUser($userKeycloakUuid);
                         return $userKeycloakUuid;
                     }
                 }
@@ -231,7 +232,8 @@ class OrganizationController extends Controller
      *
      * @return array
      */
-    public function getTherapistAndTreatmentLimit (Request $request) {
+    public function getTherapistAndTreatmentLimit(Request $request)
+    {
         $orgName = $request->get('org_name');
         $org = Organization::where('name', $orgName)->firstOrFail();
         return [
@@ -241,5 +243,33 @@ class OrganizationController extends Controller
                 'max_ongoing_treatment_plan' => $org->max_ongoing_treatment_plan,
             ],
         ];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOngoingOrganization()
+    {
+        return Organization::where('status', Organization::ONGOING_ORG_STATUS)->firstOrFail();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function updateOrganizationStatus(Request $request)
+    {
+        $status = $request->get('status');
+        $email = $request->get('email');
+
+        if ($status === Organization::SUCCESS_ORG_STATUS) {
+            $keycloakUser = KeycloakHelper::getUser($email);
+            self::sendEmailToNewUser($keycloakUser[0]['id']);
+        }
+
+        Organization::where('admin_email', $email)->update(['status' => $status]);
+
+        return ['success' => true, 'message' => 'success_message.organization.update'];
     }
 }

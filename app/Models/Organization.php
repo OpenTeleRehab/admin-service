@@ -13,6 +13,11 @@ class Organization extends Model
     const NON_HI_TYPE = 'non_hi';
     const HI_TYPE = 'hi';
 
+    const ONGOING_ORG_STATUS = 'ongoing';
+    const PENDING_ORG_STATUS = 'pending';
+    const FAILED_ORG_STATUS = 'failed';
+    const SUCCESS_ORG_STATUS = 'success';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -24,7 +29,9 @@ class Organization extends Model
         'admin_email',
         'sub_domain_name',
         'max_number_of_therapist',
-        'max_ongoing_treatment_plan'
+        'max_ongoing_treatment_plan',
+        'status',
+        'created_by',
     ];
 
     /**
