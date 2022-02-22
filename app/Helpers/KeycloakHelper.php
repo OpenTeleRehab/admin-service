@@ -245,4 +245,21 @@ class KeycloakHelper
 
         return $userGroups;
     }
+
+    /**
+     * @param string $username
+     *
+     * @return \GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response
+     */
+    public static function getUser($username)
+    {
+        $token = KeycloakHelper::getKeycloakAccessToken();
+        $response = Http::withToken($token)->withHeaders([
+            'Content-Type' => 'application/json'
+        ])->get(KEYCLOAK_USER_URL, [
+            'username' => $username,
+        ]);
+
+        return $response;
+    }
 }

@@ -120,3 +120,5 @@ Route::get('user-privacy-policy', [PrivacyPolicyController::class, 'getUserPriva
 Route::get('partnerLogo', [PartnerLogoController::class, 'getPartnerLogo']);
 Route::get('disease/get-name/by-id', [InternationalClassificationDiseaseController::class, 'getDiseaseNameById']);
 Route::get('get-org-by-name', [OrganizationController::class, 'getOrganizationByName']);
+Route::get('get-ongoing-organization', [OrganizationController::class, 'getOngoingOrganization']);
+Route::get('update-organization-status', [OrganizationController::class, 'updateOrganizationStatus']);
