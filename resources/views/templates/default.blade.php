@@ -1,6 +1,6 @@
 @if ($page->file_id)
 <div class="banner-container">
-    <img src="{{ ($platform === 'therapist_portal' ? env("THERAPIST_APP_URL") : env("APP_URL")) . '/api/admin/file/' . $page->file_id }}" alt="banner" class="w-100">
+    <img src="{{ "/api/admin/file/" . $page->file_id }}" alt="banner" class="w-100">
     <div class="banner-title p-3">
         {{ $page->title }}
     </div>
