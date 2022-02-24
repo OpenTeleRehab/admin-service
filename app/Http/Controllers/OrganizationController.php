@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\KeycloakHelper;
+use App\Helpers\OrganizationHelper;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Language;
 use App\Models\Organization;
@@ -83,13 +84,11 @@ class OrganizationController extends Controller
             return ['success' => false, 'message' => 'error_message.organization_add'];
         }
 
-        // Todo: cloning all services for new org.
-        // Store user data.
         $user = User::create([
             'email' => $adminEmail,
-            'first_name' => $adminEmail,
-            'last_name' => $adminEmail,
-            'type' => User::ADMIN_GROUP_ORG_ADMIN
+            'first_name' => $name,
+            'last_name' => $name,
+            'type' => User::ADMIN_GROUP_ORG_ADMIN,
         ]);
 
         if (!$user) {
@@ -97,7 +96,7 @@ class OrganizationController extends Controller
         }
 
         try {
-            self::createKeycloakUser($user, User::ADMIN_GROUP_ORG_ADMIN);
+            self::createKeycloakUser($user, $org, User::ADMIN_GROUP_ORG_ADMIN);
         } catch (\Exception $e) {
             DB::rollBack();
             return ['success' => false, 'message' => $e->getMessage()];
@@ -138,12 +137,13 @@ class OrganizationController extends Controller
 
     /**
      * @param object $user
+     * @param object $org
      * @param string $userGroup
      *
      * @return false|mixed|string
      * @throws \Exception
      */
-    private function createKeycloakUser($user, $userGroup)
+    private function createKeycloakUser($user, $org, $userGroup)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
         if ($token) {
@@ -204,20 +204,6 @@ class OrganizationController extends Controller
     }
 
     /**
-     * @param string $userId
-     *
-     * @return \Illuminate\Http\Client\Response
-     */
-    public static function sendEmailToNewUser($userId)
-    {
-        $token = KeycloakHelper::getKeycloakAccessToken();
-        $url = KEYCLOAK_USER_URL . '/'. $userId . KEYCLOAK_EXECUTE_EMAIL;
-        $response = Http::withToken($token)->put($url, ['UPDATE_PASSWORD']);
-
-        return $response;
-    }
-
-    /**
      * @param \Illuminate\Http\Request $request
      *
      * @return mixed
@@ -263,13 +249,20 @@ class OrganizationController extends Controller
         $status = $request->get('status');
         $email = $request->get('email');
 
-        if ($status === Organization::SUCCESS_ORG_STATUS) {
-            $keycloakUser = KeycloakHelper::getUser($email);
-            self::sendEmailToNewUser($keycloakUser[0]['id']);
+        $organization = Organization::where('admin_email', $email)->first();
+
+        if ($organization) {
+            Organization::where('admin_email', $email)->update(['status' => $status]);
+
+            if ($status === Organization::SUCCESS_ORG_STATUS) {
+                KeycloakHelper::sendEmailToNewUser(KeycloakHelper::getUser($organization->admin_email)[0]['id']);
+            } else {
+                OrganizationHelper::sendEmailNotification($organization->admin_email, $organization->name, $status);
+            }
+
+            return ['success' => true, 'message' => 'success_message.organization.update'];
         }
 
-        Organization::where('admin_email', $email)->update(['status' => $status]);
-
-        return ['success' => true, 'message' => 'success_message.organization.update'];
+        return ['success' => false, 'message' => 'error_message.organization.update'];
     }
 }
