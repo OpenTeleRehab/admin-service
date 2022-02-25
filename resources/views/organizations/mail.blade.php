@@ -18,7 +18,7 @@
 @endif
 
 @if ($status === App\Models\Organization::SUCCESS_ORG_STATUS)
-    <p>Organization creation is successful. You can visit Organization Admin Portal - #### to complete the setup of your organization.</p>
+    <p>Organization creation is successful. You can visit Organization Admin Portal to complete the setup of your organization.</p>
 @endif
 
 <p>Have a nice day!</p>

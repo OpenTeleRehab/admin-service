@@ -254,10 +254,10 @@ class OrganizationController extends Controller
         if ($organization) {
             Organization::where('admin_email', $email)->update(['status' => $status]);
 
+            OrganizationHelper::sendEmailNotification($organization->admin_email, $organization->name, $status);
+
             if ($status === Organization::SUCCESS_ORG_STATUS) {
                 KeycloakHelper::sendEmailToNewUser(KeycloakHelper::getUser($organization->admin_email)[0]['id']);
-            } else {
-                OrganizationHelper::sendEmailNotification($organization->admin_email, $organization->name, $status);
             }
 
             return ['success' => true, 'message' => 'success_message.organization.update'];
