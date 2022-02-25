@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\OrganizationHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -45,6 +46,10 @@ class Organization extends Model
 
         static::addGlobalScope('order', function (Builder $builder) {
             $builder->orderBy('name');
+        });
+
+        self::created(function ($organization) {
+            OrganizationHelper::sendEmailNotification($organization->admin_email, $organization->name, self::ONGOING_ORG_STATUS);
         });
     }
 }
