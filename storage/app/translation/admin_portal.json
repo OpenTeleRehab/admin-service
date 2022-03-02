@@ -57,6 +57,7 @@
     "common.paginate.per_page": "per page",
     "common.limit_treatment": "Treatment Limit(Default:${defaultLimitedPatients})",
     "common.on_going.treatment": "On-going Treatments: ${onGoingPatients}",
+    "common.super_admin": "Super Admin",
     "common.organization_admin": "Organization Admin",
     "common.global_admin": "Global Admin",
     "common.country_admin": "Country Admin",
