@@ -48,7 +48,7 @@ class CreateSuperAdminUser extends Command
             'type' => $type,
             'country_id' => null,
             'clinic_id' => null,
-            'language_id' => 1,
+            'language_id' => null,
             'enabled' => true,
         ]);
 

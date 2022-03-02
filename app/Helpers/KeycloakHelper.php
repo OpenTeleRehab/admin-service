@@ -247,17 +247,17 @@ class KeycloakHelper
     }
 
     /**
-     * @param string $username
+     * @param string $email
      *
      * @return \GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response
      */
-    public static function getUser($username)
+    public static function getUser($email)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
         $response = Http::withToken($token)->withHeaders([
             'Content-Type' => 'application/json'
         ])->get(KEYCLOAK_USER_URL, [
-            'username' => $username,
+            'email' => $email,
         ]);
 
         return $response;

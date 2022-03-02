@@ -5,16 +5,12 @@ namespace App\Http\Controllers;
 use App\Helpers\KeycloakHelper;
 use App\Helpers\OrganizationHelper;
 use App\Http\Resources\OrganizationResource;
-use App\Models\Language;
 use App\Models\Organization;
 use App\Models\OrganizationKeycloakRealm;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-
-define("KEYCLOAK_USERS", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
 
 class OrganizationController extends Controller
 {
@@ -136,74 +132,6 @@ class OrganizationController extends Controller
     }
 
     /**
-     * @param object $user
-     * @param object $org
-     * @param string $userGroup
-     *
-     * @return false|mixed|string
-     * @throws \Exception
-     */
-    private function createKeycloakUser($user, $org, $userGroup)
-    {
-        $token = KeycloakHelper::getKeycloakAccessToken();
-        if ($token) {
-            try {
-                $language = Language::find(Auth::user()->language_id);
-                $languageCode = $language ? $language->code : '';
-                $response = Http::withToken($token)->withHeaders([
-                    'Content-Type' => 'application/json'
-                ])->post(KEYCLOAK_USERS, [
-                    'username' => $user->email,
-                    'email' => $user->email,
-                    'enabled' => true,
-                    'firstName' => $user->first_name,
-                    'lastName' => $user->last_name,
-                    'attributes' => [
-                        'locale' => [$languageCode]
-                    ]
-                ]);
-
-                if ($response->successful()) {
-                    $createdUserUrl = $response->header('Location');
-                    $lintArray = explode('/', $createdUserUrl);
-                    $userKeycloakUuid = end($lintArray);
-                    $isCanSetPassword = true;
-                    $isCanAssignUserToGroup = self::assignUserToGroup($token, $createdUserUrl, $userGroup);
-                    if ($isCanSetPassword && $isCanAssignUserToGroup) {
-                        return $userKeycloakUuid;
-                    }
-                }
-            } catch (\Exception $e) {
-                throw new \Exception($e->getMessage());
-            }
-        }
-        throw new \Exception('no_token');
-    }
-
-    /**
-     * @param string $token
-     * @param string $userUrl
-     * @param string $userGroup
-     * @param false $isUnassigned
-     *
-     * @return bool
-     */
-    private static function assignUserToGroup($token, $userUrl, $userGroup, $isUnassigned = false)
-    {
-        $userGroups = KeycloakHelper::getUserGroups($token);
-        $url = $userUrl . '/groups/' . $userGroups[$userGroup];
-        if ($isUnassigned) {
-            $response = Http::withToken($token)->delete($url);
-        } else {
-            $response = Http::withToken($token)->put($url);
-        }
-        if ($response->successful()) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * @param \Illuminate\Http\Request $request
      *
      * @return mixed
@@ -236,7 +164,7 @@ class OrganizationController extends Controller
      */
     public function getOngoingOrganization()
     {
-        return Organization::where('status', Organization::ONGOING_ORG_STATUS)->firstOrFail();
+        return Organization::where('status', Organization::ONGOING_ORG_STATUS)->first();
     }
 
     /**
