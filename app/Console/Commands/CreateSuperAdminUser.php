@@ -58,7 +58,7 @@ class CreateSuperAdminUser extends Command
         }
 
         try {
-            KeycloakHelper::createUser($user, $email, false, $type);
+            KeycloakHelper::createUser($user, '', false, $type);
         } catch (\Exception $e) {
             DB::rollBack();
             $this->info('This user is unable to create on keycloak');
