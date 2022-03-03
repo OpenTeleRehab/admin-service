@@ -27,7 +27,8 @@ class ExerciseResource extends JsonResource
             'categories' => $this->categories ? $this->categories->pluck('id') : [],
             'therapist_id' => $this->therapist_id,
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
-            'additional_fields' => AdditionalFieldResource::collection($this->additionalFields)
+            'additional_fields' => AdditionalFieldResource::collection($this->additionalFields),
+            'global' => $this->global,
         ];
     }
 }

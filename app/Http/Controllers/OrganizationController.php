@@ -119,9 +119,9 @@ class OrganizationController extends Controller
      *
      * @return mixed
      */
-    public function getOrganizationByName(Request $request)
+    public function getOrganization(Request $request)
     {
-        return Organization::where('name', $request->get('orgName'))->firstOrFail();
+        return Organization::where('sub_domain_name', $request->get('sub_domain'))->firstOrFail();
     }
 
     /**
@@ -131,8 +131,8 @@ class OrganizationController extends Controller
      */
     public function getTherapistAndTreatmentLimit(Request $request)
     {
-        $orgName = $request->get('org_name');
-        $org = Organization::where('name', $orgName)->firstOrFail();
+        $subDomain = $request->get('sub_domain');
+        $org = Organization::where('sub_domain_name', $subDomain)->firstOrFail();
         return [
             'success' => true,
             'data' => [

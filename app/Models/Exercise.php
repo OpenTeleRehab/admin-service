@@ -25,6 +25,8 @@ class Exercise extends Model
         'include_feedback',
         'get_pain_level',
         'therapist_id',
+        'global',
+        'exercise_id'
     ];
 
 
