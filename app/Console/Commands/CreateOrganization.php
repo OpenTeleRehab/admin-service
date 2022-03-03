@@ -51,6 +51,8 @@ class CreateOrganization extends Command
                 'sub_domain_name' => 'hi',
                 'max_number_of_therapist' => $system_limit->therapist_content_limit,
                 'max_ongoing_treatment_plan' => $system_limit->number_of_ongoing_treatment_per_therapist,
+                'status' => Organization::SUCCESS_ORG_STATUS,
+                'created_by' => 0,
             ]);
         }
 
