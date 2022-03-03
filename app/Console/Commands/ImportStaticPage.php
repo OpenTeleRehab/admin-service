@@ -46,7 +46,7 @@ class ImportStaticPage extends Command
         foreach ([$admin_static_pages, $therapist_static_pages, $patient_static_pages] as $static_page) {
             $data = $static_page['data'];
 
-            if ($data['file'] !== null) {
+            if (!empty($data) && $data['file'] !== null) {
                 $file_url = env('GLOBAL_ADMIN_SERVICE_URL') . '/file/' . $data['file_id'];
                 $file_content = file_get_contents($file_url);
                 $file_path = File::STATIC_PAGE_PATH . '/' . $data['file']['fileName'];
@@ -59,18 +59,19 @@ class ImportStaticPage extends Command
 
                 // Save file to storage.
                 Storage::put($file_path, $file_content);
-            }
 
-            StaticPage::create([
-                'title' => $data['title'],
-                'content' => $data['content'],
-                'file_id' => $data['file'] !== null ? $file->id : null,
-                'platform' => $data['platform'],
-                'url_path_segment' => $data['url'],
-                'private' => $data['private'],
-                'background_color' => $data['background_color'],
-                'text_color' => $data['text_color'],
-            ]);
+                // Store static page
+                StaticPage::create([
+                    'title' => $data['title'],
+                    'content' => $data['content'],
+                    'file_id' => $data['file'] !== null ? $file->id : null,
+                    'platform' => $data['platform'],
+                    'url_path_segment' => $data['url'],
+                    'private' => $data['private'],
+                    'background_color' => $data['background_color'],
+                    'text_color' => $data['text_color'],
+                ]);
+            }
         }
 
         $this->info('Static page has been created successfully');
