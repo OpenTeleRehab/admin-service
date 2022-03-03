@@ -49,6 +49,7 @@ class OrganizationController extends Controller
         $maxOngoingTreatmentPlan = $request->get('max_ongoing_treatment_plan');
 
         $availableEmail = User::where('email', $adminEmail)->count();
+
         if ($availableEmail) {
             return abort(409, 'error_message.email_exists');
         }
@@ -78,24 +79,6 @@ class OrganizationController extends Controller
 
         if (!$org) {
             return ['success' => false, 'message' => 'error_message.organization_add'];
-        }
-
-        $user = User::create([
-            'email' => $adminEmail,
-            'first_name' => $name,
-            'last_name' => $name,
-            'type' => User::ADMIN_GROUP_ORG_ADMIN,
-        ]);
-
-        if (!$user) {
-            return ['success' => false, 'message' => 'error_message.user_add'];
-        }
-
-        try {
-            self::createKeycloakUser($user, $org, User::ADMIN_GROUP_ORG_ADMIN);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return ['success' => false, 'message' => $e->getMessage()];
         }
 
         DB::commit();
