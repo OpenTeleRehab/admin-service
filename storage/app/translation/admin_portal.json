@@ -35,6 +35,7 @@
     "common.recover_password": "Recover Password",
     "common.update-password": "Update Password",
     "common.new-password": "New Password",
+    "common.resend_mail": "Resend Mail",
     "placeholder.new-password": "Enter new password",
     "common.confirm-password": "Confirm Password",
     "placeholder.confirm-password": "Enter confirm password",
