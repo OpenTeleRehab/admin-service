@@ -202,12 +202,14 @@ class EducationMaterialController extends Controller
                 'title' => $request->get('title'),
                 'file_id' => $file->id,
                 'therapist_id' => $therapistId,
+                'global' => env('APP_NAME') == 'hi',
             ]);
         } elseif (!empty($file)) {
             $educationMaterial = EducationMaterial::create([
                 'title' => $request->get('title'),
                 'file_id' => $file->id,
                 'therapist_id' => $therapistId,
+                'global' => env('APP_NAME') == 'hi',
             ]);
         }
 
@@ -494,5 +496,25 @@ class EducationMaterialController extends Controller
         foreach ($categories as $category) {
             $educationMaterial->categories()->attach($category);
         }
+    }
+
+    /**
+     * @return \App\Models\EducationMaterial[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getEducationMaterials()
+    {
+        return EducationMaterial::all();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
+     */
+    public function getEducationMaterialFiles(Request $request)
+    {
+        $fileIDs = $request->get('file_ids', []);
+        $files = File::whereIn('id', $fileIDs)->get();
+        return $files;
     }
 }

@@ -92,16 +92,24 @@ Route::get('exercise/list/by-ids', [ExerciseController::class, 'getByIds']);
 Route::post('exercise/updateFavorite/by-therapist/{exercise}', [ExerciseController::class, 'updateFavorite']);
 Route::get('library/count/by-therapist', [ExerciseController::class, 'countTherapistLibrary']);
 Route::post('library/delete/by-therapist', [ExerciseController::class, 'deleteLibraryByTherapist']);
+Route::get('get-exercises', [ExerciseController::class, 'getExercises']);
+Route::get('get-exercise-files', [ExerciseController::class, 'getExerciseFiles']);
 
 
 Route::apiResource('education-material', EducationMaterialController::class);
 Route::get('education-material/list/by-ids', [EducationMaterialController::class, 'getByIds']);
 Route::post('education-material/updateFavorite/by-therapist/{educationMaterial}', [EducationMaterialController::class, 'updateFavorite']);
+Route::get('get-education-materials', [EducationMaterialController::class, 'getEducationMaterials']);
+Route::get('get-education-material-files', [EducationMaterialController::class, 'getEducationMaterialFiles']);
 
 Route::apiResource('questionnaire', QuestionnaireController::class);
 Route::get('questionnaire/list/by-ids', [QuestionnaireController::class, 'getByIds']);
 Route::post('questionnaire/mark-as-used/by-ids', [QuestionnaireController::class, 'markAsUsed']);
 Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite']);
+Route::get('get-questionnaires', [QuestionnaireController::class, 'getQuestionnaires']);
+Route::get('get-questionnaire-questions', [QuestionnaireController::class, 'getQuestionnaireQuestions']);
+Route::get('get-question-file', [QuestionnaireController::class, 'getQuestionFile']);
+Route::get('get-question-answers', [QuestionnaireController::class, 'getQuestionAnswers']);
 
 Route::apiResource('category', CategoryController::class);
 Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData']);
@@ -119,6 +127,6 @@ Route::get('user-term-condition', [TermAndConditionController::class, 'getUserTe
 Route::get('user-privacy-policy', [PrivacyPolicyController::class, 'getUserPrivacyPolicy']);
 Route::get('partnerLogo', [PartnerLogoController::class, 'getPartnerLogo']);
 Route::get('disease/get-name/by-id', [InternationalClassificationDiseaseController::class, 'getDiseaseNameById']);
-Route::get('get-org-by-name', [OrganizationController::class, 'getOrganizationByName']);
+Route::get('get-organization', [OrganizationController::class, 'getOrganization']);
 Route::get('get-ongoing-organization', [OrganizationController::class, 'getOngoingOrganization']);
 Route::get('update-organization-status', [OrganizationController::class, 'updateOrganizationStatus']);

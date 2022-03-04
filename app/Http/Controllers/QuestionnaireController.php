@@ -149,12 +149,14 @@ class QuestionnaireController extends Controller
                     'title' => $data->title,
                     'description' => $data->description,
                     'therapist_id' => $therapistId,
+                    'global' => env('APP_NAME') == 'hi',
                 ]);
             } else {
                 $questionnaire = Questionnaire::create([
                     'title' => $data->title,
                     'description' => $data->description,
                     'therapist_id' => $therapistId,
+                    'global' => env('APP_NAME') == 'hi',
                 ]);
             }
 
@@ -492,5 +494,46 @@ class QuestionnaireController extends Controller
 
         ContentHelper::flagFavoriteActivity($favorite, $therapistId, $questionnaire);
         return ['success' => true, 'message' => 'success_message.questionnaire_update'];
+    }
+
+    /**
+     * @return \App\Models\Questionnaire[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getQuestionnaires()
+    {
+        return Questionnaire::all();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
+     */
+    public function getQuestionnaireQuestions(Request $request)
+    {
+        $questionnaires = Questionnaire::findOrFail($request->get('questionnaire_id'));
+        return $questionnaires->questions()->get();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
+     */
+    public function getQuestionFile(Request $request)
+    {
+        $question = Question::findOrFail($request->get('question_id'));
+        return $question->file()->first();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
+     */
+    public function getQuestionAnswers(Request $request)
+    {
+        $question = Question::findOrFail($request->get('question_id'));
+        return $question->answers()->get();
     }
 }

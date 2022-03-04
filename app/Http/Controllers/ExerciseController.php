@@ -112,6 +112,7 @@ class ExerciseController extends Controller
                 'include_feedback' => $request->boolean('include_feedback'),
                 'get_pain_level' => $request->boolean('get_pain_level'),
                 'therapist_id' => $therapistId,
+                'global' => env('APP_NAME') == 'hi',
             ]);
 
             // CLone files.
@@ -129,6 +130,7 @@ class ExerciseController extends Controller
                 'include_feedback' => $request->boolean('include_feedback'),
                 'get_pain_level' => $request->boolean('get_pain_level'),
                 'therapist_id' => $therapistId,
+                'global' => env('APP_NAME') == 'hi',
             ]);
         }
 
@@ -506,5 +508,24 @@ class ExerciseController extends Controller
         foreach ($categories as $category) {
             $exercise->categories()->attach($category);
         }
+    }
+
+    /**
+     * @return \App\Models\Exercise[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getExercises()
+    {
+        return Exercise::all();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
+     */
+    public function getExerciseFiles(Request $request)
+    {
+        $excercise = Exercise::findOrFail($request->get('exercise_id'));
+        return $excercise->files()->orderBy('order')->get();
     }
 }

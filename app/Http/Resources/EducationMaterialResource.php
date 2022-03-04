@@ -23,6 +23,7 @@ class EducationMaterialResource extends JsonResource
             'categories' => $this->categories ? $this->categories->pluck('id') : [],
             'therapist_id' => $this->therapist_id,
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
+            'global' => $this->global,
         ];
     }
 }
