@@ -131,8 +131,8 @@ class OrganizationController extends Controller
      */
     public function getTherapistAndTreatmentLimit(Request $request)
     {
-        $subDomain = $request->get('sub_domain');
-        $org = Organization::where('sub_domain_name', $subDomain)->firstOrFail();
+        $org = Organization::where('sub_domain_name', $request->get('org_name'))->firstOrFail();
+
         return [
             'success' => true,
             'data' => [
