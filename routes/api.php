@@ -40,9 +40,7 @@ use \App\Http\Controllers\PartnerLogoController;
 Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('admin', AdminController::class);
     Route::apiResource('translation', TranslationController::class);
-    Route::apiResource('term-condition', TermAndConditionController::class);
     Route::post('term-condition/publish/{id}', [TermAndConditionController::class, 'publish']);
-    Route::apiResource('privacy-policy', PrivacyPolicyController::class);
     Route::post('privacy-policy/publish/{id}', [PrivacyPolicyController::class, 'publish']);
     Route::apiResource('static-page', StaticPageController::class);
     Route::apiResource('partner-logo', PartnerLogoController::class);
@@ -122,6 +120,9 @@ Route::apiResource('settings', SettingController::class);
 Route::get('org/org-therapist-and-treatment-limit', [OrganizationController::class, 'getTherapistAndTreatmentLimit']);
 
 // Public access
+Route::apiResource('term-condition', TermAndConditionController::class);
+Route::apiResource('privacy-policy', PrivacyPolicyController::class);
+
 Route::get('translation/i18n/{platform}', [TranslationController::class, 'getI18n']);
 Route::get('user-term-condition', [TermAndConditionController::class, 'getUserTermAndCondition']);
 Route::get('user-privacy-policy', [PrivacyPolicyController::class, 'getUserPrivacyPolicy']);
