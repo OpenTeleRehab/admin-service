@@ -106,6 +106,7 @@ class CreateOrganizationAdminUser extends Command
                     $isCanAssignUserToGroup = self::assignUserToGroup($token, $createdUserUrl, $userGroup);
 
                     if ($isCanSetPassword && $isCanAssignUserToGroup) {
+                        KeycloakHelper::sendEmailToNewUser($userKeycloakUuid);
                         return $userKeycloakUuid;
                     }
                 }

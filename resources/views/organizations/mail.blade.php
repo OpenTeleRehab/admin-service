@@ -3,6 +3,7 @@
 
 @if ($status === App\Models\Organization::ONGOING_ORG_STATUS)
     <p>We will inform you when the organization creation is successful.</p>
+    <p>Please wait for an account setup email confirmation from the system. Once received please complete the setup and reset your password.</p>
 @endif
 
 @if ($status === App\Models\Organization::PENDING_ORG_STATUS)
