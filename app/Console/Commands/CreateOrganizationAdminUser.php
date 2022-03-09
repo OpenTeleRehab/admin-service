@@ -68,7 +68,7 @@ class CreateOrganizationAdminUser extends Command
         DB::commit();
         $this->info('User has been created successfully');
 
-        return true;
+        return 0;
     }
 
     /**
