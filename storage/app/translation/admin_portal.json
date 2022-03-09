@@ -670,5 +670,9 @@
     "placeholder.organization.max_ongoing_treatment_plan": "Enter number of ongoing treatment plan",
     "error.organization.max_ongoing_treatment_plan": "Please fill the number of ongoing treatment plan",
     "error.country.therapist_limit.more_than.org_therapist_limit": "The therapist limit can not set more than total therapist limit of organization",
-    "error_message.organization_sub_domain_exists": "Organization sub domain name already exist"
+    "error_message.organization_sub_domain_exists": "Organization sub domain name already exist",
+    "common.success": "Success",
+    "common.ongoing": "Ongoing",
+    "common.pending": "Pending",
+    "common.failed": "Failed"
 }
