@@ -515,7 +515,7 @@ class ExerciseController extends Controller
      */
     public function getExercises()
     {
-        return Exercise::all();
+        return Exercise::withTrashed()->get();
     }
 
     /**
@@ -525,7 +525,7 @@ class ExerciseController extends Controller
      */
     public function getExerciseFiles(Request $request)
     {
-        $excercise = Exercise::findOrFail($request->get('exercise_id'));
+        $excercise = Exercise::withTrashed()->findOrFail($request->get('exercise_id'));
         return $excercise->files()->orderBy('order')->get();
     }
 }

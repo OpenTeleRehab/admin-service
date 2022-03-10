@@ -503,7 +503,7 @@ class EducationMaterialController extends Controller
      */
     public function getEducationMaterials()
     {
-        return EducationMaterial::all();
+        return EducationMaterial::withTrashed()->get();
     }
 
     /**

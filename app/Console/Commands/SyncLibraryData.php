@@ -10,6 +10,7 @@ use App\Models\Exercise;
 use App\Models\File;
 use App\Models\Question;
 use App\Models\Questionnaire;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -41,7 +42,7 @@ class SyncLibraryData extends Command
             // Sync exercise data
             $globalExercises = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercises'));
             // Remove existing global data before import.
-            $exercises = Exercise::where('global', true)->get();
+            $exercises = Exercise::withTrashed()->where('global', true)->get();
             if ($exercises) {
                 foreach ($exercises as $exercise) {
                     // Remove files.
@@ -52,10 +53,6 @@ class SyncLibraryData extends Command
                     }
                     // Remove exercise file in exercise file table.
                     DB::table('exercise_file')->where('exercise_id', $exercise->id)->delete();
-                    // Remove exercise if not exist in global data.
-                    if (!in_array($exercise->exercise_id, array_column($globalExercises, 'id'))) {
-                        DB::table('exercises')->where('id', $exercise->id)->delete();
-                    }
                 }
             }
 
@@ -74,10 +71,11 @@ class SyncLibraryData extends Command
                         'get_pain_level' => $globalExercise->get_pain_level,
                         'therapist_id' => $globalExercise->therapist_id,
                         'exercise_id' => $globalExercise->id,
-                        'global' => true
+                        'global' => true,
+                        'deleted_at' => $globalExercise->deleted_at ? Carbon::parse($globalExercise->deleted_at) : $globalExercise->deleted_at,
                     ],
                 );
-                $newExercise = Exercise::where('exercise_id', $globalExercise->id)->where('global', true)->first();
+                $newExercise = Exercise::withTrashed()->where('exercise_id', $globalExercise->id)->where('global', true)->first();
                 // Add files.
                 $files = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercise-files', ['exercise_id' => $globalExercise->id]));
                 if (!empty($files)) {
@@ -137,11 +135,6 @@ class SyncLibraryData extends Command
                 foreach ($educationMaterials as $educationMaterial) {
                     $fileIDs = array_values(get_object_vars(json_decode($educationMaterial->file_id)));
                     File::whereIn('id', $fileIDs)->delete();
-
-                    // Remove material if not exist in global data.
-                    if (!in_array($educationMaterial->education_material_id, array_column($globalEducationMaterials, 'id'))) {
-                        DB::table('education_materials')->where('id', $educationMaterial->id)->delete();
-                    }
                 }
             }
             // Import global material to org.
@@ -157,6 +150,7 @@ class SyncLibraryData extends Command
                         'therapist_id' => $globalEducationMaterial->therapist_id,
                         'education_material_id' => $globalEducationMaterial->id,
                         'global' => true,
+                        'deleted_at' => $globalEducationMaterial->deleted_at ? Carbon::parse($globalEducationMaterial->deleted_at) : $globalEducationMaterial->deleted_at,
                     ]
                 );
                 $filesIDs = array_values(get_object_vars($globalEducationMaterial->file_id));
@@ -204,14 +198,15 @@ class SyncLibraryData extends Command
                             }
                         }
                     }
-                    $education = EducationMaterial::where('education_material_id', $globalEducationMaterial->id)->where('global', true)->first();
+                    // Update material file id.
+                    $education = EducationMaterial::withTrashed()->where('education_material_id', $globalEducationMaterial->id)->where('global', true)->first();
                     DB::table('education_materials')->where('id', $education->id)->update(['file_id' => json_encode($newFileIDs)]);
                 }
             }
 
             // Sync questionnaire data.
             $globalQuestionnaires = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-questionnaires'));
-            $questionnaires = Questionnaire::where('global', true)->get();
+            $questionnaires = Questionnaire::withTrashed()->where('global', true)->get();
             // Remove data before import.
             if ($questionnaires) {
                 foreach ($questionnaires as $questionnaire) {
@@ -223,20 +218,6 @@ class SyncLibraryData extends Command
                         if ($removeFile) {
                             $removeFile->delete();
                         }
-                    }
-
-                    // Remove questionnaire if not exist in global data.
-                    if (!in_array($questionnaire->questionnaire_id, array_column($globalQuestionnaires, 'id'))) {
-                        // Remove answers.
-                        $questionIDs = $questions->pluck('id')->toArray();
-                        foreach ($questionIDs as $questionID) {
-                            Answer::where('question_id', $questionID)->delete();
-                        }
-                        // Remove question.
-                        Question::where('questionnaire_id',  $questionnaire->id)->delete();
-
-                        // Remove questionnaire.
-                        DB::table('questionnaires')->where('id', $questionnaire->id)->delete();
                     }
                 }
             }
@@ -253,9 +234,10 @@ class SyncLibraryData extends Command
                         'therapist_id' => $globalQuestionnaire->therapist_id,
                         'questionnaire_id' => $globalQuestionnaire->id,
                         'global' => true,
+                        'deleted_at' => $globalQuestionnaire->deleted_at ? Carbon::parse($globalQuestionnaire->deleted_at) : $globalQuestionnaire->deleted_at,
                     ]
                 );
-                $newQuestionnaire = Questionnaire::where('questionnaire_id', $globalQuestionnaire->id)->where('global', true)->first();
+                $newQuestionnaire = Questionnaire::withTrashed()->where('questionnaire_id', $globalQuestionnaire->id)->where('global', true)->first();
                 $questions = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-questionnaire-questions', ['questionnaire_id' => $globalQuestionnaire->id]));
                 if (!empty($questions)) {
                     foreach ($questions as $question) {

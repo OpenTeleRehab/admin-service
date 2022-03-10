@@ -501,7 +501,7 @@ class QuestionnaireController extends Controller
      */
     public function getQuestionnaires()
     {
-        return Questionnaire::all();
+        return Questionnaire::withTrashed()->get();
     }
 
     /**
@@ -511,7 +511,7 @@ class QuestionnaireController extends Controller
      */
     public function getQuestionnaireQuestions(Request $request)
     {
-        $questionnaires = Questionnaire::findOrFail($request->get('questionnaire_id'));
+        $questionnaires = Questionnaire::withTrashed()->findOrFail($request->get('questionnaire_id'));
         return $questionnaires->questions()->get();
     }
 
