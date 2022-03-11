@@ -674,5 +674,12 @@
     "common.success": "Success",
     "common.ongoing": "Ongoing",
     "common.pending": "Pending",
-    "common.failed": "Failed"
+    "common.failed": "Failed",
+    "setting.color_scheme": "Color scheme",
+    "common.primary_color": "Primary color",
+    "common.secondary_color": "Secondary color",
+    "common.primary_text_color": "Primary text color",
+    "common.secondary_text_color": "Secondary text color",
+    "success_message.color_scheme.save": "Color scheme saved successfully",
+    "toast_title.add_color_scheme": "Color scheme"
 }

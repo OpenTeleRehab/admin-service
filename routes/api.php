@@ -7,6 +7,7 @@ use App\Http\Controllers\GuidancePageController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\ColorSchemeController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
@@ -118,6 +119,7 @@ Route::get('system-limit/list/by-type', [SystemLimitController::class, 'getSyste
 Route::get('setting/library-limit', [SystemLimitController::class, 'getContentLimitForLibrary']);
 Route::apiResource('settings', SettingController::class);
 Route::get('org/org-therapist-and-treatment-limit', [OrganizationController::class, 'getTherapistAndTreatmentLimit']);
+Route::apiResource('color-scheme', ColorSchemeController::class);
 
 // Public access
 Route::apiResource('term-condition', TermAndConditionController::class);
