@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -19,16 +21,38 @@ class OrganizationHelper
      */
     public static function sendEmailNotification($email, $org_name, $status)
     {
-        $data = [
-            'subject' => $org_name . ' Organization Creation is ' . $status,
-            'email' => $email,
-            'org_name' => $org_name,
-            'status' => $status,
+        $organization = Organization::where('admin_email', $email)->first();
+        $user = User::find($organization->created_by);
+
+        $payloads = [
+            [
+                'subject' => $org_name . ' Organization Creation is ' . $status,
+                'email' => $user->email,
+                'org_name' => $org_name,
+                'status' => $status,
+                'internal' => true,
+            ],
+            [
+                'subject' => $org_name . ' Organization Creation is ' . $status,
+                'email' => 'devops@web-essentials.co',
+                'org_name' => $org_name,
+                'status' => $status,
+                'internal' => true,
+            ],
+            [
+                'subject' => $org_name . ' Organization Creation is ' . $status,
+                'email' => $email,
+                'org_name' => $org_name,
+                'status' => $status,
+                'internal' => false,
+            ]
         ];
 
-        Mail::send('organizations.mail', $data, function ($message) use ($data) {
-            $message->to($data['email'])->subject($data['subject']);
-        });
+        foreach ($payloads as $payload) {
+            Mail::send('organizations.mail', $payload, function ($message) use ($payload) {
+                $message->to($payload['email'])->subject($payload['subject']);
+            });
+        }
 
         return back()->with(['message' => 'Email successfully sent!']);
     }
