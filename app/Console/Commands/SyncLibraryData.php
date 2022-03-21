@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class SyncLibraryData extends Command
@@ -80,49 +81,53 @@ class SyncLibraryData extends Command
                 $files = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercise-files', ['exercise_id' => $globalExercise->id]));
                 if (!empty($files)) {
                     $index = 0;
-                    foreach ($files as  $file) {
+                    foreach ($files as $file) {
                         $file_url = env('GLOBAL_ADMIN_SERVICE_URL') . '/file/' . $file->id;
-                        $file_content = file_get_contents($file_url);
                         $file_path = File::EXERCISE_PATH . '/' . $file->filename;
 
-                        $record = File::create([
-                            'filename' => $file->filename,
-                            'path' => $file_path,
-                            'content_type' => $file->content_type,
-                        ]);
+                        try {
+                            $file_content = file_get_contents($file_url);
+                            $record = File::create([
+                                'filename' => $file->filename,
+                                'path' => $file_path,
+                                'content_type' => $file->content_type,
+                            ]);
 
-                        // Save file to storage.
-                        Storage::put($file_path, $file_content);
-                        if ($record) {
-                            if ($file->content_type === 'video/mp4') {
-                                $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path, File::EXERCISE_THUMBNAIL_PATH);
+                            // Save file to storage.
+                            Storage::put($file_path, $file_content);
+                            if ($record) {
+                                if ($file->content_type === 'video/mp4') {
+                                    $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path, File::EXERCISE_THUMBNAIL_PATH);
 
-                                if ($thumbnailFilePath) {
-                                    $record->update([
-                                        'thumbnail' => $thumbnailFilePath,
-                                    ]);
+                                    if ($thumbnailFilePath) {
+                                        $record->update([
+                                            'thumbnail' => $thumbnailFilePath,
+                                        ]);
+                                    }
                                 }
-                            }
 
-                            if ($file->content_type === 'application/pdf') {
-                                $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path, File::EXERCISE_THUMBNAIL_PATH);
+                                if ($file->content_type === 'application/pdf') {
+                                    $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path, File::EXERCISE_THUMBNAIL_PATH);
 
-                                if ($thumbnailFilePath) {
-                                    $record->update([
-                                        'thumbnail' => $thumbnailFilePath,
-                                    ]);
+                                    if ($thumbnailFilePath) {
+                                        $record->update([
+                                            'thumbnail' => $thumbnailFilePath,
+                                        ]);
+                                    }
                                 }
+                                // Add to exercise file
+                                DB::table('exercise_file')->insert(
+                                    [
+                                        'exercise_id' => $newExercise->id,
+                                        'file_id' =>$record->id,
+                                        'order' => $index,
+                                    ]
+                                );
                             }
-                            // Add to exercise file
-                            DB::table('exercise_file')->insert(
-                                [
-                                    'exercise_id' => $newExercise->id,
-                                    'file_id' =>$record->id,
-                                    'order' => $index,
-                                ]
-                            );
+                            $index++;
+                        } catch (\Exception $e) {
+                            Log::debug($e->getMessage());
                         }
-                        $index++;
                     }
                 }
             }
@@ -159,43 +164,50 @@ class SyncLibraryData extends Command
                 if (!empty($files)) {
                     foreach ($files as $file) {
                         $file_url = env('GLOBAL_ADMIN_SERVICE_URL') . '/file/' . $file->id;
-                        $file_content = file_get_contents($file_url);
                         $file_path = File::EDUCATION_MATERIAL_PATH . '/' . $file->filename;
-                        // Add file.
-                        $record = File::create([
-                            'filename' => $file->filename,
-                            'path' => $file_path,
-                            'content_type' => $file->content_type,
-                        ]);
 
-                        // Save file to storage.
-                        Storage::put($file_path, $file_content);
-                        if ($record) {
-                            if ($file->content_type === 'video/mp4') {
-                                $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
+                        try {
+                            $file_content = file_get_contents($file_url);
 
-                                if ($thumbnailFilePath) {
-                                    $record->update([
-                                        'thumbnail' => $thumbnailFilePath,
-                                    ]);
+                            $record = File::create([
+                                'filename' => $file->filename,
+                                'path' => $file_path,
+                                'content_type' => $file->content_type,
+                            ]);
+
+                            // Save file to storage.
+                            Storage::put($file_path, $file_content);
+                            if ($record) {
+                                if ($file->content_type === 'video/mp4') {
+                                    $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path,
+                                        File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
+
+                                    if ($thumbnailFilePath) {
+                                        $record->update([
+                                            'thumbnail' => $thumbnailFilePath,
+                                        ]);
+                                    }
+                                }
+
+                                if ($file->content_type === 'application/pdf') {
+                                    $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path,
+                                        File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
+
+                                    if ($thumbnailFilePath) {
+                                        $record->update([
+                                            'thumbnail' => $thumbnailFilePath,
+                                        ]);
+                                    }
+                                }
+                                // Update file id with new created id.
+                                foreach ($newFileIDs as $key => $value) {
+                                    if ($file->id == $value) {
+                                        $newFileIDs->$key = $record->id;
+                                    }
                                 }
                             }
-
-                            if ($file->content_type === 'application/pdf') {
-                                $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
-
-                                if ($thumbnailFilePath) {
-                                    $record->update([
-                                        'thumbnail' => $thumbnailFilePath,
-                                    ]);
-                                }
-                            }
-                            // Update file id with new created id.
-                            foreach ($newFileIDs  as $key => $value) {
-                                if ($file->id == $value) {
-                                    $newFileIDs->$key = $record->id;
-                                }
-                            }
+                        } catch (\Exception $e) {
+                            Log::debug($e->getMessage());
                         }
                     }
                     // Update material file id.
@@ -245,17 +257,21 @@ class SyncLibraryData extends Command
                         $record = null;
                         if (!empty($file)) {
                             $file_url = env('GLOBAL_ADMIN_SERVICE_URL') . '/file/' . $file->id;
-                            $file_content = file_get_contents($file_url);
                             $file_path = File::QUESTIONNAIRE_PATH . '/' . $file->filename;
 
-                            $record = File::create([
-                                'filename' => $file->filename,
-                                'path' => $file_path,
-                                'content_type' => $file->content_type,
-                            ]);
+                            try {
+                                $file_content = file_get_contents($file_url);
+                                $record = File::create([
+                                    'filename' => $file->filename,
+                                    'path' => $file_path,
+                                    'content_type' => $file->content_type,
+                                ]);
 
-                            // Save file to storage.
-                            Storage::put($file_path, $file_content);
+                                // Save file to storage.
+                                Storage::put($file_path, $file_content);
+                            } catch (\Exception $e) {
+                                Log::debug($e->getMessage());
+                            }
                         }
                         // Add questions.
                         DB::table('questions')->updateOrInsert(
