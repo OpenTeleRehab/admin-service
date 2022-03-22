@@ -25,7 +25,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('hi:sync-patient-data')->dailyAt('1:00')->runInBackground();
-        $schedule->command('hi:sync-library-data')->dailyAt('1:00')->runInBackground();
+        $schedule->command('hi:sync-exercise-data')->dailyAt('1:00')->runInBackground();
+        $schedule->command('hi:sync-education-material-data')->dailyAt('1:00')->runInBackground();
+        $schedule->command('hi:sync-questionnaire-data')->dailyAt('1:00')->runInBackground();
     }
 
     /**
