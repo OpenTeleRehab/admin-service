@@ -43,6 +43,11 @@ class ImportStaticPage extends Command
         $therapist_static_pages = Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/page/static-page-data/?url-segment=about-us&platform=' . Translation::THERAPIST_PORTAL);
         $patient_static_pages = Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/page/static-page-data/?url-segment=about-us&platform=' . Translation::PATIENT_APP);
 
+        if (StaticPage::count() > 0) {
+            $this->info('These static pages is already exists');
+            return false;
+        }
+
         foreach ([$admin_static_pages, $therapist_static_pages, $patient_static_pages] as $static_page) {
             $data = $static_page['data'];
 
