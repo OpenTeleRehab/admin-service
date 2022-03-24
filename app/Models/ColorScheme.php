@@ -12,6 +12,6 @@ class ColorScheme extends Model
      *
      * @var string[]
      */
-    protected $fillable = [ 'primary_color', 'secondary_color', 'primary_text_color', 'secondary_text_color' ];
+    protected $fillable = [ 'primary_color', 'secondary_color' ];
 
 }

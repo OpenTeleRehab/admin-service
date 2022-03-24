@@ -499,5 +499,6 @@
     "error_message.treatment_plan_disease_required": "Please choose disease",
     "appointment.status.accept": "Accepted",
     "appointment.status.pending": "Pending acceptation",
-    "appointment.status.cancel": "Cancelled"
+    "appointment.status.cancel": "Cancelled",
+    "error_message.organization_not_found": "Organization not found"
 }

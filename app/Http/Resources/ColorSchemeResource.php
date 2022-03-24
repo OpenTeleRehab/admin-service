@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\File;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ColorSchemeResource extends JsonResource
@@ -19,8 +18,6 @@ class ColorSchemeResource extends JsonResource
             'id' => $this->id,
             'primary_color' => $this->primary_color,
             'secondary_color' => $this->secondary_color,
-            'primary_text_color' => $this->primary_text_color,
-            'secondary_text_color' => $this->secondary_text_color,
         ];
     }
 }
