@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\KeycloakHelper;
 use App\Helpers\OrganizationHelper;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
