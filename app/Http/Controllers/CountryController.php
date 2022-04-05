@@ -321,4 +321,17 @@ class CountryController extends Controller
             'data' => $data
         ];
     }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
+     */
+    public function getCountryByClinicId(Request $request)
+    {
+        $clinic = Clinic::find($request->get('clinic_id'));
+        $country = Country::find($clinic->country_id);
+
+        return ['success' => true, 'data' => $country];
+    }
 }
