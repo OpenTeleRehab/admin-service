@@ -424,6 +424,7 @@
     "question.title.required": "Please fill in the title",
     "question.answer.description.placeholder": "Enter description",
     "question.answer.description.required": "Please fill in the description",
+    "question.media_upload": "Upload image",
     "toast_title.new_questionnaire": "New questionnaire",
     "toast_title.delete_questionnaire": "Delete questionnaire",
     "success_message.questionnaire_create": "Questionnaire created successfully",

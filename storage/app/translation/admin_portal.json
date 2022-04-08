@@ -188,6 +188,7 @@
     "exercise.additional_field.placeholder.label": "Enter label",
     "exercise.additional_field.placeholder.value": "Enter value",
     "exercise.additional_field.placeholder.description": "Enter description",
+    "exercise.media_upload": "Upload image",
     "exercise.download": "Download Exercises",
     "exercise.bulk_upload.instruction": "Download template, then input the content and upload",
     "exercise.bulk_upload.file.placeholder": "Browse a file",
@@ -228,6 +229,7 @@
     "question.title.required": "Please fill in the title",
     "question.answer.description.placeholder": "Enter description",
     "question.answer.description.required": "Please fill in the description",
+    "question.media_upload": "Upload image",
     "admin": "Admins",
     "admin.management": "Admin Management",
     "admin.new": "New Admin",
@@ -500,6 +502,7 @@
     "placeholder.platform": "Please select platform",
     "static_page.background_color": "Page background color",
     "static_page.text_color": "Page text color",
+    "static_page.media_upload": "Upload image",
 
     "error.static_page.title": "Please fill in title",
     "error.static_page.url": "Please fill in url path segment",
