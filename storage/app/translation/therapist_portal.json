@@ -341,6 +341,7 @@
     "library.preset_treatments": "Preset Treatments",
     "library.show_favorites_only": "Show favorites only",
     "library.show_my_contents_only": "Show my contents only",
+    "library.content_upload_reach_limit": "You have reached the maximum number (${number}) of additional content uploaded in the library",
     "common.new_content": "New Content",
     "exercise.create": "Add new Exercise",
     "education_material.create": "Add new education material",
