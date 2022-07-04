@@ -94,6 +94,7 @@ class OrganizationController extends Controller
     public function update(Request $request, Organization $organization)
     {
         $organization->update([
+            'name' => $request->get('name'),
             'max_number_of_therapist' => $request->get('max_number_of_therapist'),
             'max_ongoing_treatment_plan' => $request->get('max_ongoing_treatment_plan'),
         ]);
