@@ -429,9 +429,9 @@ class QuestionnaireController extends Controller
     public function markAsUsed(Request $request)
     {
         $questionnaireIds = $request->get('questionnaire_ids', []);
-        Questionnaire::where('is_used', false)
-            ->whereIn('id', $questionnaireIds)
-            ->update(['is_used' => true]);
+        $isUsed = $request->get('is_used');
+        Questionnaire::whereIn('id', $questionnaireIds)
+            ->update(['is_used' => $isUsed]);
     }
 
     /**

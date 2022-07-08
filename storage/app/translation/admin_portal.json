@@ -53,6 +53,8 @@
     "country.delete_confirmation_title": "Country deletion",
     "language.delete_confirmation_title": "Language deletion",
     "questionnaire.delete_confirmation_title": "Questionnaire deletion",
+    "questionnaire.update_used_questionnaire_confirmation_title": "Questionnaire update",
+    "questionnaire.update_used_questionnaire_confirmation_message": "Attention, any update will apply to questionnaires currently and previously shared with patients. Are you still want to update ?",
     "therapist.delete_confirmation_title": "Therapist deletion",
     "therapist.transfer_confirmation_title": "Patient transfer",
     "common.no_data": "No Data",
