@@ -198,6 +198,8 @@
     "chat_message.therapist_in_not_active": "This therapist is not active. You can't send message right now.",
     "chat_message.history": "User Chat/Video Call History",
     "chat_attachment.title": "Send attachment file",
+    "chat_message.daily_reminder": "You have",
+    "chat_message.unread_message": "Unread messages",
     "edit.profile.discard.message": "Do you want to discard your changes?",
     "common.error_message_invalid_file_size": "Please select a file less than or equal to ${size} MB",
     "add_a_caption": "Add a caption",
