@@ -666,6 +666,7 @@
     "organization.delete_confirmation_title": "Delete organization",
     "error_message.organization_add": "Organization cannot created",
     "setting.organization": "Organization",
+    "error.organization.name": "Please enter organization name",
     "organization.sub_domain_name": "Sub domain name",
     "placeholder.organization.sub_domain_name": "Please enter sub domain name",
     "error.organization.sub_domain_name": "Please fill the sub domain name",

@@ -28,6 +28,7 @@ class FileHelper
             'filename' => $file->getClientOriginalName(),
             'path' => $path,
             'content_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
         ]);
         if ($thumbnailPath && $file->getMimeType() === 'video/mp4') {
             $thumbnailFilePath = self::generateVideoThumbnail($record->id, $path, $thumbnailPath);

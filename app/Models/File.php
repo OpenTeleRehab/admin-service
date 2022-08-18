@@ -21,7 +21,7 @@ class File extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['filename', 'path', 'content_type', 'metadata', 'thumbnail'];
+    protected $fillable = ['filename', 'path', 'content_type', 'metadata', 'thumbnail', 'size'];
 
     /**
      * Bootstrap the model and its traits.
