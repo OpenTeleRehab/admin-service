@@ -19,7 +19,7 @@ class Localization extends Model
      * @var array
      */
     protected $fillable = [
-        'translation_id', 'language_id', 'value'
+        'translation_id', 'language_id', 'value', 'auto_translated'
     ];
 
     /**

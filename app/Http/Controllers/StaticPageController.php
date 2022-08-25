@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyStaticPageAutoTranslationEvent;
 use App\Helpers\FileHelper;
 use App\Http\Resources\StaticPageResource;
 use App\Models\StaticPage;
@@ -164,7 +165,7 @@ class StaticPageController extends Controller
             return abort(409, 'error_message.url_exists');
         }
 
-        StaticPage::create([
+        $staticPage = StaticPage::create([
             'title' => $request->get('title'),
             'content' => $request->get('content'),
             'private' => $request->boolean('private'),
@@ -174,6 +175,9 @@ class StaticPageController extends Controller
             'background_color' => $request->get('background_color'),
             'text_color' => $request->get('text_color')
         ]);
+
+        // Add automatic translation for Static page.
+        event(new ApplyStaticPageAutoTranslationEvent($staticPage));
 
         return ['success' => true, 'message' => 'success_message.static_page_add'];
     }

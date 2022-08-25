@@ -28,14 +28,14 @@ class Category extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'type', 'parent_id'];
+    protected $fillable = ['title', 'type', 'parent_id', 'auto_translated'];
 
     /**
      * The attributes that are translatable
      *
      * @var string[]
      */
-    public $translatable = ['title'];
+    public $translatable = ['title', 'auto_translated'];
 
     /**
      * Bootstrap the model and its traits.
