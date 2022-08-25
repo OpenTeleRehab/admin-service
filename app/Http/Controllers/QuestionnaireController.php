@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyQuestionnaireAutoTranslationEvent;
 use App\Helpers\CategoryHelper;
 use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
@@ -196,6 +197,10 @@ class QuestionnaireController extends Controller
             }
 
             DB::commit();
+
+            // Add automatic translation for Exercise.
+            event(new ApplyQuestionnaireAutoTranslationEvent($questionnaire));
+
             return ['success' => true, 'message' => 'success_message.questionnaire_create'];
         } catch (\Exception $e) {
             DB::rollBack();

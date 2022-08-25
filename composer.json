@@ -12,6 +12,7 @@
         "darkaonline/l5-swagger": "^8.0",
         "doctrine/dbal": "^2.12",
         "fideloper/proxy": "^4.2",
+        "google/cloud-translate": "^1.12",
         "guzzlehttp/guzzle": "^7.0.1",
         "lakshmaji/thumbnail": "^1.4",
         "laravel/framework": "^8.0",

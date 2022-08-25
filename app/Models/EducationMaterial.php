@@ -18,14 +18,14 @@ class EducationMaterial extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'file_id', 'therapist_id', 'global', 'education_material_id'];
+    protected $fillable = ['title', 'file_id', 'therapist_id', 'global', 'education_material_id', 'auto_translated'];
 
     /**
      * The attributes that are translatable
      *
      * @var string[]
      */
-    public $translatable = ['title', 'file_id'];
+    public $translatable = ['title', 'file_id', 'auto_translated'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

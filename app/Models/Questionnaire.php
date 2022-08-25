@@ -18,14 +18,14 @@ class Questionnaire extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'description', 'is_used', 'therapist_id', 'global', 'questionnaire_id'];
+    protected $fillable = ['title', 'description', 'is_used', 'therapist_id', 'global', 'questionnaire_id', 'auto_translated'];
 
     /**
      * The attributes that are translatable
      *
      * @var string[]
      */
-    public $translatable = ['title', 'description'];
+    public $translatable = ['title', 'description', 'auto_translated'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
