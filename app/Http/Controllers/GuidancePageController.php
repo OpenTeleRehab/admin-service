@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyGuidanceAutoTranslationEvent;
 use App\Helpers\FileHelper;
 use App\Http\Resources\GuidancePageResource;
 use App\Models\Guidance;
@@ -87,11 +88,14 @@ class GuidancePageController extends Controller
     {
         $lastOrderingIndex = Guidance::all()->count() + 1;
 
-        Guidance::create([
+        $guidance = Guidance::create([
             'title' => $request->get('title'),
             'content' => $request->get('content'),
             'order' => $lastOrderingIndex
         ]);
+
+        // Add automatic translation for Guidance.
+        event(new ApplyGuidanceAutoTranslationEvent($guidance));
 
         return ['success' => true, 'message' => 'success_message.guidance_add'];
     }

@@ -210,13 +210,15 @@ class TranslationController extends Controller
                     $localization = Localization::where('translation_id', $id)->where('language_id', $language['id'])->first();
                     if ($localization) {
                         $localization->fill([
-                            'value' => $translationValue
+                            'value' => $translationValue,
+                            'auto_translated' => false,
                         ])->save();
                     } else {
                         Localization::create([
                             'translation_id' => $id,
                             'language_id' => $language['id'],
-                            'value' => $translationValue
+                            'value' => $translationValue,
+                            'auto_translated' => false,
                         ]);
                     }
                 }

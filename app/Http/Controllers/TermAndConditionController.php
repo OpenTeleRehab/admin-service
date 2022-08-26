@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyTermAndConditionAutoTranslationEvent;
 use App\Http\Resources\TermAndConditionResource;
 use App\Models\TermAndCondition;
 use Carbon\Carbon;
@@ -83,11 +84,14 @@ class TermAndConditionController extends Controller
      */
     public function store(Request $request)
     {
-        TermAndCondition::create([
+        $termAndConditions = TermAndCondition::create([
             'version' => $request->get('version'),
             'content' => $request->get('content'),
             'status' => TermAndCondition::STATUS_DRAFT
         ]);
+
+        // Add automatic translation for Term and Conditions.
+        event(new ApplyTermAndConditionAutoTranslationEvent($termAndConditions));
 
         return ['success' => true, 'message' => 'success_message.team_and_condition_add'];
     }

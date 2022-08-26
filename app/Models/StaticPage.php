@@ -16,14 +16,14 @@ class StaticPage extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'private', 'content', 'url_path_segment', 'file_id', 'platform', 'background_color', 'text_color'];
+    protected $fillable = ['title', 'private', 'content', 'url_path_segment', 'file_id', 'platform', 'background_color', 'text_color', 'auto_translated'];
 
     /**
      * The attributes that are translatable
      *
      * @var string[]
      */
-    public $translatable = ['title', 'content'];
+    public $translatable = ['title', 'content', 'auto_translated'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
