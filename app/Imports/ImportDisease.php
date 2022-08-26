@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\InternationalClassificationDisease;
+use App\Models\Language;
 use Illuminate\Support\Facades\App;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -30,6 +31,12 @@ class ImportDisease implements OnEachRow, WithHeadingRow, WithEvents
             ];
             if (!$existedDisease) {
                 $disease = InternationalClassificationDisease::where('name', $row['name'])->updateOrCreate([], $data);
+                $languages = Language::where('code', '<>', 'en')->get();
+                foreach ($languages as $language) {
+                    if (isset($row[$language['code']])) {
+                        $disease->setTranslation('name', $language['code'], $row[$language['code']]);
+                    }
+                }
                 $disease->save();
             }
         }
