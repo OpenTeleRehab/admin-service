@@ -21,6 +21,7 @@ class LanguageResource extends JsonResource
             'rtl' => $this->rtl,
             'fallback' => config('app.fallback_locale'),
             'is_used' => $this->isUsed(),
+            'auto_translated' => $this->auto_translated,
         ];
     }
 }

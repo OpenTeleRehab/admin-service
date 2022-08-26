@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddAutoTranslatedToLocalizationsTable extends Migration
+class AddAutoTranslatedToLanguagesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddAutoTranslatedToLocalizationsTable extends Migration
      */
     public function up()
     {
-        Schema::table('localizations', function (Blueprint $table) {
-            $table->boolean('auto_translated')->nullable()->default(false);
+        Schema::table('languages', function (Blueprint $table) {
+            $table->boolean('auto_translated')->nullable();
         });
     }
 
@@ -25,7 +25,7 @@ class AddAutoTranslatedToLocalizationsTable extends Migration
      */
     public function down()
     {
-        Schema::table('localizations', function (Blueprint $table) {
+        Schema::table('languages', function (Blueprint $table) {
             $table->dropColumn('auto_translated');
         });
     }

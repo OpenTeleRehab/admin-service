@@ -23,6 +23,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ApplyNewLanguageTranslationListener implements ShouldQueue
 {
+    /**
+     * The number of seconds the job can run before timing out.
+     *
+     * @var int
+     */
+    public $timeout = 3600;
 
     /**
      * Handle the event.
