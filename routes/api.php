@@ -75,6 +75,7 @@ Route::get('clinic/therapist-limit/count/by-contry', [ClinicController::class, '
 Route::get('clinic/therapist/count/by-clinic', [ClinicController::class, 'countTherapistByClinic']);
 Route::apiResource('language', LanguageController::class);
 Route::get('language/by-id/{id}', [LanguageController::class, 'getById']);
+Route::put('language/language_auto_translate/{language}', [LanguageController::class, 'autoTranslate']);
 Route::post('file/upload', [FileController::class, 'uploadFile']);
 Route::apiResource('file', FileController::class)->middleware('throttle:180:1');
 Route::get('page/static', [StaticPageController::class, 'getStaticPage']);
