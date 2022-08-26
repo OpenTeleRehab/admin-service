@@ -2,10 +2,17 @@
 
 namespace App\Providers;
 
+use App\Events\ApplyExerciseAutoTranslationEvent;
+use App\Events\ApplyMaterialAutoTranslationEvent;
+use App\Events\ApplyNewLanguageTranslationEvent;
+use App\Events\ApplyQuestionnaireAutoTranslationEvent;
+use App\Listeners\ApplyExerciseAutoTranslationListener;
+use App\Listeners\ApplyMaterialAutoTranslationListener;
+use App\Listeners\ApplyNewLanguageTranslationListener;
+use App\Listeners\ApplyQuestionnaireAutoTranslationListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -17,6 +24,18 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        ApplyExerciseAutoTranslationEvent::class => [
+            ApplyExerciseAutoTranslationListener::class,
+        ],
+        ApplyMaterialAutoTranslationEvent::class => [
+            ApplyMaterialAutoTranslationListener::class,
+        ],
+        ApplyQuestionnaireAutoTranslationEvent::class => [
+            ApplyQuestionnaireAutoTranslationListener::class,
+        ],
+        ApplyNewLanguageTranslationEvent::class => [
+            ApplyNewLanguageTranslationListener::class,
         ],
     ];
 

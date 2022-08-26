@@ -26,7 +26,8 @@ class Exercise extends Model
         'get_pain_level',
         'therapist_id',
         'global',
-        'exercise_id'
+        'exercise_id',
+        'auto_translated',
     ];
 
 
@@ -45,7 +46,7 @@ class Exercise extends Model
      *
      * @var string[]
      */
-    public $translatable = ['title'];
+    public $translatable = ['title', 'auto_translated'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany

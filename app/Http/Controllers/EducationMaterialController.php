@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyMaterialAutoTranslationEvent;
 use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
 use App\Http\Resources\EducationMaterialResource;
@@ -219,6 +220,9 @@ class EducationMaterialController extends Controller
 
         // Attach category to education material.
         $this->attachCategories($educationMaterial, $request->get('categories'));
+
+        // Add automatic translation for Exercise.
+        event(new ApplyMaterialAutoTranslationEvent($educationMaterial));
 
         return ['success' => true, 'message' => 'success_message.education_material_create'];
     }

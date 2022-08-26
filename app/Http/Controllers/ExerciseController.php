@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyExerciseAutoTranslationEvent;
 use App\Exports\ExercisesExport;
 use App\Helpers\ContentHelper;
 use App\Helpers\ExerciseHelper;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ExerciseController extends Controller
@@ -152,6 +154,9 @@ class ExerciseController extends Controller
 
         // Attach category to exercise.
         $this->attachCategories($exercise, $request->get('categories'));
+
+        // Add automatic translation for Exercise.
+        event(new ApplyExerciseAutoTranslationEvent($exercise));
 
         return ['success' => true, 'message' => 'success_message.exercise_create'];
     }
