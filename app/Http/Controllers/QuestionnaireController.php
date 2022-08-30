@@ -6,10 +6,12 @@ use App\Events\ApplyQuestionnaireAutoTranslationEvent;
 use App\Helpers\CategoryHelper;
 use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\QuestionnaireResource;
 use App\Models\Answer;
 use App\Models\Category;
 use App\Models\File;
+use App\Models\Language;
 use App\Models\Question;
 use App\Models\Questionnaire;
 use App\Models\QuestionnaireCategory;
@@ -295,6 +297,8 @@ class QuestionnaireController extends Controller
 
             $questions = $data->questions;
             $questionIds = [];
+            $languages = Language::where('code', '<>', config('app.fallback_locale'))->get();
+            $translate = new GoogleTranslateHelper();
 
             foreach ($questions as $index => $question) {
                 $questionObj = Question::updateOrCreate(
@@ -320,6 +324,18 @@ class QuestionnaireController extends Controller
                     }
                 }
 
+                if ($questionObj->wasRecentlyCreated) {
+                    foreach ($languages as $language) {
+                        $languageCode = $language->code;
+
+                        // Auto translate question.
+                        $translatedTitle = $translate->translate($questionObj->title, $languageCode);
+                        $questionObj->setTranslation('title', $languageCode, $translatedTitle);
+                        $questionObj->setTranslation('auto_translated', $languageCode, true);
+                        $questionObj->save();
+                    }
+                }
+
                 $questionIds[] = $questionObj->id;
                 $answerIds = [];
                 if ($question->answers) {
@@ -335,6 +351,18 @@ class QuestionnaireController extends Controller
                         );
 
                         $answerIds[] = $answerObj->id;
+
+                        if ($answerObj->wasRecentlyCreated) {
+                            foreach ($languages as $language) {
+                                $languageCode = $language->code;
+
+                                // Auto translate answer.
+                                $translatedAnswerDescription = $translate->translate($answerObj->description, $languageCode);
+                                $answerObj->setTranslation('description', $languageCode, $translatedAnswerDescription);
+                                $answerObj->setTranslation('auto_translated', $languageCode, true);
+                                $answerObj->save();
+                            }
+                        }
                     }
                 }
 

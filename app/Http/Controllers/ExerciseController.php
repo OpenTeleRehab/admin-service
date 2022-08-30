@@ -7,11 +7,13 @@ use App\Exports\ExercisesExport;
 use App\Helpers\ContentHelper;
 use App\Helpers\ExerciseHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\ExerciseResource;
 use App\Models\AdditionalField;
 use App\Models\Exercise;
 use App\Models\ExerciseCategory;
 use App\Models\File;
+use App\Models\Language;
 use App\Models\SystemLimit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -198,6 +200,9 @@ class ExerciseController extends Controller
 
         $additionalFields = json_decode($request->get('additional_fields'));
         $additionalFieldIds = [];
+        $languages = Language::where('code', '<>', config('app.fallback_locale'))->get();
+        $translate = new GoogleTranslateHelper();
+
         foreach ($additionalFields as $index => $additionalField) {
             $additionalField = AdditionalField::updateOrCreate(
                 [
@@ -210,6 +215,17 @@ class ExerciseController extends Controller
                 ]
             );
             $additionalFieldIds[] = $additionalField->id;
+            if ($additionalField->wasRecentlyCreated){
+                foreach ($languages as $language) {
+                    $languageCode = $language->code;
+                    $translatedField = $translate->translate($additionalField->field, $languageCode);
+                    $translatedValue = $translate->translate($additionalField->value, $languageCode);
+                    $additionalField->setTranslation('field', $languageCode, $translatedField);
+                    $additionalField->setTranslation('value', $languageCode, $translatedValue);
+                    $additionalField->setTranslation('auto_translated', $languageCode, true);
+                    $additionalField->save();
+                }
+            }
         }
 
         // Remove deleted additional field.

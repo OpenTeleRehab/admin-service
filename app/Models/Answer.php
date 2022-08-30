@@ -14,12 +14,12 @@ class Answer extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['description', 'question_id'];
+    protected $fillable = ['description', 'question_id', 'auto_translated'];
 
     /**
      * The attributes that are translatable
      *
      * @var string[]
      */
-    public $translatable = ['description'];
+    public $translatable = ['description', 'auto_translated'];
 }
