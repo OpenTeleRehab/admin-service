@@ -26,6 +26,7 @@ use \App\Http\Controllers\CategoryController;
 use \App\Http\Controllers\ChartController;
 use \App\Http\Controllers\ImportController;
 use \App\Http\Controllers\PartnerLogoController;
+use \App\Http\Controllers\TranslatorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,9 @@ use \App\Http\Controllers\PartnerLogoController;
 Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('admin', AdminController::class);
     Route::apiResource('translation', TranslationController::class);
+    Route::apiResource('translator', TranslatorController::class);
+    Route::post('translator/updateStatus/{user}', [TranslatorController::class, 'updateStatus']);
+    Route::post('translator/resend-email/{user}', [TranslatorController::class, 'resendEmailToUser']);
     Route::post('term-condition/publish/{id}', [TermAndConditionController::class, 'publish']);
     Route::post('privacy-policy/publish/{id}', [PrivacyPolicyController::class, 'publish']);
     Route::apiResource('static-page', StaticPageController::class);
