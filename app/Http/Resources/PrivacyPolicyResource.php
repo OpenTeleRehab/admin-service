@@ -20,6 +20,7 @@ class PrivacyPolicyResource extends JsonResource
             'content' => $this->content,
             'published_date' => $this->published_date,
             'status' => $this->status,
+            'auto_translated' => $this->auto_translated,
         ];
     }
 }

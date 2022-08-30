@@ -18,6 +18,7 @@ class AdditionalFieldResource extends JsonResource
             'id' => $this->id,
             'field' =>  $this->field,
             'value' =>  $this->value,
+            'auto_translated' => $this->auto_translated,
         ];
     }
 }
