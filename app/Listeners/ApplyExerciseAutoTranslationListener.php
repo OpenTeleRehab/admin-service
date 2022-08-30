@@ -52,6 +52,7 @@ class ApplyExerciseAutoTranslationListener
                 $translatedValue = $translate->translate($additionalField->value, $languageCode);
                 $additionalField->setTranslation('field', $languageCode, $translatedField);
                 $additionalField->setTranslation('value', $languageCode, $translatedValue);
+                $additionalField->setTranslation('auto_translated', $languageCode, true);
                 $additionalField->save();
             }
         }

@@ -25,6 +25,7 @@ class QuestionnaireResource extends JsonResource
             'therapist_id' => $this->therapist_id,
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
             'global' => $this->global,
+            'auto_translated' => $this->auto_translated,
         ];
     }
 }

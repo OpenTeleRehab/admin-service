@@ -29,6 +29,7 @@ class ExerciseResource extends JsonResource
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
             'additional_fields' => AdditionalFieldResource::collection($this->additionalFields),
             'global' => $this->global,
+            'auto_translated' => $this->auto_translated,
         ];
     }
 }
