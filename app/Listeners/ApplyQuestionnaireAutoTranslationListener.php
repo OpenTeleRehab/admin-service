@@ -56,10 +56,12 @@ class ApplyQuestionnaireAutoTranslationListener
             foreach ($questionnaire->questions as $question) {
                 $translatedQuestionTitle = $translate->translate($question->title, $languageCode);
                 $question->setTranslation('title', $languageCode, $translatedQuestionTitle);
+                $question->setTranslation('auto_translated', $languageCode, true);
 
                 foreach ($question->answers as $answer) {
                     $translatedAnswerDescription = $translate->translate($answer->description, $languageCode);
                     $answer->setTranslation('description', $languageCode, $translatedAnswerDescription);
+                    $answer->setTranslation('auto_translated', $languageCode, true);
                     $answer->save();
                 }
 
