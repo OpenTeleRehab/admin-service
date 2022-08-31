@@ -16,10 +16,10 @@ use App\Models\File;
 use App\Models\Language;
 use App\Models\SystemLimit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ExerciseController extends Controller
@@ -161,6 +161,50 @@ class ExerciseController extends Controller
         event(new ApplyExerciseAutoTranslationEvent($exercise));
 
         return ['success' => true, 'message' => 'success_message.exercise_create'];
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function suggest(Request $request)
+    {
+        $therapistId = $request->get('therapist_id');
+        if (!Auth::user() && !$therapistId) {
+            return ['success' => false, 'message' => 'error_message.exercise_suggest'];
+        }
+
+        $foundExercise = Exercise::find($request->get('id'));
+
+        if (!$foundExercise || !$foundExercise->auto_translated || (int) $foundExercise->therapist_id === (int) $therapistId) {
+            return ['success' => false, 'message' => 'error_message.exercise_suggest'];
+        }
+
+        $exercise = Exercise::create([
+            'title' => $request->get('title'),
+            'therapist_id' => $therapistId,
+            'parent_id' => $foundExercise->id,
+            'global' => env('APP_NAME') == 'hi',
+            'suggested_lang' => App::getLocale(),
+        ]);
+
+        if (empty($exercise)) {
+            return ['success' => false, 'message' => 'error_message.exercise_suggest'];
+        }
+
+        $additionalFields = json_decode($request->get('additional_fields'));
+        foreach ($additionalFields as $index => $additionalField) {
+            AdditionalField::create([
+                'field' => $additionalField->field,
+                'value' => $additionalField->value,
+                'exercise_id' => $exercise->id,
+                'parent_id' => $additionalField->id,
+                'suggested_lang' => App::getLocale(),
+            ]);
+        }
+
+        return ['success' => true, 'message' => 'success_message.exercise_suggest'];
     }
 
     /**

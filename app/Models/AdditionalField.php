@@ -19,6 +19,8 @@ class AdditionalField extends Model
         'value',
         'exercise_id',
         'auto_translated',
+        'parent_id',
+        'suggested_lang',
     ];
 
     /**
