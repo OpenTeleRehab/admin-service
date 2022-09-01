@@ -278,6 +278,74 @@ class QuestionnaireController extends Controller
     }
 
     /**
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Questionnaire $questionnaire
+     *
+     * @return array
+     */
+    public function approveTranslation(Request $request, Questionnaire $questionnaire)
+    {
+        $parentQuestionnaire = Questionnaire::find($questionnaire->parent_id);
+
+        if (!$parentQuestionnaire) {
+            return ['success' => false, 'message' => 'error_message.questionnaire_update'];
+        }
+
+        DB::beginTransaction();
+        try {
+            $data = json_decode($request->get('data'));
+
+            $parentQuestionnaire->update([
+                'title' => $data->title,
+                'description' => $data->description,
+                'auto_translated' => false,
+            ]);
+
+            $questions = $data->questions;
+            foreach ($questions as $index => $question) {
+                $foundQuestion = Question::find($question->parent_id);
+                if ($foundQuestion) {
+                    $foundQuestion->update([
+                        'title' => $question->title,
+                    ]);
+
+                    if ($question->answers) {
+                        foreach ($question->answers as $answer) {
+                            $foundAnswer = Answer::find($answer->parent_id);
+                            if ($foundAnswer) {
+                                $foundAnswer->update([
+                                    'description' => $answer->description,
+                                ]);
+                            }
+                        }
+
+                        // Remove submitted translation remaining
+                        Answer::where('suggested_lang', App::getLocale())
+                            ->where('parent_id', $answer->parent_id)
+                            ->delete();
+                    }
+                }
+
+                // Remove submitted translation remaining
+                Question::where('suggested_lang', App::getLocale())
+                    ->where('parent_id', $question->parent_id)
+                    ->delete();
+            }
+
+            // Remove submitted translation remaining
+            Questionnaire::where('suggested_lang', App::getLocale())
+                ->where('parent_id', $questionnaire->parent_id)
+                ->delete();
+
+            DB::commit();
+            return ['success' => true, 'message' => 'success_message.questionnaire_update'];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
      * @param \App\Models\Questionnaire $questionnaire
      *
      * @return \App\Http\Resources\EducationMaterialResource
