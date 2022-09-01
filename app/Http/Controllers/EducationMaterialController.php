@@ -54,7 +54,7 @@ class EducationMaterialController extends Controller
         $therapistId = $request->get('therapist_id');
         $filter = json_decode($request->get('filter'), true);
 
-        $query = EducationMaterial::select('education_materials.*');
+        $query = EducationMaterial::select('education_materials.*')->where('education_materials.parent_id', null);
 
         if (!empty($filter['favorites_only'])) {
             $query->join('favorite_activities_therapists', function ($join) use ($therapistId) {
@@ -225,6 +225,39 @@ class EducationMaterialController extends Controller
         event(new ApplyMaterialAutoTranslationEvent($educationMaterial));
 
         return ['success' => true, 'message' => 'success_message.education_material_create'];
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function suggest(Request $request)
+    {
+        $therapistId = $request->get('therapist_id');
+        if (!Auth::user() && !$therapistId) {
+            return ['success' => false, 'message' => 'error_message.education_material_suggest'];
+        }
+
+        $foundEducationMaterial = EducationMaterial::find($request->get('id'));
+
+        if (!$foundEducationMaterial || !$foundEducationMaterial->auto_translated || (int) $foundEducationMaterial->therapist_id === (int) $therapistId) {
+            return ['success' => false, 'message' => 'error_message.education_material_suggest'];
+        }
+
+        $educationMaterial = EducationMaterial::create([
+            'title' => $request->get('title'),
+            'file_id' =>  $request->get('file_id'),
+            'therapist_id' => $therapistId,
+            'parent_id' => $foundEducationMaterial->id,
+            'global' => env('APP_NAME') == 'hi',
+            'suggested_lang' => App::getLocale(),
+        ]);
+
+        if (empty($educationMaterial)) {
+            return ['success' => false, 'message' => 'error_message.education_material_suggest'];
+        }
+        return ['success' => true, 'message' => 'success_message.education_material_suggest'];
     }
 
     /**

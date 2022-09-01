@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Events\ApplyQuestionnaireAutoTranslationEvent;
-use App\Helpers\CategoryHelper;
 use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\QuestionnaireResource;
 use App\Models\Answer;
-use App\Models\Category;
 use App\Models\File;
 use App\Models\Language;
 use App\Models\Question;
@@ -61,7 +59,7 @@ class QuestionnaireController extends Controller
         $therapistId = $request->get('therapist_id');
         $filter = json_decode($request->get('filter'), true);
 
-        $query = Questionnaire::select('questionnaires.*');
+        $query = Questionnaire::select('questionnaires.*')->where('questionnaires.parent_id', null);
 
         if (!empty($filter['favorites_only'])) {
             $query->join('favorite_activities_therapists', function ($join) use ($therapistId) {
@@ -204,6 +202,71 @@ class QuestionnaireController extends Controller
             event(new ApplyQuestionnaireAutoTranslationEvent($questionnaire));
 
             return ['success' => true, 'message' => 'success_message.questionnaire_create'];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function suggest(Request $request)
+    {
+        $therapistId = $request->get('therapist_id');
+        if (!Auth::user() && !$therapistId) {
+            return ['success' => false, 'message' => 'error_message.questionnaire_suggest'];
+        }
+
+        $data = json_decode($request->get('data'));
+
+        $foundQuestionnaire = Questionnaire::find($data->id);
+
+        if (!$foundQuestionnaire || !$foundQuestionnaire->auto_translated || (int) $foundQuestionnaire->therapist_id === (int) $therapistId) {
+            return ['success' => false, 'message' => 'error_message.questionnaire_suggest'];
+        }
+
+
+        DB::beginTransaction();
+        try {
+            $data = json_decode($request->get('data'));
+            $questionnaire = Questionnaire::create([
+                'title' => $data->title,
+                'description' => $data->description,
+                'therapist_id' => $therapistId,
+                'parent_id' => $foundQuestionnaire->id,
+                'global' => env('APP_NAME') == 'hi',
+                'suggested_lang' => App::getLocale(),
+            ]);
+
+            $questions = $data->questions;
+            foreach ($questions as $index => $question) {
+                $newQuestion = Question::create([
+                    'title' => $question->title,
+                    'type' => $question->type,
+                    'questionnaire_id' => $questionnaire->id,
+                    'file_id' => $question->file ? $question->file->id : null,
+                    'order' => $index,
+                    'parent_id' => $question->id,
+                    'suggested_lang' => App::getLocale(),
+                ]);
+
+                if (isset($question->answers)) {
+                    foreach ($question->answers as $answer) {
+                        Answer::create([
+                            'description' => $answer->description,
+                            'question_id' => $newQuestion->id,
+                            'parent_id' => $answer->id,
+                            'suggested_lang' => App::getLocale(),
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return ['success' => true, 'message' => 'success_message.questionnaire_suggest'];
         } catch (\Exception $e) {
             DB::rollBack();
             return ['success' => false, 'message' => $e->getMessage()];

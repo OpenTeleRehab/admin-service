@@ -14,7 +14,7 @@ class Answer extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['description', 'question_id', 'auto_translated'];
+    protected $fillable = ['description', 'question_id', 'auto_translated', 'parent_id', 'suggested_lang'];
 
     /**
      * The attributes that are translatable

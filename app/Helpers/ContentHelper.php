@@ -57,9 +57,9 @@ class ContentHelper
      */
     public static function countTherapistContents($therapistId)
     {
-        $contentCount = Exercise::where('therapist_id', $therapistId)->count();
-        $contentCount += EducationMaterial::where('therapist_id', $therapistId)->count();
-        $contentCount += Questionnaire::where('therapist_id', $therapistId)->count();
+        $contentCount = Exercise::where('therapist_id', $therapistId)->where('parent_id', null)->count();
+        $contentCount += EducationMaterial::where('therapist_id', $therapistId)->where('parent_id', null)->count();
+        $contentCount += Questionnaire::where('therapist_id', $therapistId)->where('parent_id', null)->count();
 
         return $contentCount;
     }

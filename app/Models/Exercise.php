@@ -28,6 +28,8 @@ class Exercise extends Model
         'global',
         'exercise_id',
         'auto_translated',
+        'parent_id',
+        'suggested_lang',
     ];
 
 
