@@ -25,6 +25,8 @@ class EducationMaterialResource extends JsonResource
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
             'global' => $this->global,
             'auto_translated' => $this->auto_translated,
+            'parent_id' => $this->parent_id,
+            'children' => EducationMaterialResource::collection($this->children),
         ];
     }
 }

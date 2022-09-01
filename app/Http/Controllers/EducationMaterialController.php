@@ -68,6 +68,10 @@ class EducationMaterialController extends Controller
             $query->where('education_materials.therapist_id', $therapistId);
         }
 
+        if (!empty($filter['suggestions'])) {
+            $query->whereHas('children');
+        }
+
         $query->where(function ($query) use ($therapistId) {
             $query->whereNull('education_materials.therapist_id');
             if ($therapistId) {

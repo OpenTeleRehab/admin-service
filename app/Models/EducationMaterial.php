@@ -36,6 +36,13 @@ class EducationMaterial extends Model
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function children(){
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /**
      * Bootstrap the model and its traits.
      *
      * @return void

@@ -30,7 +30,9 @@ class ExerciseResource extends JsonResource
             'additional_fields' => AdditionalFieldResource::collection($this->additionalFields),
             'global' => $this->global,
             'auto_translated' => $this->auto_translated,
-            'parent_id',
+            'parent_id' => $this->parent_id,
+            'children' => ExerciseResource::collection($this->children),
+            'suggested_lang' => $this->suggested_lang,
         ];
     }
 }
