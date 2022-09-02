@@ -29,6 +29,10 @@ class QuestionnaireResource extends JsonResource
             'parent_id' => $this->parent_id,
             'children' => QuestionnaireResource::collection($this->children),
             'suggested_lang' => $this->suggested_lang,
+            'fallback' => [
+                'title' => $this->getTranslation('title', config('app.fallback_locale')),
+                'description' => $this->getTranslation('description', config('app.fallback_locale')),
+            ],
         ];
     }
 }

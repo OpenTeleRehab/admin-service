@@ -28,6 +28,9 @@ class EducationMaterialResource extends JsonResource
             'parent_id' => $this->parent_id,
             'children' => EducationMaterialResource::collection($this->children),
             'suggested_lang' => $this->suggested_lang,
+            'fallback' => [
+                'title' => $this->getTranslation('title', config('app.fallback_locale')),
+            ],
         ];
     }
 }
