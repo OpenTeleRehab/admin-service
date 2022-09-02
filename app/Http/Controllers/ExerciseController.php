@@ -306,6 +306,45 @@ class ExerciseController extends Controller
     }
 
     /**
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Exercise $exercise
+     *
+     * @return array
+     */
+    public function approveTranslation(Request $request, Exercise $exercise)
+    {
+        $parentExercise = Exercise::find($exercise->parent_id);
+
+        if (!$parentExercise) {
+            return ['success' => false, 'message' => 'error_message.exercise_update'];
+        }
+
+        $parentExercise->update([
+            'title' => $request->get('title'),
+            'auto_translated' => false,
+        ]);
+
+        $additionalFields = json_decode($request->get('additional_fields'));
+        foreach ($additionalFields as $index => $additionalField) {
+            $foundAdditionalField = AdditionalField::find($additionalField->parent_id);
+            if ($foundAdditionalField) {
+                $foundAdditionalField->update([
+                    'field' => $additionalField->field,
+                    'value' => $additionalField->value,
+                    'auto_translated' => false
+                ]);
+            }
+        }
+
+        // Remove submitted translation remaining
+        Exercise::where('suggested_lang', App::getLocale())
+            ->where('parent_id', $exercise->parent_id)
+            ->delete();
+
+        return ['success' => true, 'message' => 'success_message.exercise_update'];
+    }
+
+    /**
      * @OA\Get(
      *     path="/api/library/count/by-therapist",
      *     tags={"Exercise"},

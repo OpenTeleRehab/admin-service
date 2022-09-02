@@ -73,6 +73,10 @@ class QuestionnaireController extends Controller
             $query->where('questionnaires.therapist_id', $therapistId);
         }
 
+        if (!empty($filter['suggestions'])) {
+            $query->whereHas('children');
+        }
+
         $query->where(function ($query) use ($therapistId) {
             $query->whereNull('questionnaires.therapist_id');
             if ($therapistId) {

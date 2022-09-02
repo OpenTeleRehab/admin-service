@@ -18,6 +18,7 @@ class AnswerResource extends JsonResource
             'id' => $this->id,
             'description' => $this->description,
             'question_id' => $this->question_id,
+            'parent_id' => $this->parent_id,
         ];
     }
 }

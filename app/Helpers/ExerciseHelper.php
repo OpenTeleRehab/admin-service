@@ -31,6 +31,10 @@ class ExerciseHelper
             $query->where('exercises.therapist_id', $therapistId);
         }
 
+        if (!empty($filter['suggestions'])) {
+            $query->whereHas('children');
+        }
+
         $query->where(function ($query) use ($therapistId) {
             $query->whereNull('exercises.therapist_id');
             if ($therapistId) {

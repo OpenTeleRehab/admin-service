@@ -94,6 +94,7 @@ Route::apiResource('disease', InternationalClassificationDiseaseController::clas
 
 Route::apiResource('exercise', ExerciseController::class);
 Route::post('exercise/suggest', [ExerciseController::class, 'suggest']);
+Route::post('exercise/approve-translate/{exercise}', [ExerciseController::class, 'approveTranslation']);
 Route::get('exercise/list/by-ids', [ExerciseController::class, 'getByIds']);
 Route::post('exercise/updateFavorite/by-therapist/{exercise}', [ExerciseController::class, 'updateFavorite']);
 Route::get('library/count/by-therapist', [ExerciseController::class, 'countTherapistLibrary']);

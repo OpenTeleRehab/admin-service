@@ -21,6 +21,7 @@ class QuestionResource extends JsonResource
             'file' => $this->file,
             'answers' => AnswerResource::collection($this->answers),
             'auto_translated' => $this->auto_translated,
+            'parent_id' => $this->parent_id,
         ];
     }
 }
