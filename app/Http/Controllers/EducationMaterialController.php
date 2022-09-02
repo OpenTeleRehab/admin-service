@@ -265,6 +265,33 @@ class EducationMaterialController extends Controller
     }
 
     /**
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\EducationMaterial $educationMaterial
+     *
+     * @return array
+     */
+    public function approveTranslation(Request $request, EducationMaterial $educationMaterial)
+    {
+        $parentEducationMaterial = EducationMaterial::find($educationMaterial->parent_id);
+
+        if (!$parentEducationMaterial) {
+            return ['success' => false, 'message' => 'error_message.education_material_update'];
+        }
+
+        $parentEducationMaterial->update([
+            'title' => $request->get('title'),
+            'auto_translated' => false,
+        ]);
+
+        // Remove submitted translation remaining
+        EducationMaterial::where('suggested_lang', App::getLocale())
+            ->where('parent_id', $educationMaterial->parent_id)
+            ->delete();
+
+        return ['success' => true, 'message' => 'success_message.education_material_update'];
+    }
+
+    /**
      * @param \App\Models\EducationMaterial $educationMaterial
      *
      * @return \App\Http\Resources\EducationMaterialResource

@@ -28,6 +28,7 @@ class QuestionnaireResource extends JsonResource
             'auto_translated' => $this->auto_translated,
             'parent_id' => $this->parent_id,
             'children' => QuestionnaireResource::collection($this->children),
+            'suggested_lang' => $this->suggested_lang,
         ];
     }
 }

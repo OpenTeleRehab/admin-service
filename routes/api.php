@@ -105,6 +105,7 @@ Route::get('get-exercise-files', [ExerciseController::class, 'getExerciseFiles']
 
 Route::apiResource('education-material', EducationMaterialController::class);
 Route::post('education-material/suggest', [EducationMaterialController::class, 'suggest']);
+Route::post('education-material/approve-translate/{educationMaterial}', [EducationMaterialController::class, 'approveTranslation']);
 Route::get('education-material/list/by-ids', [EducationMaterialController::class, 'getByIds']);
 Route::post('education-material/updateFavorite/by-therapist/{educationMaterial}', [EducationMaterialController::class, 'updateFavorite']);
 Route::get('get-education-materials', [EducationMaterialController::class, 'getEducationMaterials']);
@@ -112,6 +113,7 @@ Route::get('get-education-material-files', [EducationMaterialController::class, 
 
 Route::apiResource('questionnaire', QuestionnaireController::class);
 Route::post('questionnaire/suggest', [QuestionnaireController::class, 'suggest']);
+Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation']);
 Route::get('questionnaire/list/by-ids', [QuestionnaireController::class, 'getByIds']);
 Route::post('questionnaire/mark-as-used/by-ids', [QuestionnaireController::class, 'markAsUsed']);
 Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite']);

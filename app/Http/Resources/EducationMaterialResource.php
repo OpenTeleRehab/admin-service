@@ -27,6 +27,7 @@ class EducationMaterialResource extends JsonResource
             'auto_translated' => $this->auto_translated,
             'parent_id' => $this->parent_id,
             'children' => EducationMaterialResource::collection($this->children),
+            'suggested_lang' => $this->suggested_lang,
         ];
     }
 }
