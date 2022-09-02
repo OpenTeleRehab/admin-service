@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use App\Helpers\ContentHelper;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\DB;
 
 class ExerciseResource extends JsonResource
 {
@@ -33,6 +32,9 @@ class ExerciseResource extends JsonResource
             'parent_id' => $this->parent_id,
             'children' => ExerciseResource::collection($this->children),
             'suggested_lang' => $this->suggested_lang,
+            'fallback' => [
+                'title' => $this->getTranslation('title', config('app.fallback_locale')),
+            ],
         ];
     }
 }
