@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\CategoryHelper;
+use App\Events\ApplyQuestionnaireAutoTranslationEvent;
 use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\QuestionnaireResource;
 use App\Models\Answer;
-use App\Models\Category;
 use App\Models\File;
+use App\Models\Language;
 use App\Models\Question;
 use App\Models\Questionnaire;
 use App\Models\QuestionnaireCategory;
@@ -58,7 +59,7 @@ class QuestionnaireController extends Controller
         $therapistId = $request->get('therapist_id');
         $filter = json_decode($request->get('filter'), true);
 
-        $query = Questionnaire::select('questionnaires.*');
+        $query = Questionnaire::select('questionnaires.*')->where('questionnaires.parent_id', null);
 
         if (!empty($filter['favorites_only'])) {
             $query->join('favorite_activities_therapists', function ($join) use ($therapistId) {
@@ -70,6 +71,10 @@ class QuestionnaireController extends Controller
 
         if (!empty($filter['my_contents_only'])) {
             $query->where('questionnaires.therapist_id', $therapistId);
+        }
+
+        if (!empty($filter['suggestions'])) {
+            $query->whereHas('children');
         }
 
         $query->where(function ($query) use ($therapistId) {
@@ -196,7 +201,144 @@ class QuestionnaireController extends Controller
             }
 
             DB::commit();
+
+            // Add automatic translation for Exercise.
+            event(new ApplyQuestionnaireAutoTranslationEvent($questionnaire));
+
             return ['success' => true, 'message' => 'success_message.questionnaire_create'];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function suggest(Request $request)
+    {
+        $therapistId = $request->get('therapist_id');
+        if (!Auth::user() && !$therapistId) {
+            return ['success' => false, 'message' => 'error_message.questionnaire_suggest'];
+        }
+
+        $data = json_decode($request->get('data'));
+
+        $foundQuestionnaire = Questionnaire::find($data->id);
+
+        if (!$foundQuestionnaire || !$foundQuestionnaire->auto_translated || (int) $foundQuestionnaire->therapist_id === (int) $therapistId) {
+            return ['success' => false, 'message' => 'error_message.questionnaire_suggest'];
+        }
+
+
+        DB::beginTransaction();
+        try {
+            $data = json_decode($request->get('data'));
+            $questionnaire = Questionnaire::create([
+                'title' => $data->title,
+                'description' => $data->description,
+                'therapist_id' => $therapistId,
+                'parent_id' => $foundQuestionnaire->id,
+                'global' => env('APP_NAME') == 'hi',
+                'suggested_lang' => App::getLocale(),
+            ]);
+
+            $questions = $data->questions;
+            foreach ($questions as $index => $question) {
+                $newQuestion = Question::create([
+                    'title' => $question->title,
+                    'type' => $question->type,
+                    'questionnaire_id' => $questionnaire->id,
+                    'file_id' => $question->file ? $question->file->id : null,
+                    'order' => $index,
+                    'parent_id' => $question->id,
+                    'suggested_lang' => App::getLocale(),
+                ]);
+
+                if (isset($question->answers)) {
+                    foreach ($question->answers as $answer) {
+                        Answer::create([
+                            'description' => $answer->description,
+                            'question_id' => $newQuestion->id,
+                            'parent_id' => $answer->id,
+                            'suggested_lang' => App::getLocale(),
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return ['success' => true, 'message' => 'success_message.questionnaire_suggest'];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Questionnaire $questionnaire
+     *
+     * @return array
+     */
+    public function approveTranslation(Request $request, Questionnaire $questionnaire)
+    {
+        $parentQuestionnaire = Questionnaire::find($questionnaire->parent_id);
+
+        if (!$parentQuestionnaire) {
+            return ['success' => false, 'message' => 'error_message.questionnaire_update'];
+        }
+
+        DB::beginTransaction();
+        try {
+            $data = json_decode($request->get('data'));
+
+            $parentQuestionnaire->update([
+                'title' => $data->title,
+                'description' => $data->description,
+                'auto_translated' => false,
+            ]);
+
+            $questions = $data->questions;
+            foreach ($questions as $index => $question) {
+                $foundQuestion = Question::find($question->parent_id);
+                if ($foundQuestion) {
+                    $foundQuestion->update([
+                        'title' => $question->title,
+                    ]);
+
+                    if ($question->answers) {
+                        foreach ($question->answers as $answer) {
+                            $foundAnswer = Answer::find($answer->parent_id);
+                            if ($foundAnswer) {
+                                $foundAnswer->update([
+                                    'description' => $answer->description,
+                                ]);
+                            }
+                        }
+
+                        // Remove submitted translation remaining
+                        Answer::where('suggested_lang', App::getLocale())
+                            ->where('parent_id', $answer->parent_id)
+                            ->delete();
+                    }
+                }
+
+                // Remove submitted translation remaining
+                Question::where('suggested_lang', App::getLocale())
+                    ->where('parent_id', $question->parent_id)
+                    ->delete();
+            }
+
+            // Remove submitted translation remaining
+            Questionnaire::where('suggested_lang', App::getLocale())
+                ->where('parent_id', $questionnaire->parent_id)
+                ->delete();
+
+            DB::commit();
+            return ['success' => true, 'message' => 'success_message.questionnaire_update'];
         } catch (\Exception $e) {
             DB::rollBack();
             return ['success' => false, 'message' => $e->getMessage()];
@@ -290,6 +432,8 @@ class QuestionnaireController extends Controller
 
             $questions = $data->questions;
             $questionIds = [];
+            $languages = Language::where('code', '<>', config('app.fallback_locale'))->get();
+            $translate = new GoogleTranslateHelper();
 
             foreach ($questions as $index => $question) {
                 $questionObj = Question::updateOrCreate(
@@ -315,6 +459,18 @@ class QuestionnaireController extends Controller
                     }
                 }
 
+                if ($questionObj->wasRecentlyCreated) {
+                    foreach ($languages as $language) {
+                        $languageCode = $language->code;
+
+                        // Auto translate question.
+                        $translatedTitle = $translate->translate($questionObj->title, $languageCode);
+                        $questionObj->setTranslation('title', $languageCode, $translatedTitle);
+                        $questionObj->setTranslation('auto_translated', $languageCode, true);
+                        $questionObj->save();
+                    }
+                }
+
                 $questionIds[] = $questionObj->id;
                 $answerIds = [];
                 if ($question->answers) {
@@ -330,6 +486,18 @@ class QuestionnaireController extends Controller
                         );
 
                         $answerIds[] = $answerObj->id;
+
+                        if ($answerObj->wasRecentlyCreated) {
+                            foreach ($languages as $language) {
+                                $languageCode = $language->code;
+
+                                // Auto translate answer.
+                                $translatedAnswerDescription = $translate->translate($answerObj->description, $languageCode);
+                                $answerObj->setTranslation('description', $languageCode, $translatedAnswerDescription);
+                                $answerObj->setTranslation('auto_translated', $languageCode, true);
+                                $answerObj->save();
+                            }
+                        }
                     }
                 }
 

@@ -18,14 +18,14 @@ class Questionnaire extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'description', 'is_used', 'therapist_id', 'global', 'questionnaire_id'];
+    protected $fillable = ['title', 'description', 'is_used', 'therapist_id', 'global', 'questionnaire_id', 'auto_translated', 'parent_id', 'suggested_lang'];
 
     /**
      * The attributes that are translatable
      *
      * @var string[]
      */
-    public $translatable = ['title', 'description'];
+    public $translatable = ['title', 'description', 'auto_translated'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -33,6 +33,13 @@ class Questionnaire extends Model
     public function questions()
     {
         return $this->hasMany(Question::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function children(){
+        return $this->hasMany(self::class, 'parent_id');
     }
 
     /**

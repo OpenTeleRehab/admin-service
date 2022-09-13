@@ -15,14 +15,14 @@ class Question extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'questionnaire_id', 'type', 'file_id', 'order'];
+    protected $fillable = ['title', 'questionnaire_id', 'type', 'file_id', 'order', 'auto_translated', 'parent_id', 'suggested_lang'];
 
     /**
      * The attributes that are translatable
      *
      * @var string[]
      */
-    public $translatable = ['title'];
+    public $translatable = ['title', 'auto_translated'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

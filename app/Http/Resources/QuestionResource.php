@@ -20,6 +20,11 @@ class QuestionResource extends JsonResource
             'type' => $this->type,
             'file' => $this->file,
             'answers' => AnswerResource::collection($this->answers),
+            'auto_translated' => $this->auto_translated,
+            'parent_id' => $this->parent_id,
+            'fallback' => [
+                'title' => $this->getTranslation('title', config('app.fallback_locale')),
+            ],
         ];
     }
 }

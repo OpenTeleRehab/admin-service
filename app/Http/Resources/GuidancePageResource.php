@@ -18,7 +18,8 @@ class GuidancePageResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'content' => $this->content,
-            'order' => $this->order
+            'order' => $this->order,
+            'auto_translated' => $this->auto_translated,
         ];
     }
 }

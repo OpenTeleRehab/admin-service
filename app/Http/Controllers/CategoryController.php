@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyCategoryAutoTranslationEvent;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\CategoryTreeResource;
 use App\Models\Category;
@@ -131,16 +132,22 @@ class CategoryController extends Controller
                 'title' => $request->get('category'),
                 'type' => $request->get('type'),
             ]);
+
+            // Add automatic translation for Category.
+            event(new ApplyCategoryAutoTranslationEvent($parentCategory));
         }
 
         $subCategoryTitles = explode(';', $request->get('category_value', ''));
         foreach ($subCategoryTitles as $subCategoryTitle) {
             if (trim($subCategoryTitle)) {
-                Category::create([
+                $category = Category::create([
                     'title' => $subCategoryTitle,
                     'type' => $request->get('type'),
                     'parent_id' => $parentCategory->id,
                 ]);
+
+                // Add automatic translation for Category.
+                event(new ApplyCategoryAutoTranslationEvent($category));
             }
         }
 

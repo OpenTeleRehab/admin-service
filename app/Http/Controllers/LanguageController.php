@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyNewLanguageTranslationEvent;
 use App\Http\Resources\LanguageResource;
 use App\Models\Language;
 use Illuminate\Http\Request;
@@ -187,6 +188,42 @@ class LanguageController extends Controller
         ]);
 
         return ['success' => true, 'message' => 'success_message.language_update'];
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/language_auto_translate/{id}",
+     *     tags={"Language"},
+     *     summary="Auto translate by language",
+     *     operationId="autoTranslateLanguage",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
+     * @param \App\Models\Language $language
+     *
+     * @return array|void
+     */
+    public function autoTranslate(Language $language)
+    {
+        if (!$language || !$language->code) {
+            return abort(500, 'error_message.language_exists');
+        }
+
+        event(new ApplyNewLanguageTranslationEvent($language->code));
+        $language->update(['auto_translated' => true]);
+
+        return ['success' => true, 'message' => 'success_message.auto_translated'];
     }
 
     /**

@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ApplyExerciseAutoTranslationEvent;
 use App\Exports\ExercisesExport;
 use App\Helpers\ContentHelper;
 use App\Helpers\ExerciseHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\ExerciseResource;
 use App\Models\AdditionalField;
 use App\Models\Exercise;
 use App\Models\ExerciseCategory;
 use App\Models\File;
+use App\Models\Language;
 use App\Models\SystemLimit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -153,7 +157,54 @@ class ExerciseController extends Controller
         // Attach category to exercise.
         $this->attachCategories($exercise, $request->get('categories'));
 
+        // Add automatic translation for Exercise.
+        event(new ApplyExerciseAutoTranslationEvent($exercise));
+
         return ['success' => true, 'message' => 'success_message.exercise_create'];
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function suggest(Request $request)
+    {
+        $therapistId = $request->get('therapist_id');
+        if (!Auth::user() && !$therapistId) {
+            return ['success' => false, 'message' => 'error_message.exercise_suggest'];
+        }
+
+        $foundExercise = Exercise::find($request->get('id'));
+
+        if (!$foundExercise || !$foundExercise->auto_translated || (int) $foundExercise->therapist_id === (int) $therapistId) {
+            return ['success' => false, 'message' => 'error_message.exercise_suggest'];
+        }
+
+        $exercise = Exercise::create([
+            'title' => $request->get('title'),
+            'therapist_id' => $therapistId,
+            'parent_id' => $foundExercise->id,
+            'global' => env('APP_NAME') == 'hi',
+            'suggested_lang' => App::getLocale(),
+        ]);
+
+        if (empty($exercise)) {
+            return ['success' => false, 'message' => 'error_message.exercise_suggest'];
+        }
+
+        $additionalFields = json_decode($request->get('additional_fields'));
+        foreach ($additionalFields as $index => $additionalField) {
+            AdditionalField::create([
+                'field' => $additionalField->field,
+                'value' => $additionalField->value,
+                'exercise_id' => $exercise->id,
+                'parent_id' => $additionalField->id,
+                'suggested_lang' => App::getLocale(),
+            ]);
+        }
+
+        return ['success' => true, 'message' => 'success_message.exercise_suggest'];
     }
 
     /**
@@ -193,6 +244,9 @@ class ExerciseController extends Controller
 
         $additionalFields = json_decode($request->get('additional_fields'));
         $additionalFieldIds = [];
+        $languages = Language::where('code', '<>', config('app.fallback_locale'))->get();
+        $translate = new GoogleTranslateHelper();
+
         foreach ($additionalFields as $index => $additionalField) {
             $additionalField = AdditionalField::updateOrCreate(
                 [
@@ -205,6 +259,17 @@ class ExerciseController extends Controller
                 ]
             );
             $additionalFieldIds[] = $additionalField->id;
+            if ($additionalField->wasRecentlyCreated){
+                foreach ($languages as $language) {
+                    $languageCode = $language->code;
+                    $translatedField = $translate->translate($additionalField->field, $languageCode);
+                    $translatedValue = $translate->translate($additionalField->value, $languageCode);
+                    $additionalField->setTranslation('field', $languageCode, $translatedField);
+                    $additionalField->setTranslation('value', $languageCode, $translatedValue);
+                    $additionalField->setTranslation('auto_translated', $languageCode, true);
+                    $additionalField->save();
+                }
+            }
         }
 
         // Remove deleted additional field.
@@ -236,6 +301,45 @@ class ExerciseController extends Controller
         // Attach category to exercise.
         ExerciseCategory::where('exercise_id', $exercise->id)->delete();
         $this->attachCategories($exercise, $request->get('categories'));
+
+        return ['success' => true, 'message' => 'success_message.exercise_update'];
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Exercise $exercise
+     *
+     * @return array
+     */
+    public function approveTranslation(Request $request, Exercise $exercise)
+    {
+        $parentExercise = Exercise::find($exercise->parent_id);
+
+        if (!$parentExercise) {
+            return ['success' => false, 'message' => 'error_message.exercise_update'];
+        }
+
+        $parentExercise->update([
+            'title' => $request->get('title'),
+            'auto_translated' => false,
+        ]);
+
+        $additionalFields = json_decode($request->get('additional_fields'));
+        foreach ($additionalFields as $index => $additionalField) {
+            $foundAdditionalField = AdditionalField::find($additionalField->parent_id);
+            if ($foundAdditionalField) {
+                $foundAdditionalField->update([
+                    'field' => $additionalField->field,
+                    'value' => $additionalField->value,
+                    'auto_translated' => false
+                ]);
+            }
+        }
+
+        // Remove submitted translation remaining
+        Exercise::where('suggested_lang', App::getLocale())
+            ->where('parent_id', $exercise->parent_id)
+            ->delete();
 
         return ['success' => true, 'message' => 'success_message.exercise_update'];
     }

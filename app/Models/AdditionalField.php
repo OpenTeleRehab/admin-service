@@ -17,7 +17,10 @@ class AdditionalField extends Model
     protected $fillable = [
         'field',
         'value',
-        'exercise_id'
+        'exercise_id',
+        'auto_translated',
+        'parent_id',
+        'suggested_lang',
     ];
 
     /**
@@ -25,5 +28,5 @@ class AdditionalField extends Model
      *
      * @var string[]
      */
-    public $translatable = ['field', 'value'];
+    public $translatable = ['field', 'value', 'auto_translated'];
 }

@@ -26,6 +26,7 @@ use \App\Http\Controllers\CategoryController;
 use \App\Http\Controllers\ChartController;
 use \App\Http\Controllers\ImportController;
 use \App\Http\Controllers\PartnerLogoController;
+use \App\Http\Controllers\TranslatorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,9 @@ use \App\Http\Controllers\PartnerLogoController;
 Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('admin', AdminController::class);
     Route::apiResource('translation', TranslationController::class);
+    Route::apiResource('translator', TranslatorController::class);
+    Route::post('translator/updateStatus/{user}', [TranslatorController::class, 'updateStatus']);
+    Route::post('translator/resend-email/{user}', [TranslatorController::class, 'resendEmailToUser']);
     Route::post('term-condition/publish/{id}', [TermAndConditionController::class, 'publish']);
     Route::post('privacy-policy/publish/{id}', [PrivacyPolicyController::class, 'publish']);
     Route::apiResource('static-page', StaticPageController::class);
@@ -75,6 +79,7 @@ Route::get('clinic/therapist-limit/count/by-contry', [ClinicController::class, '
 Route::get('clinic/therapist/count/by-clinic', [ClinicController::class, 'countTherapistByClinic']);
 Route::apiResource('language', LanguageController::class);
 Route::get('language/by-id/{id}', [LanguageController::class, 'getById']);
+Route::put('language/language_auto_translate/{language}', [LanguageController::class, 'autoTranslate']);
 Route::post('file/upload', [FileController::class, 'uploadFile']);
 Route::apiResource('file', FileController::class)->middleware('throttle:180:1');
 Route::get('page/static', [StaticPageController::class, 'getStaticPage']);
@@ -88,6 +93,8 @@ Route::apiResource('profession', ProfessionController::class);
 Route::apiResource('disease', InternationalClassificationDiseaseController::class);
 
 Route::apiResource('exercise', ExerciseController::class);
+Route::post('exercise/suggest', [ExerciseController::class, 'suggest']);
+Route::post('exercise/approve-translate/{exercise}', [ExerciseController::class, 'approveTranslation']);
 Route::get('exercise/list/by-ids', [ExerciseController::class, 'getByIds']);
 Route::post('exercise/updateFavorite/by-therapist/{exercise}', [ExerciseController::class, 'updateFavorite']);
 Route::get('library/count/by-therapist', [ExerciseController::class, 'countTherapistLibrary']);
@@ -97,12 +104,16 @@ Route::get('get-exercise-files', [ExerciseController::class, 'getExerciseFiles']
 
 
 Route::apiResource('education-material', EducationMaterialController::class);
+Route::post('education-material/suggest', [EducationMaterialController::class, 'suggest']);
+Route::post('education-material/approve-translate/{educationMaterial}', [EducationMaterialController::class, 'approveTranslation']);
 Route::get('education-material/list/by-ids', [EducationMaterialController::class, 'getByIds']);
 Route::post('education-material/updateFavorite/by-therapist/{educationMaterial}', [EducationMaterialController::class, 'updateFavorite']);
 Route::get('get-education-materials', [EducationMaterialController::class, 'getEducationMaterials']);
 Route::get('get-education-material-files', [EducationMaterialController::class, 'getEducationMaterialFiles']);
 
 Route::apiResource('questionnaire', QuestionnaireController::class);
+Route::post('questionnaire/suggest', [QuestionnaireController::class, 'suggest']);
+Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation']);
 Route::get('questionnaire/list/by-ids', [QuestionnaireController::class, 'getByIds']);
 Route::post('questionnaire/mark-as-used/by-ids', [QuestionnaireController::class, 'markAsUsed']);
 Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite']);

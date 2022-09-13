@@ -25,6 +25,14 @@ class QuestionnaireResource extends JsonResource
             'therapist_id' => $this->therapist_id,
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
             'global' => $this->global,
+            'auto_translated' => $this->auto_translated,
+            'parent_id' => $this->parent_id,
+            'children' => QuestionnaireResource::collection($this->children),
+            'suggested_lang' => $this->suggested_lang,
+            'fallback' => [
+                'title' => $this->getTranslation('title', config('app.fallback_locale')),
+                'description' => $this->getTranslation('description', config('app.fallback_locale')),
+            ],
         ];
     }
 }

@@ -16,7 +16,7 @@ class ExerciseHelper
     public static function generateFilterQuery(Request $request)
     {
         $therapistId = $request->get('therapist_id');
-        $query = Exercise::select('exercises.*');
+        $query = Exercise::select('exercises.*')->where('exercises.parent_id', null);
         $filter = json_decode($request->get('filter'), true);
 
         if (!empty($filter['favorites_only'])) {
@@ -29,6 +29,10 @@ class ExerciseHelper
 
         if (!empty($filter['my_contents_only'])) {
             $query->where('exercises.therapist_id', $therapistId);
+        }
+
+        if (!empty($filter['suggestions'])) {
+            $query->whereHas('children');
         }
 
         $query->where(function ($query) use ($therapistId) {

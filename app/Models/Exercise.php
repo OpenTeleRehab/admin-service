@@ -26,7 +26,10 @@ class Exercise extends Model
         'get_pain_level',
         'therapist_id',
         'global',
-        'exercise_id'
+        'exercise_id',
+        'auto_translated',
+        'parent_id',
+        'suggested_lang',
     ];
 
 
@@ -45,7 +48,7 @@ class Exercise extends Model
      *
      * @var string[]
      */
-    public $translatable = ['title'];
+    public $translatable = ['title', 'auto_translated'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -61,6 +64,13 @@ class Exercise extends Model
     public function additionalFields()
     {
         return $this->hasMany(AdditionalField::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function children(){
+        return $this->hasMany(self::class, 'parent_id');
     }
 
     /**

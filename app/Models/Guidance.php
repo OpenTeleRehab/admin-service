@@ -16,14 +16,14 @@ class Guidance extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['content', 'order', 'title'];
+    protected $fillable = ['content', 'order', 'title', 'auto_translated'];
 
     /**
      * The attributes that are translatable
      *
      * @var string[]
      */
-    public $translatable = ['title', 'content'];
+    public $translatable = ['title', 'content', 'auto_translated'];
 
     /**
      * Bootstrap the model and its traits.
