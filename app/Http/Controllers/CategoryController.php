@@ -131,6 +131,7 @@ class CategoryController extends Controller
             $parentCategory = Category::create([
                 'title' => $request->get('category'),
                 'type' => $request->get('type'),
+                'hi_only' => $request->get('hi_only'),
             ]);
 
             // Add automatic translation for Category.
@@ -144,6 +145,7 @@ class CategoryController extends Controller
                     'title' => $subCategoryTitle,
                     'type' => $request->get('type'),
                     'parent_id' => $parentCategory->id,
+                    'hi_only' => $request->get('hi_only'),
                 ]);
 
                 // Add automatic translation for Category.
@@ -210,6 +212,7 @@ class CategoryController extends Controller
     {
         $category->update([
             'title' => $request->get('category'),
+            'hi_only' => $request->get('hi_only'),
         ]);
 
         return ['success' => true, 'message' => 'success_message.category_update'];
