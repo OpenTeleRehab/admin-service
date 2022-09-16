@@ -92,7 +92,7 @@ Route::get('getDefaultLimitedPatient', [SettingController::class, 'getDefaultLim
 Route::apiResource('profession', ProfessionController::class);
 Route::apiResource('disease', InternationalClassificationDiseaseController::class);
 
-Route::apiResource('exercise', ExerciseController::class);
+Route::apiResource('exercise', ExerciseController::class)->middleware('throttle:240:1');
 Route::post('exercise/suggest', [ExerciseController::class, 'suggest']);
 Route::post('exercise/approve-translate/{exercise}', [ExerciseController::class, 'approveTranslation']);
 Route::get('exercise/list/by-ids', [ExerciseController::class, 'getByIds']);
@@ -103,7 +103,7 @@ Route::get('get-exercises', [ExerciseController::class, 'getExercises']);
 Route::get('get-exercise-files', [ExerciseController::class, 'getExerciseFiles']);
 
 
-Route::apiResource('education-material', EducationMaterialController::class);
+Route::apiResource('education-material', EducationMaterialController::class)->middleware('throttle:240:1');
 Route::post('education-material/suggest', [EducationMaterialController::class, 'suggest']);
 Route::post('education-material/approve-translate/{educationMaterial}', [EducationMaterialController::class, 'approveTranslation']);
 Route::get('education-material/list/by-ids', [EducationMaterialController::class, 'getByIds']);
@@ -111,7 +111,7 @@ Route::post('education-material/updateFavorite/by-therapist/{educationMaterial}'
 Route::get('get-education-materials', [EducationMaterialController::class, 'getEducationMaterials']);
 Route::get('get-education-material-files', [EducationMaterialController::class, 'getEducationMaterialFiles']);
 
-Route::apiResource('questionnaire', QuestionnaireController::class);
+Route::apiResource('questionnaire', QuestionnaireController::class)->middleware('throttle:240:1');
 Route::post('questionnaire/suggest', [QuestionnaireController::class, 'suggest']);
 Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation']);
 Route::get('questionnaire/list/by-ids', [QuestionnaireController::class, 'getByIds']);
