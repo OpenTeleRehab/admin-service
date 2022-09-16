@@ -101,7 +101,8 @@ Route::get('library/count/by-therapist', [ExerciseController::class, 'countThera
 Route::post('library/delete/by-therapist', [ExerciseController::class, 'deleteLibraryByTherapist']);
 Route::get('get-exercises', [ExerciseController::class, 'getExercises']);
 Route::get('get-exercise-files', [ExerciseController::class, 'getExerciseFiles']);
-
+Route::get('get-exercises-for-open-library', [ExerciseController::class, 'getExercisesForOpenLibrary']);
+Route::get('get-exercise-categories-for-open-library', [ExerciseController::class, 'getExerciseCategoriesForOpenLibrary']);
 
 Route::apiResource('education-material', EducationMaterialController::class);
 Route::post('education-material/suggest', [EducationMaterialController::class, 'suggest']);
@@ -110,6 +111,8 @@ Route::get('education-material/list/by-ids', [EducationMaterialController::class
 Route::post('education-material/updateFavorite/by-therapist/{educationMaterial}', [EducationMaterialController::class, 'updateFavorite']);
 Route::get('get-education-materials', [EducationMaterialController::class, 'getEducationMaterials']);
 Route::get('get-education-material-files', [EducationMaterialController::class, 'getEducationMaterialFiles']);
+Route::get('get-education-materials-for-open-library', [EducationMaterialController::class, 'getEducationMaterialsForOpenLibrary']);
+Route::get('get-education-material-categories-for-open-library', [EducationMaterialController::class, 'getEducationMaterialCategoriesForOpenLibrary']);
 
 Route::apiResource('questionnaire', QuestionnaireController::class);
 Route::post('questionnaire/suggest', [QuestionnaireController::class, 'suggest']);
@@ -121,9 +124,12 @@ Route::get('get-questionnaires', [QuestionnaireController::class, 'getQuestionna
 Route::get('get-questionnaire-questions', [QuestionnaireController::class, 'getQuestionnaireQuestions']);
 Route::get('get-question-file', [QuestionnaireController::class, 'getQuestionFile']);
 Route::get('get-question-answers', [QuestionnaireController::class, 'getQuestionAnswers']);
+Route::get('get-questionnaires-for-open-library', [QuestionnaireController::class, 'getQuestionnairesForOpenLibrary']);
+Route::get('get-questionnaire-categories-for-open-library', [QuestionnaireController::class, 'getQuestionnaireCategoriesForOpenLibrary']);
 
 Route::apiResource('category', CategoryController::class);
 Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData']);
+Route::get('get-categories-for-open-library', [CategoryController::class, 'getCategoriesForOpenLibrary']);
 
 
 Route::apiResource('system-limit', SystemLimitController::class);

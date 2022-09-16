@@ -6,6 +6,7 @@ use App\Events\ApplyMaterialAutoTranslationEvent;
 use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
 use App\Http\Resources\EducationMaterialResource;
+use App\Models\Category;
 use App\Models\EducationMaterial;
 use App\Models\EducationMaterialCategory;
 use App\Models\File;
@@ -572,6 +573,31 @@ class EducationMaterialController extends Controller
     public function getEducationMaterials()
     {
         return EducationMaterial::withTrashed()->get();
+    }
+
+    /**
+     * @return \App\Models\EducationMaterial[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getEducationMaterialsForOpenLibrary()
+    {
+        $categories = Category::where('hi_only', true)->get();
+        $query = EducationMaterial::withTrashed()->where('global', true);
+        foreach ($categories as $category) {
+            $query->whereDoesntHave('categories', function ($query) use ($category) {
+                $query->where('categories.id', $category->id);
+            });
+        }
+        return $query->get();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \App\Models\EducationMaterialCategory[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getEducationMaterialCategoriesForOpenLibrary(Request $request)
+    {
+        return EducationMaterialCategory::where('education_material_id', $request->get('id'))->get();
     }
 
     /**

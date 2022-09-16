@@ -8,6 +8,7 @@ use App\Helpers\FileHelper;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\QuestionnaireResource;
 use App\Models\Answer;
+use App\Models\Category;
 use App\Models\File;
 use App\Models\Language;
 use App\Models\Question;
@@ -670,6 +671,29 @@ class QuestionnaireController extends Controller
     public function getQuestionnaires()
     {
         return Questionnaire::withTrashed()->get();
+    }
+
+    /**
+     * @return \App\Models\Questionnaire[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getQuestionnairesForOpenLibrary()
+    {
+        $categories = Category::where('hi_only', true)->get();
+        $query = Questionnaire::withTrashed()->where('global', true);
+        foreach ($categories as $category) {
+            $query->whereDoesntHave('categories', function ($query) use ($category) {
+                $query->where('categories.id', $category->id);
+            });
+        }
+        return $query->get();
+    }
+
+    /**
+     * @return \App\Models\QuestionnaireCategory[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getQuestionnaireCategoriesForOpenLibrary(Request $request)
+    {
+        return QuestionnaireCategory::where('questionnaire_id', $request->get('id'))->get();
     }
 
     /**
