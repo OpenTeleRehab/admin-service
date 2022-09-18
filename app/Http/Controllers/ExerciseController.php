@@ -10,6 +10,7 @@ use App\Helpers\FileHelper;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\ExerciseResource;
 use App\Models\AdditionalField;
+use App\Models\Category;
 use App\Models\Exercise;
 use App\Models\ExerciseCategory;
 use App\Models\File;
@@ -620,6 +621,31 @@ class ExerciseController extends Controller
     public function getExercises()
     {
         return Exercise::withTrashed()->get();
+    }
+
+    /**
+     * @return \App\Models\Exercise[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getExercisesForOpenLibrary()
+    {
+        $categories = Category::where('hi_only', true)->get();
+        $query = Exercise::withTrashed()->where('global', true);
+        foreach ($categories as $category) {
+            $query->whereDoesntHave('categories', function ($query) use ($category) {
+                $query->where('categories.id', $category->id);
+            });
+        }
+        return $query->get();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \App\Models\ExerciseCategory[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getExerciseCategoriesForOpenLibrary(Request $request)
+    {
+        return ExerciseCategory::where('exercise_id', $request->get('id'))->get();
     }
 
     /**

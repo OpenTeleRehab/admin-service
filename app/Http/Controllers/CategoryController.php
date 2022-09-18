@@ -264,6 +264,13 @@ class CategoryController extends Controller
     }
 
     /**
+     * @return \App\Models\Category[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getCategoriesForOpenLibrary() {
+        return Category::where('hi_only', false)->orWhereNull('hi_only')->orderBy('id', 'ASC')->get();
+    }
+
+    /**
      * @OA\Delete(
      *     path="/api/category/{id}",
      *     tags={"Category"},
