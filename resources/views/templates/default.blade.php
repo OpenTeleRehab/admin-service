@@ -10,4 +10,10 @@
 @endif
 <div class="p-3 flex-grow-1" style="{{ 'color: ' . $page->text_color . '; background-color: ' . $page->background_color }}">
     {!! $page->content !!}
+
+    @if ($page->auto_translated)
+        <div class="d-flex justify-content-end">
+            <img src="/images/google-translation.png" alt="text attribution" />
+        </div>
+    @endif
 </div>
