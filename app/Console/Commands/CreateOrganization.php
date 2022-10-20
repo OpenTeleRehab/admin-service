@@ -24,28 +24,18 @@ class CreateOrganization extends Command
     protected $description = 'Create organization';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Execute the console command.
      *
-     * @return int
+     * @return bool
      */
     public function handle()
     {
         $system_limit = json_decode(Storage::get('system_limit/settings.json'));
-        $user = User::where('type', User::ADMIN_GROUP_GLOBAL_ADMIN)->first();
+        $user = User::where('type', User::ADMIN_GROUP_ORG_ADMIN)->first();
 
         if ($user) {
             Organization::create([
-                'name' => 'Humanity Inclusion',
+                'name' => 'hi',
                 'type' => Organization::HI_TYPE,
                 'admin_email' => $user->email,
                 'sub_domain_name' => 'hi',
@@ -54,10 +44,12 @@ class CreateOrganization extends Command
                 'status' => Organization::SUCCESS_ORG_STATUS,
                 'created_by' => 0,
             ]);
+
+            $this->info('Organization has been created successfully');
+            return true;
         }
 
-        $this->info('Organization has been created successfully');
-
-        return 0;
+        $this->error('There is no Organization Admin user found');
+        return false;
     }
 }
