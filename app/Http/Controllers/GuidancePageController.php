@@ -166,7 +166,8 @@ class GuidancePageController extends Controller
     {
         $guidancePage->update([
             'title' => $request->get('title'),
-            'content' => $request->get('content')
+            'content' => $request->get('content'),
+            'auto_translated' => false,
         ]);
 
         return ['success' => true, 'message' => 'success_message.guidance.update'];

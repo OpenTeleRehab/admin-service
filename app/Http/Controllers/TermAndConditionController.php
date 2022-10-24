@@ -165,6 +165,7 @@ class TermAndConditionController extends Controller
         $termAndCondition->update([
             'version' => $request->get('version'),
             'content' => $request->get('content'),
+            'auto_translated' => false,
         ]);
 
         return ['success' => true, 'message' => 'success_message.team_and_condition_update'];

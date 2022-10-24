@@ -330,7 +330,8 @@ class StaticPageController extends Controller
             'platform' => $request->get('platform'),
             'url_path_segment' => $request->get('url'),
             'background_color' => $request->get('background_color'),
-            'text_color' => $request->get('text_color')
+            'text_color' => $request->get('text_color'),
+            'auto_translated' => false,
         ]);
 
         return ['success' => true, 'message' => 'success_message.static_file.update'];
