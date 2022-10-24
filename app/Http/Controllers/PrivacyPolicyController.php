@@ -166,6 +166,7 @@ class PrivacyPolicyController extends Controller
         $privacyPolicy->update([
             'version' => $request->get('version'),
             'content' => $request->get('content'),
+            'auto_translated' => false,
         ]);
 
         return ['success' => true, 'message' => 'success_message.privacy_policy_update'];
