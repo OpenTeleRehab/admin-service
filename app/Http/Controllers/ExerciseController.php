@@ -14,6 +14,7 @@ use App\Models\Category;
 use App\Models\Exercise;
 use App\Models\ExerciseCategory;
 use App\Models\File;
+use App\Models\Forwarder;
 use App\Models\Language;
 use App\Models\SystemLimit;
 use Illuminate\Http\Request;
@@ -82,11 +83,13 @@ class ExerciseController extends Controller
     public function store(Request $request)
     {
         $therapistId = $request->get('therapist_id');
+
         if (!Auth::user() && !$therapistId) {
             return ['success' => false, 'message' => 'error_message.exercise_create'];
         }
 
         $contentLimit = ContentHelper::getContentLimitLibray(SystemLimit::THERAPIST_CONTENT_LIMIT);
+
         if ($therapistId) {
             $ownContentCount = $this->countTherapistLibrary($request);
 
@@ -96,6 +99,7 @@ class ExerciseController extends Controller
         }
 
         $copyId = $request->get('copy_id');
+
         if ($copyId) {
             // Clone exercise.
             $exercise = Exercise::findOrFail($copyId)->replicate();
@@ -227,6 +231,7 @@ class ExerciseController extends Controller
     public function update(Request $request, Exercise $exercise)
     {
         $therapistId = $request->get('therapist_id');
+
         if (!Auth::user() && !$therapistId) {
             return ['success' => false, 'message' => 'error_message.exercise_update'];
         }
@@ -260,7 +265,7 @@ class ExerciseController extends Controller
                 ]
             );
             $additionalFieldIds[] = $additionalField->id;
-            if ($additionalField->wasRecentlyCreated){
+            if ($additionalField->wasRecentlyCreated) {
                 foreach ($languages as $language) {
                     $languageCode = $language->code;
                     $translatedField = $translate->translate($additionalField->field, $languageCode);
@@ -280,8 +285,10 @@ class ExerciseController extends Controller
 
         // Remove files.
         $exerciseFileIDs = $exercise->files()->pluck('id')->toArray();
-        $mediaFileIDs = $request->get('media_files', []);
+        $mediaFiles = $request->get('media_files', []);
+        $mediaFileIDs = explode(',', $mediaFiles);
         $removeFileIDs = array_diff($exerciseFileIDs, $mediaFileIDs);
+
         foreach ($removeFileIDs as $removeFileID) {
             $removeFile = File::find($removeFileID);
             $removeFile->delete();
@@ -297,7 +304,6 @@ class ExerciseController extends Controller
 
         // Upload files and attach to Exercise.
         $this->attachFiles($exercise, $request->allFiles());
-
 
         // Attach category to exercise.
         ExerciseCategory::where('exercise_id', $exercise->id)->delete();
@@ -337,7 +343,7 @@ class ExerciseController extends Controller
             }
         }
 
-        // Remove submitted translation remaining
+        // Remove submitted translation remaining.
         Exercise::where('suggested_lang', App::getLocale())
             ->where('parent_id', $exercise->parent_id)
             ->delete();
@@ -381,7 +387,8 @@ class ExerciseController extends Controller
     {
         $therapistId = $request->get('therapist_id');
         $treatmentPresets = 0;
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/treatment-plan/count/by-therapist?therapist_id=' . $therapistId);
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/treatment-plan/count/by-therapist?therapist_id=' . $therapistId);
 
         if (!empty($response) && $response->successful()) {
             $treatmentPresets = $response->json();
@@ -431,6 +438,8 @@ class ExerciseController extends Controller
     public static function deleteLibraryByTherapist(Request $request)
     {
         $therapistId = $request->get('therapist_id');
+        $country = $request->get('country');
+
         ContentHelper::deleteTherapistContents($therapistId);
     }
 
@@ -595,6 +604,7 @@ class ExerciseController extends Controller
     {
         foreach ($requestFiles as $index => $uploadedFile) {
             $file = FileHelper::createFile($uploadedFile, File::EXERCISE_PATH, File::EXERCISE_THUMBNAIL_PATH);
+
             if ($file) {
                 $exercise->files()->attach($file->id, ['order' => (int) $index]);
             }

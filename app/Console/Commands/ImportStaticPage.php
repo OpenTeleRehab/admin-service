@@ -45,6 +45,7 @@ class ImportStaticPage extends Command
 
         if (StaticPage::count() > 0) {
             $this->info('These static pages is already exists');
+
             return false;
         }
 
@@ -64,7 +65,7 @@ class ImportStaticPage extends Command
                 // Save file to storage.
                 Storage::put($file_path, $file_content);
 
-                // Store static page
+                // Store static page.
                 StaticPage::create([
                     'title' => $data['title'],
                     'content' => '<table style="border-collapse: collapse; width: 100%; height: 10px;" border="1"><tbody><tr style="height: 64px;"><td style="width: 100%; border-style: hidden; text-align: center; height: 10px;"><h6 style="text-align: center;"><strong>OpenTeleRehab is an open source multidisciplinary telerehabilitation software, connecting rehabilitation professionals with users in order to provide remote rehabilitation services.</strong></h6><p style="text-align: center;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ullamcorper ultrices elit ut hendrerit. Sed molestie sed magna ac pharetra. Vivamus convallis diam in commodo ultricies.</p><p style="text-align: center;">Maecenas malesuada mauris neque. Nullam id molestie dolor, a facilisis velit. Nulla euismod arcu lacus, id mattis dui faucibus quis. In vitae nulla consectetur, suscipit tortor sit amet, sollicitudin arcu.</p><p style="text-align: center;">Morbi vel molestie lectus, id aliquam risus. Vivamus vel ex quis diam interdum tempus. Praesent id fermentum tellus, et vulputate metus. Pellentesque id pellentesque ante.</p><p style="text-align: center;">Open Rehab is powered by</p></td></tr></tbody></table><table style="border-collapse: collapse; width: 100%;" border="1"><tbody><tr><td style="width: 100%; border-style: hidden;"><img class="n3VNCb" style="width: 138px; height: 59px; margin: 0px auto; display: block;" src="https://inclusivefutures.org/wp-content/uploads/2020/05/HumanityInclusion2.svg" alt="Humanity &amp; Inclusion | Inclusive Futures" data-noaft="1" /></td></tr></tbody></table>',

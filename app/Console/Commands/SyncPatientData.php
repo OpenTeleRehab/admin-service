@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Country;
+use App\Models\Forwarder;
 use App\Models\GlobalPatient;
 use App\Models\GlobalTreatmentPlan;
 use Carbon\Carbon;
@@ -32,30 +33,22 @@ class SyncPatientData extends Command
     public function handle()
     {
         $hosts = config('settings.hosting_country');
-        // Sync patient and treatment plans from vn db or other country to new table
+
+        // Sync patient and treatment plans from vn db or other country to new table.
         foreach ($hosts as $host) {
             $country = Country::where('iso_code', $host)->first();
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $host);
+
             if ($this->option('all')) {
-                // Get all records
-                $patientData = json_decode(Http::withHeaders([
-                    'country' => $host
-                ])->get(env('PATIENT_SERVICE_URL') . '/patient/list/global', [
-                    'all' => true,
-                ]));
-                $treatmentPlanData = json_decode(Http::withHeaders([
-                    'country' => $host
-                ])->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global', [
-                    'all' => true,
-                ]));
+                // Get all records.
+                $patientData = json_decode(Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/patient/list/global', ['all' => true]));
+                $treatmentPlanData = json_decode(Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global', ['all' => true]));
             } else {
-                // Get only yesterday records
-                $patientData = json_decode(Http::withHeaders([
-                    'country' => $host
-                ])->get(env('PATIENT_SERVICE_URL') . '/patient/list/global'));
-                $treatmentPlanData = json_decode(Http::withHeaders([
-                    'country' => $host
-                ])->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global'));
+                // Get only yesterday records.
+                $patientData = json_decode(Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/patient/list/global'));
+                $treatmentPlanData = json_decode(Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global'));
             }
+
             foreach ($patientData as $patient) {
                 GlobalPatient::updateOrCreate(
                     [
@@ -74,6 +67,7 @@ class SyncPatientData extends Command
                     ],
                 );
             }
+
             foreach ($treatmentPlanData as $treatmentPlan) {
                 GlobalTreatmentPlan::updateOrCreate(
                     [
@@ -94,19 +88,17 @@ class SyncPatientData extends Command
             }
         }
 
-        // Sync patient and treatment plans from global db to new table
+        // Sync patient and treatment plans from global db to new table.
+        $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
         if ($this->option('all')) {
-            // Get all records
-            $patientGlobal = json_decode(Http::get(env('PATIENT_SERVICE_URL') . '/patient/list/global', [
-                'all' => true,
-            ]));
-            $treatmentPlanGlobal = json_decode(Http::get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global', [
-                'all' => true,
-            ]));
+            // Get all records.
+            $patientGlobal = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/list/global', ['all' => true]));
+            $treatmentPlanGlobal = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global', ['all' => true]));
         } else {
-            // Get only yesterday records
-            $patientGlobal = json_decode(Http::get(env('PATIENT_SERVICE_URL') . '/patient/list/global'));
-            $treatmentPlanGlobal = json_decode(Http::get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global'));
+            // Get only yesterday records.
+            $patientGlobal = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/list/global'));
+            $treatmentPlanGlobal = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global'));
         }
 
         foreach ($patientGlobal as $patient) {
@@ -127,8 +119,10 @@ class SyncPatientData extends Command
                 ],
             );
         }
+
         foreach ($treatmentPlanGlobal as $treatmentPlan) {
-            $patient = json_decode(Http::get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $treatmentPlan->patient_id));
+            $patient = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $treatmentPlan->patient_id));
+
             GlobalTreatmentPlan::updateOrCreate(
                 [
                     'treatment_id' => $treatmentPlan->id,
@@ -146,6 +140,7 @@ class SyncPatientData extends Command
                 ],
             );
         }
+
         $this->info('Data has been sync successfully');
     }
 }

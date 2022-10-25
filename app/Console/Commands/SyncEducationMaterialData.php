@@ -35,9 +35,9 @@ class SyncEducationMaterialData extends Command
     public function handle()
     {
         if (env('APP_NAME') != 'hi') {
-
             // Sync eduction material data.
-            $globalEducationMaterials = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-education-materials'));
+            $access_token = Forwarder::getAccessToken(Forwarder::GADMIN_SERVICE);
+            $globalEducationMaterials = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-education-materials'));
             $educationMaterials = DB::table('education_materials')->where('global', true)->get();
             // Remove data before import.
             if ($educationMaterials) {
@@ -48,11 +48,11 @@ class SyncEducationMaterialData extends Command
             }
             // Import global material to org.
             foreach ($globalEducationMaterials as $globalEducationMaterial) {
-                 DB::table('education_materials')->updateOrInsert(
-                     [
-                         'education_material_id' => $globalEducationMaterial->id,
-                         'global' => true,
-                     ],
+                DB::table('education_materials')->updateOrInsert(
+                    [
+                        'education_material_id' => $globalEducationMaterial->id,
+                        'global' => true,
+                    ],
                     [
                         'title' => json_encode($globalEducationMaterial->title),
                         'file_id' => json_encode($globalEducationMaterial->file_id),
@@ -63,7 +63,7 @@ class SyncEducationMaterialData extends Command
                     ]
                 );
                 $filesIDs = array_values(get_object_vars($globalEducationMaterial->file_id));
-                $files = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-education-material-files', ['file_ids' => $filesIDs]));
+                $files = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-education-material-files', ['file_ids' => $filesIDs]));
                 $newFileIDs = $globalEducationMaterial->file_id;
                 if (!empty($files)) {
                     foreach ($files as $file) {
@@ -83,8 +83,7 @@ class SyncEducationMaterialData extends Command
                             Storage::put($file_path, $file_content);
                             if ($record) {
                                 if ($file->content_type === 'video/mp4') {
-                                    $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path,
-                                        File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
+                                    $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
 
                                     if ($thumbnailFilePath) {
                                         $record->update([
@@ -94,8 +93,7 @@ class SyncEducationMaterialData extends Command
                                 }
 
                                 if ($file->content_type === 'application/pdf') {
-                                    $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path,
-                                        File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
+                                    $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
 
                                     if ($thumbnailFilePath) {
                                         $record->update([

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Clinic;
 use App\Models\Country;
+use App\Models\Forwarder;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -50,6 +51,7 @@ class ChartController extends Controller
             ->where('enabled', '=', 1)
             ->groupBy('country_id')
             ->get();
+
         $countryAdminsByCountry = DB::table('users')
             ->select(DB::raw('
                 country_id,
@@ -63,7 +65,8 @@ class ChartController extends Controller
 
         $patientData = $this->getDataForGlobalAdmin();
 
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-global-admin');
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-global-admin');
 
         if (!empty($response) && $response->successful()) {
             $therapistData = $response->json();
@@ -117,6 +120,7 @@ class ChartController extends Controller
     {
         $country_id = $request->get('country_id');
         $country = Country::find($country_id);
+
         $clinicAdminTotal = DB::table('users')
             ->select(DB::raw('
                 COUNT(*) AS total
@@ -129,6 +133,7 @@ class ChartController extends Controller
         $therapistData = [];
 
         $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE),
             'country' => $country ? $country->iso_code : null
         ])->get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-country-admin', [
             'country_id' => [$country_id]
@@ -138,19 +143,22 @@ class ChartController extends Controller
             $patientData = $response->json();
         }
 
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-country-admin', [
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))->get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-country-admin', [
             'country_id' => [$country_id]
         ]);
 
         if (!empty($response) && $response->successful()) {
             $therapistData = $response->json();
         }
+
         $therapistData['therapistLimit'] = $country->therapist_limit;
+
         $data = [
             'clinicAdminTotal' => $clinicAdminTotal,
             'patientData' => $patientData,
             'therapistData' => $therapistData,
         ];
+
         return ['success' => true, 'data' => $data];
     }
 
@@ -195,6 +203,7 @@ class ChartController extends Controller
         $therapistData = [];
 
         $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE),
             'country' => $country ? strtoupper($country->iso_code) : null
         ])->get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
             'clinic_id' => [$clinicId]
@@ -204,9 +213,8 @@ class ChartController extends Controller
             $patientData = $response->json();
         }
 
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
-            'clinic_id' => [$clinicId]
-        ]);
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-clinic-admin', ['clinic_id' => [$clinicId]]);
 
         if (!empty($response) && $response->successful()) {
             $therapistData = $response->json();
@@ -224,7 +232,8 @@ class ChartController extends Controller
     /**
      * @return array
      */
-    public function getDataForGlobalAdmin() {
+    public function getDataForGlobalAdmin()
+    {
         $patientsByGenderGroupedByCountry = DB::table('global_patients')
             ->select(DB::raw('
                 country_id,
@@ -243,7 +252,7 @@ class ChartController extends Controller
             SUM(CASE WHEN gender = "female" AND start_date <= CURDATE() AND end_date >= CURDATE() THEN 1 ELSE 0 END) AS female,
             SUM(CASE WHEN gender = "other" AND start_date <= CURDATE() AND end_date >= CURDATE() THEN 1 ELSE 0 END) AS other
         '))
-            ->join('global_treatment_plans',function($q) {
+            ->join('global_treatment_plans', function ($q) {
                 $q->on('global_treatment_plans.patient_id', 'global_patients.patient_id');
                 $q->on('global_treatment_plans.country_id', 'global_patients.country_id');
             })
@@ -260,7 +269,7 @@ class ChartController extends Controller
             SUM(CASE WHEN gender = "female" THEN 1 ELSE 0 END) AS female,
             SUM(CASE WHEN gender = "other" THEN 1 ELSE 0 END) AS other
         '))
-            ->leftJoin('global_patients',function($q) {
+            ->leftJoin('global_patients', function ($q) {
                 $q->on('global_treatment_plans.patient_id', 'global_patients.patient_id');
                 $q->on('global_treatment_plans.country_id', 'global_patients.country_id');
             })
@@ -321,7 +330,7 @@ class ChartController extends Controller
             ->where('global_patients.enabled', '=', 1)
             ->where('global_patients.deleted_at', '=', null)
             ->groupBy('global_patients.country_id')
-            ->join('global_treatment_plans',function($q) {
+            ->join('global_treatment_plans', function ($q) {
                 $q->on('global_treatment_plans.patient_id', 'global_patients.patient_id');
                 $q->on('global_treatment_plans.country_id', 'global_patients.country_id');
             })
@@ -333,7 +342,7 @@ class ChartController extends Controller
             ->where('global_patients.enabled', '=', 1)
             ->where('global_patients.deleted_at', '=', null)
             ->groupBy('global_patients.country_id')
-            ->join('global_patients', function($q) {
+            ->join('global_patients', function ($q) {
                 $q->on('global_treatment_plans.patient_id', 'global_patients.patient_id');
                 $q->on('global_treatment_plans.country_id', 'global_patients.country_id');
             })

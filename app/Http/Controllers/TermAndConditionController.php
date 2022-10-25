@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ApplyTermAndConditionAutoTranslationEvent;
 use App\Http\Resources\TermAndConditionResource;
+use App\Models\Forwarder;
 use App\Models\TermAndCondition;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -249,7 +250,8 @@ class TermAndConditionController extends Controller
             ]);
 
         // Add required action to all users.
-        Http::get(env('THERAPIST_SERVICE_URL') . '/term-condition/send-re-consent');
+        Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/term-condition/send-re-consent');
 
         return ['success' => true, 'message' => 'success_message.team_and_condition_publish'];
     }

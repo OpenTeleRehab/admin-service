@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ProfessionResource;
+use App\Models\Forwarder;
 use App\Models\Profession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -209,7 +210,8 @@ class ProfessionController extends Controller
     public function destroy(Profession $profession)
     {
         $isUsed = false;
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/therapist/get-used-profession?profession_id=' . $profession->id);
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/therapist/get-used-profession?profession_id=' . $profession->id);
 
         if (!empty($response) && $response->successful()) {
             $isUsed = $response->json();

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Helpers\FileHelper;
 use App\Models\Exercise;
 use App\Models\File;
+use App\Models\Forwarder;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -35,8 +36,9 @@ class SyncExerciseData extends Command
     public function handle()
     {
         if (env('APP_NAME') != 'hi') {
-            // Sync exercise data
-            $globalExercises = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercises'));
+            // Sync exercise data.
+            $access_token = Forwarder::getAccessToken(Forwarder::GADMIN_SERVICE);
+            $globalExercises = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercises'));
             // Remove existing global data before import.
             $exercises = Exercise::withTrashed()->where('global', true)->get();
             if ($exercises) {
@@ -54,10 +56,12 @@ class SyncExerciseData extends Command
 
             // Import global exercises to org.
             foreach ($globalExercises as $globalExercise) {
-                DB::table('exercises')->updateOrInsert([
+                DB::table('exercises')->updateOrInsert(
+                    [
                         'exercise_id' => $globalExercise->id,
                         'global' => true,
-                    ], [
+                    ],
+                    [
                         'title' => json_encode($globalExercise->title),
                         'sets' => $globalExercise->sets,
                         'reps' => $globalExercise->reps,
@@ -67,12 +71,13 @@ class SyncExerciseData extends Command
                         'exercise_id' => $globalExercise->id,
                         'global' => true,
                         'deleted_at' => $globalExercise->deleted_at ? Carbon::parse($globalExercise->deleted_at) : $globalExercise->deleted_at,
-                    ],);
-                $newExercise = Exercise::withTrashed()->where('exercise_id', $globalExercise->id)->where('global',
-                    true)->first();
+                    ]
+                );
+                $newExercise = Exercise::withTrashed()->where('exercise_id', $globalExercise->id)->where('global', true)->first();
+
                 // Add files.
-                $files = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercise-files',
-                    ['exercise_id' => $globalExercise->id]));
+                $files = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercise-files', ['exercise_id' => $globalExercise->id]));
+
                 if (!empty($files)) {
                     $index = 0;
                     foreach ($files as $file) {
@@ -89,10 +94,10 @@ class SyncExerciseData extends Command
 
                             // Save file to storage.
                             Storage::put($file_path, $file_content);
+
                             if ($record) {
                                 if ($file->content_type === 'video/mp4') {
-                                    $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path,
-                                        File::EXERCISE_THUMBNAIL_PATH);
+                                    $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path, File::EXERCISE_THUMBNAIL_PATH);
 
                                     if ($thumbnailFilePath) {
                                         $record->update([
@@ -102,8 +107,7 @@ class SyncExerciseData extends Command
                                 }
 
                                 if ($file->content_type === 'application/pdf') {
-                                    $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path,
-                                        File::EXERCISE_THUMBNAIL_PATH);
+                                    $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path, File::EXERCISE_THUMBNAIL_PATH);
 
                                     if ($thumbnailFilePath) {
                                         $record->update([
@@ -111,12 +115,14 @@ class SyncExerciseData extends Command
                                         ]);
                                     }
                                 }
-                                // Add to exercise file
-                                DB::table('exercise_file')->insert([
+                                // Add to exercise file.
+                                DB::table('exercise_file')->insert(
+                                    [
                                         'exercise_id' => $newExercise->id,
                                         'file_id' => $record->id,
                                         'order' => $index,
-                                    ]);
+                                    ]
+                                );
                             }
                             $index++;
                         } catch (\Exception $e) {

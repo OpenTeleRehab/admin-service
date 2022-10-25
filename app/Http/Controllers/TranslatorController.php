@@ -378,8 +378,6 @@ class TranslatorController extends Controller
 
     /**
      * @param \App\Models\User $user
-     * @param string $password
-     * @param bool $isTemporaryPassword
      * @param string $userGroup
      *
      * @return false|mixed|string
@@ -388,6 +386,7 @@ class TranslatorController extends Controller
     private function createKeycloakUser($user, $userGroup)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
+
         if ($token) {
             try {
                 $language = Language::find(Auth::user()->language_id);

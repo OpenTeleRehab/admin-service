@@ -44,7 +44,7 @@ class GlobalPatientController extends Controller
                         $query->where('identity', 'like', '%' . $data['search_value'] . '%')
                             ->orWhere('first_name', 'like', '%' . $data['search_value'] . '%')
                             ->orWhere('last_name', 'like', '%' . $data['search_value'] . '%')
-                            ->orWhereHas('treatmentPlans', function(Builder $query) use ($data) {
+                            ->orWhereHas('treatmentPlans', function (Builder $query) use ($data) {
                                 $query->where('name', 'like', '%' . $data['search_value'] . '%');
                             });
                     });
@@ -66,35 +66,35 @@ class GlobalPatientController extends Controller
                             $query->where('country_id', $filterObj->value);
                         } elseif ($filterObj->columnName === 'treatment_status') {
                             if ($filterObj->value == GlobalPatient::FINISHED_TREATMENT_PLAN) {
-                                $query->whereHas('treatmentPlans', function(Builder $query) {
+                                $query->whereHas('treatmentPlans', function (Builder $query) {
                                     $query->whereDate('end_date', '<', Carbon::now());
-                                })->whereDoesntHave('treatmentPlans', function(Builder $query) {
+                                })->whereDoesntHave('treatmentPlans', function (Builder $query) {
                                     $query->whereDate('end_date', '>', Carbon::now());
-                                })->whereDoesntHave('treatmentPlans', function(Builder $query) {
+                                })->whereDoesntHave('treatmentPlans', function (Builder $query) {
                                     $query->whereDate('start_date', '<=', Carbon::now())
                                         ->whereDate('end_date', '>=', Carbon::now());
                                 });
                             } elseif ($filterObj->value == GlobalPatient::PLANNED_TREATMENT_PLAN) {
-                                $query->whereHas('treatmentPlans', function(Builder $query) {
+                                $query->whereHas('treatmentPlans', function (Builder $query) {
                                     $query->whereDate('end_date', '>', Carbon::now());
-                                })->whereDoesntHave('treatmentPlans', function(Builder $query) {
+                                })->whereDoesntHave('treatmentPlans', function (Builder $query) {
                                     $query->whereDate('start_date', '<=', Carbon::now())
                                         ->whereDate('end_date', '>=', Carbon::now());
                                 });
                             } else {
-                                $query->whereHas('treatmentPlans', function(Builder $query) {
+                                $query->whereHas('treatmentPlans', function (Builder $query) {
                                     $query->whereDate('start_date', '<=', Carbon::now())
                                         ->whereDate('end_date', '>=', Carbon::now());
                                 });
                             }
-                        } else if ($filterObj->columnName === 'age') {
+                        } elseif ($filterObj->columnName === 'age') {
                             $query->whereRaw('YEAR(NOW()) - YEAR(date_of_birth) = ? OR ABS(MONTH(date_of_birth) - MONTH(NOW())) = ?  OR ABS(DAY(date_of_birth) - DAY(NOW())) = ?', [$filterObj->value, $filterObj->value, $filterObj->value]);
-                        } else if ($filterObj->columnName === 'ongoing_treatment_plan') {
-                            $query->whereHas('treatmentPlans', function(Builder $query) use ($filterObj) {
+                        } elseif ($filterObj->columnName === 'ongoing_treatment_plan') {
+                            $query->whereHas('treatmentPlans', function (Builder $query) use ($filterObj) {
                                 $query->where('name', 'like', '%' .  $filterObj->value . '%');
                             });
-                        } else if ($filterObj->columnName === 'secondary_therapist') {
-                            if ($filterObj->value == GlobalPatient::SECONDARY_TERAPIST){
+                        } elseif ($filterObj->columnName === 'secondary_therapist') {
+                            if ($filterObj->value == GlobalPatient::SECONDARY_TERAPIST) {
                                 $query->where(function ($query) use ($therapist_id) {
                                     $query->whereJsonContains('secondary_therapists', intval($therapist_id));
                                 });

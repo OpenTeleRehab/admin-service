@@ -38,7 +38,8 @@ class Questionnaire extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function children(){
+    public function children()
+    {
         return $this->hasMany(self::class, 'parent_id');
     }
 
