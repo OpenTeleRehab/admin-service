@@ -22,6 +22,11 @@ class OrganizationHelper
     public static function sendEmailNotification($email, $org_name, $status)
     {
         $organization = Organization::where('admin_email', $email)->first();
+
+        if ($organization->created_by === 0) {
+            return back();
+        }
+
         $user = User::find($organization->created_by);
 
         $payloads = [

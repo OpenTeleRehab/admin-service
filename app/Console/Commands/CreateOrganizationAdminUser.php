@@ -37,7 +37,7 @@ class CreateOrganizationAdminUser extends Command
         $type = User::ADMIN_GROUP_ORG_ADMIN;
 
         if (User::where('email', $email)->exists()) {
-            $this->info('This email is already exists');
+            $this->error('This email is already exists');
             return false;
         }
 
@@ -53,7 +53,7 @@ class CreateOrganizationAdminUser extends Command
         ]);
 
         if (!$user) {
-            $this->info('This user is unable to create on system');
+            $this->error('This user is unable to create on system');
             return false;
         }
 
@@ -61,12 +61,13 @@ class CreateOrganizationAdminUser extends Command
             self::createKeycloakUser($org_name, $email, $type);
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->info('This user is unable to create on keycloak');
+            $this->error('This user is unable to create on keycloak');
             return false;
         }
 
         DB::commit();
         $this->info('User has been created successfully');
+        return true;
     }
 
     /**
