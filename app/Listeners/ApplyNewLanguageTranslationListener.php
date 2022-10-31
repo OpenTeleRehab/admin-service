@@ -11,6 +11,7 @@ use App\Events\ApplyPrivacyPolicyAutoTranslationEvent;
 use App\Events\ApplyQuestionnaireAutoTranslationEvent;
 use App\Events\ApplyStaticPageAutoTranslationEvent;
 use App\Events\ApplyTermAndConditionAutoTranslationEvent;
+use App\Events\ApplyTranslationAutoTranslationEvent;
 use App\Models\Category;
 use App\Models\EducationMaterial;
 use App\Models\Exercise;
@@ -19,6 +20,7 @@ use App\Models\PrivacyPolicy;
 use App\Models\Questionnaire;
 use App\Models\StaticPage;
 use App\Models\TermAndCondition;
+use App\Models\Translation;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ApplyNewLanguageTranslationListener implements ShouldQueue
@@ -77,6 +79,11 @@ class ApplyNewLanguageTranslationListener implements ShouldQueue
         $termAndConditions = TermAndCondition::all();
         foreach ($termAndConditions as $termAndCondition) {
             event(new ApplyTermAndConditionAutoTranslationEvent($termAndCondition, $langCode));
+        }
+
+        $translations = Translation::all();
+        foreach ($translations as $translation) {
+            event(new ApplyTranslationAutoTranslationEvent($translation, $langCode));
         }
     }
 }
