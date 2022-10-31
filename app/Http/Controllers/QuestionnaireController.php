@@ -157,6 +157,7 @@ class QuestionnaireController extends Controller
                 $questionnaire->update([
                     'title' => $data->title,
                     'description' => $data->description,
+                    'share_to_hi_library' => false,
                     'therapist_id' => $therapistId,
                     'global' => env('APP_NAME') == 'hi',
                 ]);
@@ -164,6 +165,7 @@ class QuestionnaireController extends Controller
                 $questionnaire = Questionnaire::create([
                     'title' => $data->title,
                     'description' => $data->description,
+                    'share_to_hi_library' => $data->share_to_hi_library ?? false,
                     'therapist_id' => $therapistId,
                     'global' => env('APP_NAME') == 'hi',
                 ]);
@@ -428,7 +430,8 @@ class QuestionnaireController extends Controller
 
             $questionnaire->update([
                 'title' => $data->title,
-                'description' => $data->description
+                'description' => $data->description,
+                'share_to_hi_library' => $data->share_to_hi_library ?? false
             ]);
 
             // Attach category to exercise.
@@ -689,13 +692,10 @@ class QuestionnaireController extends Controller
      */
     public function getQuestionnairesForOpenLibrary()
     {
-        $categories = Category::where('hi_only', true)->get();
-        $query = Questionnaire::withTrashed()->where('global', true);
-        foreach ($categories as $category) {
-            $query->whereDoesntHave('categories', function ($query) use ($category) {
-                $query->where('categories.id', $category->id);
-            });
-        }
+        $query = Questionnaire::withTrashed()
+            ->where('global', true)
+            ->where('share_to_hi_library', true);
+
         return $query->get();
     }
 

@@ -120,6 +120,7 @@ class ExerciseController extends Controller
                 'reps' => $request->get('reps'),
                 'include_feedback' => $request->boolean('include_feedback'),
                 'get_pain_level' => $request->boolean('get_pain_level'),
+                'share_to_hi_library' => false,
                 'therapist_id' => $therapistId,
                 'global' => env('APP_NAME') == 'hi',
             ]);
@@ -138,6 +139,7 @@ class ExerciseController extends Controller
                 'reps' => $request->get('reps'),
                 'include_feedback' => $request->boolean('include_feedback'),
                 'get_pain_level' => $request->boolean('get_pain_level'),
+                'share_to_hi_library' => $request->boolean('share_to_hi_library'),
                 'therapist_id' => $therapistId,
                 'global' => env('APP_NAME') == 'hi',
             ]);
@@ -246,6 +248,7 @@ class ExerciseController extends Controller
             'reps' => $request->get('reps'),
             'include_feedback' => $request->boolean('include_feedback'),
             'get_pain_level' => $request->boolean('get_pain_level'),
+            'share_to_hi_library' => $request->boolean('share_to_hi_library'),
         ]);
 
         $additionalFields = json_decode($request->get('additional_fields'));
@@ -638,13 +641,10 @@ class ExerciseController extends Controller
      */
     public function getExercisesForOpenLibrary()
     {
-        $categories = Category::where('hi_only', true)->get();
-        $query = Exercise::withTrashed()->where('global', true);
-        foreach ($categories as $category) {
-            $query->whereDoesntHave('categories', function ($query) use ($category) {
-                $query->where('categories.id', $category->id);
-            });
-        }
+        $query = Exercise::withTrashed()
+            ->where('global', true)
+            ->where('share_to_hi_library', true);
+
         return $query->get();
     }
 

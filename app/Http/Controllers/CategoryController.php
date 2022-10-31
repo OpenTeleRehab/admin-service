@@ -131,7 +131,6 @@ class CategoryController extends Controller
             $parentCategory = Category::create([
                 'title' => $request->get('category'),
                 'type' => $request->get('type'),
-                'hi_only' => $request->get('hi_only'),
             ]);
 
             // Add automatic translation for Category.
@@ -145,7 +144,6 @@ class CategoryController extends Controller
                     'title' => $subCategoryTitle,
                     'type' => $request->get('type'),
                     'parent_id' => $parentCategory->id,
-                    'hi_only' => $request->get('hi_only'),
                 ]);
 
                 // Add automatic translation for Category.
@@ -212,7 +210,6 @@ class CategoryController extends Controller
     {
         $category->update([
             'title' => $request->get('category'),
-            'hi_only' => $request->get('hi_only'),
         ]);
 
         return ['success' => true, 'message' => 'success_message.category_update'];
@@ -268,7 +265,7 @@ class CategoryController extends Controller
      */
     public function getCategoriesForOpenLibrary()
     {
-        return Category::where('hi_only', false)->orWhereNull('hi_only')->orderBy('id', 'ASC')->get();
+        return Category::orderBy('id', 'ASC')->get();
     }
 
     /**

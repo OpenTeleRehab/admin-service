@@ -28,7 +28,7 @@ class Category extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'type', 'parent_id', 'hi_only', 'auto_translated'];
+    protected $fillable = ['title', 'type', 'parent_id', 'auto_translated'];
 
     /**
      * The attributes that are translatable
