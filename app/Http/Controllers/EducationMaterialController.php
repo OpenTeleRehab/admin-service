@@ -207,6 +207,7 @@ class EducationMaterialController extends Controller
             // Update form elements.
             $educationMaterial->update([
                 'title' => $request->get('title'),
+                'share_to_hi_library' => false,
                 'file_id' => $file->id,
                 'therapist_id' => $therapistId,
                 'global' => env('APP_NAME') == 'hi',
@@ -214,6 +215,7 @@ class EducationMaterialController extends Controller
         } elseif (!empty($file)) {
             $educationMaterial = EducationMaterial::create([
                 'title' => $request->get('title'),
+                'share_to_hi_library' => $request->boolean('share_to_hi_library'),
                 'file_id' => $file->id,
                 'therapist_id' => $therapistId,
                 'global' => env('APP_NAME') == 'hi',
@@ -398,11 +400,13 @@ class EducationMaterialController extends Controller
             $newFile = FileHelper::createFile($uploadedFile, File::EDUCATION_MATERIAL_PATH, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
             $educationMaterial->update([
                 'title' => $request->get('title'),
+                'share_to_hi_library' => $request->boolean('share_to_hi_library'),
                 'file_id' => $newFile->id,
             ]);
         } else {
             $educationMaterial->update([
                 'title' => $request->get('title'),
+                'share_to_hi_library' => $request->boolean('share_to_hi_library'),
             ]);
         }
 
@@ -581,13 +585,10 @@ class EducationMaterialController extends Controller
      */
     public function getEducationMaterialsForOpenLibrary()
     {
-        $categories = Category::where('hi_only', true)->get();
-        $query = EducationMaterial::withTrashed()->where('global', true);
-        foreach ($categories as $category) {
-            $query->whereDoesntHave('categories', function ($query) use ($category) {
-                $query->where('categories.id', $category->id);
-            });
-        }
+        $query = EducationMaterial::withTrashed()
+            ->where('global', true)
+            ->where('share_to_hi_library', true);
+
         return $query->get();
     }
 

@@ -139,7 +139,6 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData']);
-    Route::get('get-categories-for-open-library', [CategoryController::class, 'getCategoriesForOpenLibrary']);
     Route::apiResource('category', CategoryController::class);
 
     Route::post('term-condition/publish/{id}', [TermAndConditionController::class, 'publish']);

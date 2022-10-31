@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Translatable\HasTranslations;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
+use Spatie\Translatable\HasTranslations;
 
 class EducationMaterial extends Model
 {
@@ -18,7 +18,7 @@ class EducationMaterial extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'file_id', 'therapist_id', 'global', 'education_material_id', 'auto_translated', 'parent_id', 'suggested_lang'];
+    protected $fillable = ['title', 'file_id', 'therapist_id', 'global', 'education_material_id', 'auto_translated', 'parent_id', 'suggested_lang', 'share_to_hi_library'];
 
     /**
      * The attributes that are translatable

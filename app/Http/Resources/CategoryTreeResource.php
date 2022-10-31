@@ -18,7 +18,6 @@ class CategoryTreeResource extends JsonResource
             'value' => $this->id,
             'label' => $this->title,
             'children' => $this->children->count() ? CategoryTreeResource::collection($this->children) : null,
-            'hi_only' => $this->hi_only
         ];
     }
 }

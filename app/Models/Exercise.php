@@ -30,6 +30,7 @@ class Exercise extends Model
         'auto_translated',
         'parent_id',
         'suggested_lang',
+        'share_to_hi_library',
     ];
 
 

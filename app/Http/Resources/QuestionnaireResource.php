@@ -28,6 +28,7 @@ class QuestionnaireResource extends JsonResource
             'auto_translated' => $this->auto_translated,
             'parent_id' => $this->parent_id,
             'children' => QuestionnaireResource::collection($this->children),
+            'share_to_hi_library' => $this->share_to_hi_library,
             'suggested_lang' => $this->suggested_lang,
             'fallback' => [
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),

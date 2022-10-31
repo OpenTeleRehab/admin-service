@@ -20,7 +20,6 @@ class CategoryResource extends JsonResource
             'type' => $this->type,
             'parent' => $this->parent_id,
             'is_used' => $this->isUsed(),
-            'hi_only' => $this->hi_only,
             'auto_translated' => $this->auto_translated,
         ];
     }
