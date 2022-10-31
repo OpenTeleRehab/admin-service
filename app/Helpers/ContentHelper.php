@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Models\EducationMaterial;
 use App\Models\Exercise;
 use App\Models\FavoriteActivitiesTherapist;
+use App\Models\Forwarder;
 use App\Models\Questionnaire;
 use App\Models\SystemLimit;
 use Illuminate\Support\Facades\Http;
@@ -66,14 +67,17 @@ class ContentHelper
 
     /**
      * @param integer $therapistId
+     * @param string $country
      *
      * @return integer
      */
-    public static function deleteTherapistContents($therapistId)
+    public static function deleteTherapistContents($therapistId, $country)
     {
         $exerciseIds = [];
         $materialIds = [];
         $questionnaireIds = [];
+
+        $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
 
         $ownExercises = Exercise::where('therapist_id', $therapistId)->get();
         $ownMaterials = EducationMaterial::where('therapist_id', $therapistId)->get();
@@ -92,19 +96,28 @@ class ContentHelper
         }
 
         if ($exerciseIds) {
-            Http::post(env('PATIENT_SERVICE_URL') . '/activities/delete/by-ids', [
+            Http::withHeaders([
+                'Authorization' => 'Bearer ' . $access_token,
+                'country' => $country
+            ])->post(env('PATIENT_SERVICE_URL') . '/patient-activities/delete/by-ids', [
                 'activity_ids' => $exerciseIds,
                 'type' => 'exercise'
             ]);
         }
         if ($materialIds) {
-            Http::post(env('PATIENT_SERVICE_URL') . '/activities/delete/by-ids', [
+            Http::withHeaders([
+                'Authorization' => 'Bearer ' . $access_token,
+                'country' => $country
+            ])->post(env('PATIENT_SERVICE_URL') . '/patient-activities/delete/by-ids', [
                 'activity_ids' => $materialIds,
                 'type' => 'material'
             ]);
         }
         if ($questionnaireIds) {
-            Http::post(env('PATIENT_SERVICE_URL') . '/activities/delete/by-ids', [
+            Http::withHeaders([
+                'Authorization' => 'Bearer ' . $access_token,
+                'country' => $country
+            ])->post(env('PATIENT_SERVICE_URL') . '/patient-activities/delete/by-ids', [
                 'activity_ids' => $questionnaireIds,
                 'type' => 'questionnaire'
             ]);

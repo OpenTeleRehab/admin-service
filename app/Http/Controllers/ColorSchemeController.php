@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 class ColorSchemeController extends Controller
 {
+    /**
+     * @return array
+     */
     public function index()
     {
         $data = ColorScheme::first();
@@ -24,6 +27,11 @@ class ColorSchemeController extends Controller
         return new ColorSchemeResource($colorScheme);
     }
 
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
     public function store(Request $request)
     {
         $primaryColor = $request->get('primary_color');

@@ -165,6 +165,7 @@ class EducationMaterialController extends Controller
     public function store(Request $request)
     {
         $therapistId = $request->get('therapist_id');
+
         if (!Auth::user() && !$therapistId) {
             return ['success' => false, 'message' => 'error_message.education_material_create'];
         }
@@ -252,7 +253,7 @@ class EducationMaterialController extends Controller
 
         $educationMaterial = EducationMaterial::create([
             'title' => $request->get('title'),
-            'file_id' =>  $request->get('file_id'),
+            'file_id' => $request->get('file_id'),
             'therapist_id' => $therapistId,
             'parent_id' => $foundEducationMaterial->id,
             'global' => env('APP_NAME') == 'hi',
@@ -284,7 +285,7 @@ class EducationMaterialController extends Controller
             'auto_translated' => false,
         ]);
 
-        // Remove submitted translation remaining
+        // Remove submitted translation remaining.
         EducationMaterial::where('suggested_lang', App::getLocale())
             ->where('parent_id', $educationMaterial->parent_id)
             ->delete();

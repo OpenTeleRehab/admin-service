@@ -6,6 +6,7 @@ use App\Helpers\KeycloakHelper;
 use App\Http\Resources\ClinicResource;
 use App\Models\Clinic;
 use App\Models\Country;
+use App\Models\Forwarder;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -321,12 +322,14 @@ class ClinicController extends Controller
             }
 
             // Remove therapists of clinic.
-            Http::post(env('THERAPIST_SERVICE_URL') . '/therapist/delete/by-clinic', [
-                'clinic_id' => $clinic->id,
-            ]);
+            Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+                ->post(env('THERAPIST_SERVICE_URL') . '/therapist/delete/by-clinic', [
+                    'clinic_id' => $clinic->id,
+                ]);
 
             // Remove patients of clinic.
             Http::withHeaders([
+                'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE),
                 'country' => $country->iso_code,
             ])->post(env('PATIENT_SERVICE_URL') . '/patient/delete/by-clinic', [
                 'clinic_id' => $clinic->id,
@@ -341,7 +344,7 @@ class ClinicController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/clinic/therapist-limit/count/by-contry",
+     *     path="/api/clinic/therapist-limit/count/by-country",
      *     tags={"Clinic"},
      *     summary="Total therapist limit by country",
      *     operationId="totalTherapistLimit",
@@ -424,9 +427,10 @@ class ClinicController extends Controller
         $clinicId = $request->get('clinic_id');
 
         $therapistData = [];
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
-            'clinic_id' => [$clinicId]
-        ]);
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
+                'clinic_id' => [$clinicId]
+            ]);
 
         if (!empty($response) && $response->successful()) {
             $therapistData = $response->json();

@@ -120,11 +120,13 @@ class QuestionnaireController extends Controller
     public function store(Request $request)
     {
         $therapistId = $request->get('therapist_id');
+
         if (!Auth::user() && !$therapistId) {
             return ['success' => false, 'message' => 'error_message.questionnaire_create'];
         }
 
         $contentLimit = ContentHelper::getContentLimitLibray(SystemLimit::THERAPIST_CONTENT_LIMIT);
+
         if ($therapistId) {
             $ownContentCount = ExerciseController::countTherapistLibrary($request);
 
@@ -134,6 +136,7 @@ class QuestionnaireController extends Controller
         }
 
         DB::beginTransaction();
+
         try {
             $files = $request->allFiles();
             $data = json_decode($request->get('data'));
@@ -173,10 +176,13 @@ class QuestionnaireController extends Controller
             }
 
             $questions = $data->questions;
+
             foreach ($questions as $index => $question) {
+                $file_index_key = array_keys($files);
                 $file = null;
-                if (array_key_exists($index, $files)) {
-                    $file = FileHelper::createFile($files[$index], File::QUESTIONNAIRE_PATH);
+
+                if (array_key_exists($file_index_key[$index], $files)) {
+                    $file = FileHelper::createFile($files[$file_index_key[$index]], File::QUESTIONNAIRE_PATH);
                 } elseif (isset($question->file) && $question->file->id) {
                     // CLone files.
                     $originalFile = File::findOrFail($question->file->id);
@@ -320,20 +326,20 @@ class QuestionnaireController extends Controller
                             }
                         }
 
-                        // Remove submitted translation remaining
+                        // Remove submitted translation remaining.
                         Answer::where('suggested_lang', App::getLocale())
                             ->where('parent_id', $answer->parent_id)
                             ->delete();
                     }
                 }
 
-                // Remove submitted translation remaining
+                // Remove submitted translation remaining.
                 Question::where('suggested_lang', App::getLocale())
                     ->where('parent_id', $question->parent_id)
                     ->delete();
             }
 
-            // Remove submitted translation remaining
+            // Remove submitted translation remaining.
             Questionnaire::where('suggested_lang', App::getLocale())
                 ->where('parent_id', $questionnaire->parent_id)
                 ->delete();
@@ -419,6 +425,7 @@ class QuestionnaireController extends Controller
             $files = $request->allFiles();
             $data = json_decode($request->get('data'));
             $noChangedFiles = $request->get('no_changed_files', []);
+
             $questionnaire->update([
                 'title' => $data->title,
                 'description' => $data->description
@@ -449,13 +456,17 @@ class QuestionnaireController extends Controller
                     ]
                 );
 
-                if (!in_array($questionObj->id, $noChangedFiles)) {
+                if (!in_array($questionObj->id, (array) $noChangedFiles)) {
                     $oldFile = File::find($questionObj->file_id);
+
                     if ($oldFile) {
                         $oldFile->delete();
                     }
-                    if (array_key_exists($index, $files)) {
-                        $file = FileHelper::createFile($files[$index], File::QUESTIONNAIRE_PATH);
+
+                    $file_index_key = array_keys($files);
+
+                    if ($files && array_key_exists($file_index_key[$index], $files)) {
+                        $file = FileHelper::createFile($files[$file_index_key[$index]], File::QUESTIONNAIRE_PATH);
                         $questionObj->update(['file_id' => $file ? $file->id : null]);
                     }
                 }
@@ -689,7 +700,9 @@ class QuestionnaireController extends Controller
     }
 
     /**
-     * @return \App\Models\QuestionnaireCategory[]|\Illuminate\Database\Eloquent\Collection
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
      */
     public function getQuestionnaireCategoriesForOpenLibrary(Request $request)
     {

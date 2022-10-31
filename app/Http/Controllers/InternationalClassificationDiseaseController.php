@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\InternationalClassificationDiseaseResource;
+use App\Models\Forwarder;
 use App\Models\InternationalClassificationDisease;
 use App\Models\Language;
 use Illuminate\Http\Request;
@@ -218,7 +219,8 @@ class InternationalClassificationDiseaseController extends Controller
     public function destroy(InternationalClassificationDisease $disease)
     {
         $isUsed = false;
-        $response = Http::get(env('PATIENT_SERVICE_URL') . '/treatment-plan/get-used-disease?disease_id=' . $disease->id);
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE))
+            ->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/get-used-disease?disease_id=' . $disease->id);
 
         if (!empty($response) && $response->successful()) {
             $isUsed = $response->json();

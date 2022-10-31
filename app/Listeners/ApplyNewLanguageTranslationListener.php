@@ -28,7 +28,7 @@ class ApplyNewLanguageTranslationListener implements ShouldQueue
     /**
      * The number of seconds the job can run before timing out.
      *
-     * @var int
+     * @var integer
      */
     public $timeout = 3600;
 

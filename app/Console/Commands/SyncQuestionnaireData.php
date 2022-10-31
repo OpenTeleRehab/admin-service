@@ -35,9 +35,9 @@ class SyncQuestionnaireData extends Command
     public function handle()
     {
         if (env('APP_NAME') != 'hi') {
-
             // Sync questionnaire data.
-            $globalQuestionnaires = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-questionnaires'));
+            $access_token = Forwarder::getAccessToken(Forwarder::GADMIN_SERVICE);
+            $globalQuestionnaires = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-questionnaires'));
             $questionnaires = Questionnaire::withTrashed()->where('global', true)->get();
             // Remove data before import.
             if ($questionnaires) {
@@ -70,10 +70,10 @@ class SyncQuestionnaireData extends Command
                     ]
                 );
                 $newQuestionnaire = Questionnaire::withTrashed()->where('questionnaire_id', $globalQuestionnaire->id)->where('global', true)->first();
-                $questions = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-questionnaire-questions', ['questionnaire_id' => $globalQuestionnaire->id]));
+                $questions = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-questionnaire-questions', ['questionnaire_id' => $globalQuestionnaire->id]));
                 if (!empty($questions)) {
                     foreach ($questions as $question) {
-                        $file = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-question-file', ['question_id' => $question->id]));
+                        $file = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-question-file', ['question_id' => $question->id]));
                         $record = null;
                         if (!empty($file)) {
                             $file_url = env('GLOBAL_ADMIN_SERVICE_URL') . '/file/' . $file->id;
@@ -110,7 +110,7 @@ class SyncQuestionnaireData extends Command
                         );
                         // Add answers.
                         $newQuestion = Question::where('questionnaire_id', $newQuestionnaire->id)->where('question_id', $question->id)->first();
-                        $answers = json_decode(Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-question-answers', ['question_id' => $question->id]));
+                        $answers = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-question-answers', ['question_id' => $question->id]));
                         if (!empty($answers)) {
                             foreach ($answers as $answer) {
                                 DB::table('answers')->updateOrInsert(

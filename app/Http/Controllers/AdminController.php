@@ -460,8 +460,6 @@ class AdminController extends Controller
 
     /**
      * @param \App\Models\User $user
-     * @param string $password
-     * @param bool $isTemporaryPassword
      * @param string $userGroup
      *
      * @return false|mixed|string

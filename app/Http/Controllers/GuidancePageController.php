@@ -225,7 +225,7 @@ class GuidancePageController extends Controller
      *     },
      * )
      *
-     * @param \App\Models\Guidance $guidance
+     * @param \App\Models\Guidance $guidancePage
      *
      * @return array
      * @throws \Exception

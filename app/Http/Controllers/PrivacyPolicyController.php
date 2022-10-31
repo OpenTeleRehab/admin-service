@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\ApplyPrivacyPolicyAutoTranslationEvent;
 use App\Http\Resources\PrivacyPolicyResource;
 use App\Http\Resources\TermAndConditionResource;
+use App\Models\Forwarder;
 use App\Models\PrivacyPolicy;
 use App\Models\TermAndCondition;
 use Carbon\Carbon;
@@ -250,7 +251,8 @@ class PrivacyPolicyController extends Controller
             ]);
 
         // Add required action to all users.
-        $response = Http::get(env('THERAPIST_SERVICE_URL') . '/term-condition/send-re-consent');
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/term-condition/send-re-consent');
 
         return ['success' => true, 'message' => 'success_message.privacy_policy_publish'];
     }

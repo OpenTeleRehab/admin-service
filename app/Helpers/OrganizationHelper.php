@@ -14,8 +14,7 @@ class OrganizationHelper
     /**
      * @param string $email
      * @param string $org_name
-     * @param string $subject
-     * @param string $message
+     * @param string $status
      *
      * @return \Illuminate\Http\RedirectResponse
      */
