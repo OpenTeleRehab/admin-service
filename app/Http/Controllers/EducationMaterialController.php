@@ -165,7 +165,6 @@ class EducationMaterialController extends Controller
     public function store(Request $request)
     {
         $therapistId = $request->get('therapist_id');
-
         if (!Auth::user() && !$therapistId) {
             return ['success' => false, 'message' => 'error_message.education_material_create'];
         }

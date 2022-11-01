@@ -14,6 +14,8 @@ use Spatie\PdfToImage\Pdf;
  */
 class FileHelper
 {
+    const DEFAULT_EXT = ['image', 'audio', 'video', 'pdf'];
+
     /**
      * @param \Illuminate\Http\UploadedFile $file
      * @param string $uploadPath
@@ -23,13 +25,19 @@ class FileHelper
      */
     public static function createFile(UploadedFile $file, $uploadPath, $thumbnailPath = null)
     {
+        if (!self::validateMimeType($file)) {
+            return false;
+        };
+
         $path = $file->store($uploadPath);
+
         $record = File::create([
             'filename' => $file->getClientOriginalName(),
             'path' => $path,
             'content_type' => $file->getMimeType(),
             'size' => $file->getSize(),
         ]);
+
         if ($thumbnailPath && $file->getMimeType() === 'video/mp4') {
             $thumbnailFilePath = self::generateVideoThumbnail($record->id, $path, $thumbnailPath);
 
@@ -115,5 +123,21 @@ class FileHelper
         $pdf->saveImage($thumbnailPath . '/' . $thumbnailImage);
 
         return $thumbnailFilePath . '/' . $thumbnailImage;
+    }
+
+    /**
+     * @param \Illuminate\Http\UploadedFile $file
+     *
+     * @return boolean
+     */
+    private static function validateMimeType(UploadedFile $file)
+    {
+        foreach (self::DEFAULT_EXT as $value) {
+            if (str_contains($file->getMimeType(), $value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
