@@ -10,7 +10,6 @@ use App\Helpers\FileHelper;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\ExerciseResource;
 use App\Models\AdditionalField;
-use App\Models\Category;
 use App\Models\Exercise;
 use App\Models\ExerciseCategory;
 use App\Models\File;
@@ -608,7 +607,7 @@ class ExerciseController extends Controller
         foreach ($requestFiles as $index => $uploadedFile) {
             $file = FileHelper::createFile($uploadedFile, File::EXERCISE_PATH, File::EXERCISE_THUMBNAIL_PATH);
 
-            if ($file) {
+            if ($file && $file->id) {
                 $exercise->files()->attach($file->id, ['order' => (int) $index]);
             }
         }
