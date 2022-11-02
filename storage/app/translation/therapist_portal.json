@@ -453,6 +453,7 @@
     "placeholder.type.message": "Type message",
     "placeholder.disabled.chat": "You can't send message or make a call right now because this patient is not active.",
     "common.error_message_invalid_file_size": "Please select a file less than or equal to ${size} MB",
+    "common.error_message_invalid_file_type": "Please try to upload the correct file format",
     "common.toggle_fullscreen": "Toggle fullscreen",
     "common.download": "Download",
     "common.zoom": "Zoom",
