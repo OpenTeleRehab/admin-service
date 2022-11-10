@@ -14,7 +14,7 @@ class Category extends Model
 
     const TYPE_EXERCISE = 'exercise';
     const TYPE_EDUCATION_MATERIAL = 'education';
-    const TTYPE_QUESTIONNAIRE = 'questionnaire';
+    const TYPE_QUESTIONNAIRE = 'questionnaire';
 
     /**
      * Indicates if the model should be timestamped.
@@ -113,7 +113,7 @@ class Category extends Model
             $isUsed = $this->educationMaterials->count() > 0;
         }
 
-        if ($this->type === self::TTYPE_QUESTIONNAIRE) {
+        if ($this->type === self::TYPE_QUESTIONNAIRE) {
             $isUsed = $this->questionnaires->count() > 0;
         }
 
