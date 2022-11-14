@@ -74,8 +74,6 @@ Route::group(['middleware' => 'auth:api'], function () {
     // Country
     Route::apiResource('country', CountryController::class);
 
-    Route::get('country/list/by-clinic', [CountryController::class, 'getCountryByClinicId']);
-
     // Clinic
     Route::get('clinic/therapist-limit/count/by-country', [ClinicController::class, 'countTherapistLimitByCountry']);
     Route::get('clinic/therapist/count/by-clinic', [ClinicController::class, 'countTherapistByClinic']);
@@ -186,8 +184,8 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::get('patient/list/by-therapist-ids', [ForwarderController::class, 'index']);
         Route::get('patient/list/by-therapist-id', [ForwarderController::class, 'index']);
         Route::get('patient/list/for-therapist-remove', [ForwarderController::class, 'index']);
-        Route::get('treatment-plan', [ForwarderController::class, 'index']);
-        Route::get('treatment-plan/get-treatment-plan-detail', [ForwarderController::class, 'index']);
+        Route::get('patient-treatment-plan', [ForwarderController::class, 'index']);
+        Route::get('patient-treatment-plan/get-treatment-plan-detail', [ForwarderController::class, 'index']);
         Route::post('patient/transfer-to-therapist/{id}', [ForwarderController::class, 'store']);
     });
 });
@@ -205,6 +203,8 @@ Route::get('user-term-condition', [TermAndConditionController::class, 'getUserTe
 Route::get('user-privacy-policy', [PrivacyPolicyController::class, 'getUserPrivacyPolicy']);
 Route::get('update-organization-status', [OrganizationController::class, 'updateOrganizationStatus']);
 Route::get('get-ongoing-organization', [OrganizationController::class, 'getOngoingOrganization']);
+Route::get('country', [CountryController::class, 'index']);
+Route::get('country/list/by-clinic', [CountryController::class, 'getCountryByClinicId']);
 Route::get('country/list/defined-country', [CountryController::class, 'getDefinedCountries']);
 Route::get('term-condition', [TermAndConditionController::class, 'index']);
 Route::get('privacy-policy', [PrivacyPolicyController::class, 'index']);
