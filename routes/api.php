@@ -40,6 +40,10 @@ use App\Http\Controllers\ForwarderController;
 |
 */
 
+// Override public api resource
+Route::get('term-condition/{id}', [TermAndConditionController::class, 'show']);
+Route::get('privacy-policy/{id}', [PrivacyPolicyController::class, 'show']);
+
 Route::group(['middleware' => 'auth:api'], function () {
     // Admin
     Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus']);
