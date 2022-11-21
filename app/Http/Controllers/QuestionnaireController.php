@@ -183,12 +183,14 @@ class QuestionnaireController extends Controller
                 $file_index_key = array_keys($files);
                 $file = null;
 
-                if (array_key_exists($file_index_key[$index], $files)) {
-                    $file = FileHelper::createFile($files[$file_index_key[$index]], File::QUESTIONNAIRE_PATH);
-                } elseif (isset($question->file) && $question->file->id) {
-                    // CLone files.
-                    $originalFile = File::findOrFail($question->file->id);
-                    $file = FileHelper::replicateFile($originalFile);
+                if ($files) {
+                    if (array_key_exists($file_index_key[$index], $files)) {
+                        $file = FileHelper::createFile($files[$file_index_key[$index]], File::QUESTIONNAIRE_PATH);
+                    } elseif (isset($question->file) && $question->file->id) {
+                        // CLone files.
+                        $originalFile = File::findOrFail($question->file->id);
+                        $file = FileHelper::replicateFile($originalFile);
+                    }
                 }
 
                 $newQuestion = Question::create([
