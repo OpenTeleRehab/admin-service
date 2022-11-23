@@ -102,6 +102,7 @@
     "common.guidance.next": "Next",
     "common.guidance.prev": "Previous",
     "common.guidance.hide": "Doesn't show guidance",
+    "common.suggest_translation": "Suggest Translation",
     "toast_title.translate_exercise": "Translate Exercise",
     "success_message.exercise_suggest": "Translation suggested successfully",
     "error_message.exercise_suggest": "Translation cannot be suggested",
