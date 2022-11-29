@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\ApplyAssistiveTechnologyAutoTranslationEvent;
 use App\Events\ApplyCategoryAutoTranslationEvent;
 use App\Events\ApplyExerciseAutoTranslationEvent;
 use App\Events\ApplyGuidanceAutoTranslationEvent;
@@ -12,6 +13,7 @@ use App\Events\ApplyQuestionnaireAutoTranslationEvent;
 use App\Events\ApplyStaticPageAutoTranslationEvent;
 use App\Events\ApplyTermAndConditionAutoTranslationEvent;
 use App\Events\ApplyTranslationAutoTranslationEvent;
+use App\Listeners\ApplyAssistiveTechnologyAutoTranslationListener;
 use App\Listeners\ApplyCategoryAutoTranslationListener;
 use App\Listeners\ApplyExerciseAutoTranslationListener;
 use App\Listeners\ApplyGuidanceAutoTranslationListener;
@@ -66,6 +68,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         ApplyTranslationAutoTranslationEvent::class => [
             ApplyTranslationAutoTranslationListener::class,
+        ],
+        ApplyAssistiveTechnologyAutoTranslationEvent::class => [
+            ApplyAssistiveTechnologyAutoTranslationListener::class,
         ],
     ];
 

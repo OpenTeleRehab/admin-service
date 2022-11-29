@@ -28,6 +28,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\PartnerLogoController;
 use App\Http\Controllers\TranslatorController;
 use App\Http\Controllers\ForwarderController;
+use App\Http\Controllers\AssistiveTechnologyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +55,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('translator/updateStatus/{user}', [TranslatorController::class, 'updateStatus']);
     Route::post('translator/resend-email/{user}', [TranslatorController::class, 'resendEmailToUser']);
     Route::apiResource('translator', TranslatorController::class);
+
+    // Assistive Technology
+    Route::apiResource('assistive-technologies', AssistiveTechnologyController::class);
 
     // Profession
     Route::apiResource('profession', ProfessionController::class);
