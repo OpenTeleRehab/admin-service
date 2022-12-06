@@ -14,6 +14,7 @@ class File extends Model
     const EXERCISE_THUMBNAIL_PATH = self::EXERCISE_PATH . '/thumbnail';
     const EDUCATION_MATERIAL_THUMBNAIL_PATH = self::EDUCATION_MATERIAL_PATH . '/thumbnail';
     const STATIC_PAGE_PATH = 'static_page';
+    const ASSISTIVE_TECHNOLOGY_PATH = 'assistive_technology';
     const FILE_PATH = 'file';
 
     /**
