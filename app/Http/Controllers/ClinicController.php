@@ -329,7 +329,7 @@ class ClinicController extends Controller
 
             // Remove patients of clinic.
             Http::withHeaders([
-                'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE),
+                'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code),
                 'country' => $country->iso_code,
             ])->post(env('PATIENT_SERVICE_URL') . '/patient/delete/by-clinic', [
                 'clinic_id' => $clinic->id,
