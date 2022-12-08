@@ -133,8 +133,8 @@ class ChartController extends Controller
         $therapistData = [];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE),
-            'country' => $country ? $country->iso_code : null
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code),
+            'country' => $country->iso_code
         ])->get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-country-admin', [
             'country_id' => [$country_id]
         ]);
@@ -199,12 +199,13 @@ class ChartController extends Controller
         $clinicId = $request->get('clinic_id');
         $clinic = Clinic::find($clinicId);
         $country = Country::find($clinic->country_id);
+
         $patientData = [];
         $therapistData = [];
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE),
-            'country' => $country ? strtoupper($country->iso_code) : null
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code),
+            'country' => $country->iso_code
         ])->get(env('PATIENT_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
             'clinic_id' => [$clinicId]
         ]);
