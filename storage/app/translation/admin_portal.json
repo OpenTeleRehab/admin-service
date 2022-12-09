@@ -148,6 +148,7 @@
     "therapist": "Therapists",
     "profile.change_password": "Edit password",
     "setting": "Settings",
+    "assistive_technology": "Assistive Technology",
     "setting.countries": "Countries",
     "setting.translations": "Translations",
     "setting.term_and_conditions": "Term & Conditions",
@@ -314,6 +315,7 @@
     "placeholder.password": "Enter password",
     "placeholder.assistive_technology.code": "Enter assistive technology code",
     "placeholder.assistive_technology.name": "Enter assistive technology name",
+    "placeholder.date": "Please select date",
     "error.email": "Please fill in the email",
     "error.first_name": "Please fill first name",
     "error.last_name": "Please fill last name",
@@ -744,5 +746,11 @@
     "common.primary_text_color": "Primary text color",
     "common.secondary_text_color": "Secondary text color",
     "success_message.color_scheme.save": "Color scheme saved successfully",
-    "toast_title.add_color_scheme": "Color scheme"
+    "toast_title.add_color_scheme": "Color scheme",
+    "assistive_patient.list.title": "Assistive Technology List",
+    "assistive_patient.provision_date": "Date of provision",
+    "assistive_patient.total_patient": "Total Patient: ${number}",
+    "assistive_patient.placeholder.from_date": "From Date",
+    "assistive_patient.placeholder.to_date": "To Date",
+    "assistive_patient.assistive_technology": "Assistive Technology"
 }

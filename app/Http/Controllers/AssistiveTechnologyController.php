@@ -8,7 +8,6 @@ use App\Http\Resources\AssistiveTechnologyResource;
 use App\Models\AssistiveTechnology;
 use App\Models\File;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class AssistiveTechnologyController extends Controller
 {
