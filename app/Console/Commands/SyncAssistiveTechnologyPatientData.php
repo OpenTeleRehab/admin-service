@@ -42,12 +42,12 @@ class SyncAssistiveTechnologyPatientData extends Command
                 foreach ($patientData as $patient) {
                     GlobalAssistiveTechnologyPatient::updateOrCreate(
                         [
-                            'patient_id' => $patient['id'],
+                            'patient_id' => $patient['patient_id'],
                             'country_id' => $patient['country_id'],
                             'assistive_technology_id' => $patient['assistive_technology_id'],
                         ],
                         [
-                            'patient_id' => $patient['id'],
+                            'patient_id' => $patient['patient_id'],
                             'gender' => $patient['gender'],
                             'date_of_birth' => $patient['date_of_birth'],
                             'identity' => $patient['identity'],
@@ -73,12 +73,12 @@ class SyncAssistiveTechnologyPatientData extends Command
             foreach ($patientGlobal as $patient) {
                 GlobalAssistiveTechnologyPatient::updateOrCreate(
                     [
-                        'patient_id' => $patient['id'],
+                        'patient_id' => $patient['patient_id'],
                         'country_id' => $patient['country_id'],
                         'assistive_technology_id' => $patient['assistive_technology_id'],
                     ],
                     [
-                        'patient_id' => $patient['id'],
+                        'patient_id' => $patient['patient_id'],
                         'gender' => $patient['gender'],
                         'date_of_birth' => $patient['date_of_birth'],
                         'identity' => $patient['identity'],
