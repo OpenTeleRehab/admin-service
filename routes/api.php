@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GlobalAssistiveTechnologyPatientController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\CountryController;
@@ -196,6 +197,9 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::get('patient-treatment-plan/get-treatment-plan-detail', [ForwarderController::class, 'index']);
         Route::post('patient/transfer-to-therapist/{id}', [ForwarderController::class, 'store']);
     });
+
+    // Global Assistive Technology Patients
+    Route::apiResource('global-at-patients', GlobalAssistiveTechnologyPatientController::class);
 });
 
 // Public Access
