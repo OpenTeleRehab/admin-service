@@ -20,6 +20,8 @@ class AssistiveTechnologyResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'file' => new FileResource($this->file),
+            'isUsed' => $this->isUsed(),
+            'deleted_at' => $this->deleted_at,
         ];
     }
 }

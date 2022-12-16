@@ -34,6 +34,14 @@ class GlobalPatientController extends Controller
                 $query->where('enabled', boolval($data['enabled']));
             }
 
+            if (isset($data['country'])) {
+                $query->where('country_id', $data['country']);
+            }
+
+            if (isset($data['clinic'])) {
+                $query->where('clinic_id', $data['clinic']);
+            }
+
             if (isset($data['search_value'])) {
                 if ($request->get('type') === GlobalPatient::ADMIN_GROUP_ORG_ADMIN) {
                     $query->where(function ($query) use ($data) {

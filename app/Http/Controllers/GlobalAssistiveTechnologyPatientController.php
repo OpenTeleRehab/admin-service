@@ -23,10 +23,12 @@ class GlobalAssistiveTechnologyPatientController extends Controller
                 ANY_VALUE(gat.identity) as identity,
                 ANY_VALUE(gat.date_of_birth) as date_of_birth,
                 ANY_VALUE(gat.provision_date) as provision_date,
+                ANY_VALUE(gat.country_id) as country_id,
+                ANY_VALUE(gat.clinic_id) as clinic_id,
                 group_concat(gat.assistive_technology_id) as assistive_technology_id
             '))
             ->leftJoin('assistive_technologies', 'gat.assistive_technology_id', '=', 'assistive_technologies.id')
-            ->where('deleted_at', null);
+            ->where('gat.deleted_at', null);
 
         if (isset($data['country'])) {
             $query->where('country_id', $data['country']);
@@ -56,14 +58,23 @@ class GlobalAssistiveTechnologyPatientController extends Controller
                 foreach ($filters as $filter) {
                     $filterObj = json_decode($filter);
                     if ($filterObj->columnName === 'provision_date') {
-                        $provisionDate = date_create_from_format('d/m/Y', $filterObj->value);
-                        $query->where('provision_date', date_format($provisionDate, config('settings.defaultTimestampFormat')));
+                        $dates = explode(' - ', $filterObj->value);
+                        $startDate = date_create_from_format('d/m/Y', $dates[0]);
+                        $endDate = date_create_from_format('d/m/Y', $dates[1]);
+                        $startDate->format('Y-m-d');
+                        $endDate->format('Y-m-d');
+                        $query->whereDate($filterObj->columnName, '>=', $startDate)
+                            ->whereDate($filterObj->columnName, '<=', $endDate);
                     } elseif ($filterObj->columnName === 'age') {
                         $query->whereRaw('YEAR(NOW()) - YEAR(date_of_birth) = ? OR ABS(MONTH(date_of_birth) - MONTH(NOW())) = ?  OR ABS(DAY(date_of_birth) - DAY(NOW())) = ?', [$filterObj->value, $filterObj->value, $filterObj->value]);
                     } elseif ($filterObj->columnName === 'gender') {
-                        $query->where('gender', $filterObj->value);
+                        $query->where($filterObj->columnName, $filterObj->value);
                     } elseif ($filterObj->columnName === 'assistive_technology') {
-                        $query->where('assistive_technology_id', $filterObj->value);
+                        $query->whereIn('assistive_technology_id', $filterObj->value);
+                    } elseif ($filterObj->columnName === 'country') {
+                        $query->where('country_id', $filterObj->value);
+                    } elseif ($filterObj->columnName === 'clinic') {
+                        $query->where('clinic_id', $filterObj->value);
                     } else {
                         $query->where($filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
                     }

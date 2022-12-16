@@ -272,6 +272,7 @@
     "assistive_technology.description": "Description",
     "assistive_technology.upload_file": "Upload file",
     "assistive_technology.delete_confirmation_title": "Assistive technology deletion",
+    "assistive_technology.delete_used_assistive_confirmation_message": "This assistive technology have been used. Are you sure want to delete this record?",
     "assistive_technology.upload_file.placeholder": "Browse a file",
     "success_message.assistive_technology_add": "Assistive technology saved successfully",
     "success_message.assistive_technology_update": "Assistive technology updated successfully",
@@ -752,5 +753,6 @@
     "assistive_patient.total_patient": "Total Patient: ${number}",
     "assistive_patient.placeholder.from_date": "From Date",
     "assistive_patient.placeholder.to_date": "To Date",
-    "assistive_patient.assistive_technology": "Assistive Technology"
+    "assistive_patient.assistive_technology": "Assistive Technology",
+    "assistive_patient.assistive_technology.placeholder" : "Select assistive technology"
 }

@@ -163,6 +163,7 @@
     "appointment.invitation_appointment_with": "Invitation: Appointment with",
     "appointment.updated_appointment_with": "Updated: Appointment with",
     "appointment.deleted_appointment_with": "Deleted: Appointment with",
+    "appointment.at_follow_up": "${name} - AT follow-up",
     "term.of.service": "Terms of Services",
     "term.of.service.agree": "I agree to Terms of Service.",
     "term.of.service.detail": "Terms of Services Detail",

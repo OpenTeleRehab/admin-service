@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Http;
 use Spatie\Translatable\HasTranslations;
 
 class AssistiveTechnology extends Model
 {
     use HasTranslations;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -54,5 +57,20 @@ class AssistiveTechnology extends Model
     public function file()
     {
         return $this->belongsTo(File::class);
+    }
+
+    /**
+     * @return array|false|mixed
+     */
+    public function isUsed()
+    {
+        $isUsed = false;
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE))->get(env('PATIENT_SERVICE_URL') . '/assistive-technologies/get-used-at?assistive_technology_id=' . $this->id);
+
+        if (!empty($response) && $response->successful()) {
+            $isUsed = $response->json();
+        }
+
+        return $isUsed;
     }
 }
