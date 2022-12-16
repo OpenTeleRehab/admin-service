@@ -28,7 +28,7 @@ class AddParentIdAndSuggestedLangToQuestionnairesTable extends Migration
     {
         Schema::table('questionnaires', function (Blueprint $table) {
             $table->dropColumn('parent_id');
-            $table->dropColumn('suggested_lange');
+            $table->dropColumn('suggested_lang');
         });
     }
 }

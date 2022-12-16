@@ -26,7 +26,7 @@ class AlterTableGuidanceChangeTitle extends Migration
     public function down()
     {
         Schema::table('guidances', function (Blueprint $table) {
-            $table->string('title');
+            $table->string('title')->change();
         });
     }
 }
