@@ -290,5 +290,8 @@
     "activity.completed.button_title": "Got that",
     "activity.completed.kid_title" : "Yay! You have completed the task!",
     "activity.completed.kid_description": "Just a few more tasks, you will earn badges as the reward.",
-    "activity.completed.kid_button_title": "Got that"
+    "activity.completed.kid_button_title": "Got that",
+    "app.update.title": "New version is available",
+    "app.update.message": "A new version is available in store now. Do you want to update?",
+    "app.update.message.force": "A new version is available in store now. You have to update the app to continue."
 }
