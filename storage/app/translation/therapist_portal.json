@@ -465,6 +465,8 @@
     "patient.assistive_technology.confirm_content": "This item has already been added to the patient. Do you still want to add it anyway?",
     "patient.assistive_technology.delete_confirm_title": "Assistive technology deletion",
     "patient.assistive_technology.delete_confirm_content": "Are you sure want to delete this record?",
+    "patient.message": "Message",
+    "patient.message.save.draft": "Save as draft",
     "common.profession": "Profession",
     "placeholder.profession": "Please select a profession",
     "treatment_plan.save_as_preset_title": "Save Treatment As Preset",
