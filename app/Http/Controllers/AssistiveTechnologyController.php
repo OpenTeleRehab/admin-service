@@ -31,6 +31,7 @@ class AssistiveTechnologyController extends Controller
     public function store(Request $request)
     {
         $existing = AssistiveTechnology::where('code', $request->get('code'))->count();
+        $file = null;
 
         if ($existing) {
             return abort(409, 'error_message.assistive_technology_exists');
@@ -44,7 +45,7 @@ class AssistiveTechnologyController extends Controller
             'code' => $request->get('code'),
             'name' => $request->get('name'),
             'description' => $request->get('description'),
-            'file_id' => $file->id
+            'file_id' => $file ? $file->id : null,
         ]);
 
         // Add automatic translation for Assistive Technology.
@@ -121,5 +122,14 @@ class AssistiveTechnologyController extends Controller
         $assistiveTechnology->delete();
 
         return ['success' => true, 'message' => 'success_message.assistive_technology_delete'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllAssistiveTechnology()
+    {
+        $assistiveTechnologies = AssistiveTechnology::withTrashed()->get();
+        return ['success' => true, 'data' => AssistiveTechnologyResource::collection($assistiveTechnologies)];
     }
 }

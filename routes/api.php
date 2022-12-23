@@ -59,6 +59,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Assistive Technology
     Route::apiResource('assistive-technologies', AssistiveTechnologyController::class);
+    Route::get('assistive-technologies/list/get-all', [AssistiveTechnologyController::class, 'getAllAssistiveTechnology']);
 
     // Profession
     Route::apiResource('profession', ProfessionController::class);
@@ -221,3 +222,4 @@ Route::get('country/list/defined-country', [CountryController::class, 'getDefine
 Route::get('term-condition', [TermAndConditionController::class, 'index']);
 Route::get('privacy-policy', [PrivacyPolicyController::class, 'index']);
 Route::get('language', [LanguageController::class, 'index']);
+Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'index']);

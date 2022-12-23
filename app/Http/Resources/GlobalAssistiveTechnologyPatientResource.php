@@ -20,6 +20,8 @@ class GlobalAssistiveTechnologyPatientResource extends JsonResource
             'gender' => $this->gender,
             'assistive_technology_id' => $this->assistive_technology_id,
             'provision_date' => $this->provision_date,
+            'country_id' => $this->country_id,
+            'clinic_id' => $this->clinic_id,
         ];
     }
 }
