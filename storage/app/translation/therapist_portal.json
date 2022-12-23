@@ -510,6 +510,8 @@
     "error_message.treatment_plan_disease_required": "Please choose disease",
     "error_message.organization_not_found": "Organization not found",
     "error_message.server_error": "Something went wrong",
+    "error_message.video_call.unsupported_device": "This browser is not supported for calling",
+    "error_message.video_call.unsupported_browser": "Can't find your device",
     "toast_title.delete_patient_account": "Delete account",
     "toast_title.translate_exercise": "Translate Exercise",
     "toast_title.accept_appointment": "Accept appointment",
