@@ -660,6 +660,16 @@ class ExerciseController extends Controller
     /**
      * @param \Illuminate\Http\Request $request
      *
+     * @return \App\Models\ExerciseCategory[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function getExerciseAdditionalFieldsForOpenLibrary(Request $request)
+    {
+        return AdditionalField::where('exercise_id', $request->get('id'))->get();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
      * @return mixed
      */
     public function getExerciseFiles(Request $request)

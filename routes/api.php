@@ -130,6 +130,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation']);
     Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite']);
 
+    // Additional Fields
+    Route::get('get-exercise-additional-fields-for-open-library', [ExerciseController::class, 'getExerciseAdditionalFieldsForOpenLibrary']);
+
     // Guidance
     Route::post('guidance-page/update-order', [GuidancePageController::class, 'updateOrder']);
     Route::apiResource('guidance-page', GuidancePageController::class);
