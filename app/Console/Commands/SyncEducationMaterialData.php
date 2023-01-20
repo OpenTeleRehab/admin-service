@@ -82,25 +82,12 @@ class SyncEducationMaterialData extends Command
                             // Save file to storage.
                             Storage::put($file_path, $file_content);
                             if ($record) {
-                                if ($file->content_type === 'video/mp4') {
-                                    $thumbnailFilePath = FileHelper::generateVideoThumbnail($record->id, $file_path, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
+                                $thumbnailFilePath = FileHelper::generateThumbnail($record, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
 
-                                    if ($thumbnailFilePath) {
-                                        $record->update([
-                                            'thumbnail' => $thumbnailFilePath,
-                                        ]);
-                                    }
+                                if ($thumbnailFilePath) {
+                                    $record->update(['thumbnail' => $thumbnailFilePath]);
                                 }
 
-                                if ($file->content_type === 'application/pdf') {
-                                    $thumbnailFilePath = FileHelper::generatePdfThumbnail($record->id, $file_path, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
-
-                                    if ($thumbnailFilePath) {
-                                        $record->update([
-                                            'thumbnail' => $thumbnailFilePath,
-                                        ]);
-                                    }
-                                }
                                 // Update file id with new created id.
                                 foreach ($newFileIDs as $key => $value) {
                                     if ($file->id == $value) {

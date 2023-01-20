@@ -287,7 +287,7 @@ class ExerciseController extends Controller
 
         // Remove files.
         $exerciseFileIDs = $exercise->files()->pluck('id')->toArray();
-        $mediaFiles = $request->get('media_files', []);
+        $mediaFiles = $request->get('media_files', '');
         $mediaFileIDs = explode(',', $mediaFiles);
         $removeFileIDs = array_diff($exerciseFileIDs, $mediaFileIDs);
 
