@@ -14,6 +14,7 @@
         "fideloper/proxy": "^4.2",
         "google/cloud-translate": "^1.12",
         "guzzlehttp/guzzle": "^7.0.1",
+        "intervention/image": "^2.7",
         "lakshmaji/thumbnail": "^1.4",
         "laravel/framework": "^8.0",
         "laravel/tinker": "^2.0",

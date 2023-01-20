@@ -6,6 +6,7 @@ use App\Models\File;
 use \Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 use Lakshmaji\Thumbnail\Facade\Thumbnail;
 use Spatie\PdfToImage\Pdf;
 
@@ -38,23 +39,11 @@ class FileHelper
             'size' => $file->getSize(),
         ]);
 
-        if ($thumbnailPath && $file->getMimeType() === 'video/mp4') {
-            $thumbnailFilePath = self::generateVideoThumbnail($record->id, $path, $thumbnailPath);
+        if ($thumbnailPath) {
+            $thumbnailFilePath = self::generateThumbnail($record, $thumbnailPath);
 
             if ($thumbnailFilePath) {
-                $record->update([
-                    'thumbnail' => $thumbnailFilePath,
-                ]);
-            }
-        }
-
-        if ($thumbnailPath && $file->getMimeType() === 'application/pdf') {
-            $thumbnailFilePath = self::generatePdfThumbnail($record->id, $path, $thumbnailPath);
-
-            if ($thumbnailFilePath) {
-                $record->update([
-                    'thumbnail' => $thumbnailFilePath,
-                ]);
+                $record->update(['thumbnail' => $thumbnailFilePath]);
             }
         }
 
@@ -80,49 +69,40 @@ class FileHelper
     }
 
     /**
-     * @param string $fileName
-     * @param string $filePath
+     * @param File $file
      * @param string $thumbnailFilePath
      *
-     * @return string
+     * @return string|null
+     * @throws \Spatie\PdfToImage\Exceptions\PdfDoesNotExist
      */
-    public static function generateVideoThumbnail($fileName, $filePath, $thumbnailFilePath)
+    public static function generateThumbnail(File $file, $thumbnailFilePath)
     {
-        $destinationPath = storage_path('app') . '/' . $filePath;
-        $thumbnailPath = storage_path('app') . '/' . $thumbnailFilePath;
-        $thumbnailImage = $fileName . '.jpg';
+        $thumbnailImage = $file->id . '.jpg';
+        $thumbnailFile = $thumbnailFilePath . '/' . $thumbnailImage;
+        $destinationPath = storage_path('app/') . $file->path;
+        $thumbnailPath = storage_path('app/') . $thumbnailFilePath;
+        $thumbnailFileFullPath = storage_path('app/') . $thumbnailFile;
 
         if (!file_exists($thumbnailPath)) {
             mkdir($thumbnailPath);
         }
 
-        Thumbnail::getThumbnail($destinationPath, $thumbnailPath, $thumbnailImage, 1);
-
-        return $thumbnailFilePath . '/' . $thumbnailImage;
-    }
-
-    /**
-     * @param string $fileName
-     * @param string $filePath
-     * @param string $thumbnailFilePath
-     *
-     * @return string
-     */
-    public static function generatePdfThumbnail($fileName, $filePath, $thumbnailFilePath)
-    {
-        $destinationPath = storage_path('app') . '/' . $filePath;
-        $thumbnailPath = storage_path('app') . '/' . $thumbnailFilePath;
-        $thumbnailImage = $fileName . '.jpg';
-
-        if (!file_exists($thumbnailPath)) {
-            mkdir($thumbnailPath);
+        if (str_contains($file->content_type, 'image')) {
+            Image::make($destinationPath)
+                ->resize(320, 240)
+                ->save($thumbnailFileFullPath);
+            return $thumbnailFile;
+        } elseif ($file->content_type === 'video/mp4') {
+            Thumbnail::getThumbnail($destinationPath, $thumbnailPath, $thumbnailImage, 1);
+            return $thumbnailFile;
+        } elseif ($file->content_type === 'application/pdf') {
+            $pdf = new Pdf($destinationPath);
+            $pdf->setResolution(48);
+            $pdf->saveImage($thumbnailFileFullPath);
+            return $thumbnailFile;
         }
 
-        $pdf = new Pdf($destinationPath);
-        $pdf->setResolution(48);
-        $pdf->saveImage($thumbnailPath . '/' . $thumbnailImage);
-
-        return $thumbnailFilePath . '/' . $thumbnailImage;
+        return null;
     }
 
     /**

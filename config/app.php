@@ -176,6 +176,7 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         // Other Service Providers
+        Intervention\Image\ImageServiceProvider::class,
         Lakshmaji\Thumbnail\ThumbnailServiceProvider::class,
     ],
 
@@ -228,8 +229,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'Image' => Intervention\Image\Facades\Image::class,
         'Thumbnail' => Lakshmaji\Thumbnail\Facade\Thumbnail::class,
-
     ],
 
 ];
