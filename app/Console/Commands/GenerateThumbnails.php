@@ -30,21 +30,33 @@ class GenerateThumbnails extends Command
     protected $help = 'php artisan hi:generate-thumbnails';
 
     /**
-     * Execute the console command.
-     *
-     * @return int
+     * @return true
+     * @throws \Spatie\PdfToImage\Exceptions\PdfDoesNotExist
      */
     public function handle()
     {
 
         $files = File::where('content_type', 'LIKE', 'image%')
+            ->where('content_type', '<>', 'image/svg')
             ->where('thumbnail', null)
             ->get();
 
-        $this->alert('Start generating thumbnails: ' . count($files));
-        $this->output->progressStart(count($files));
+        if ($files->count() === 0) {
+            $this->info('There is not file to  generate');
+            return true;
+        }
+
+        $this->alert('Start generating thumbnails: ' . $files->count());
+        $this->output->progressStart($files->count());
         foreach ($files as $file) {
-            $thumbnailFile = FileHelper::generateThumbnail($file, File::EXERCISE_THUMBNAIL_PATH);
+            $thumbnailFilePath = File::EXERCISE_THUMBNAIL_PATH;
+            if (str_starts_with($file->path, File::EDUCATION_MATERIAL_PATH)) {
+                $thumbnailFilePath = File::EDUCATION_MATERIAL_PATH;
+            } elseif (str_starts_with($file->path, File::QUESTIONNAIRE_PATH)) {
+                $thumbnailFilePath = File::QUESTIONNAIRE_PATH;
+            }
+
+            $thumbnailFile = FileHelper::generateThumbnail($file, $thumbnailFilePath);
 
             if ($thumbnailFile) {
                 $file->update(['thumbnail' => $thumbnailFile]);
@@ -54,6 +66,6 @@ class GenerateThumbnails extends Command
 
         $this->output->progressFinish();
 
-        return 0;
+        return true;
     }
 }
