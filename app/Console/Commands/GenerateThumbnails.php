@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Helpers\FileHelper;
 use App\Models\File;
 use Illuminate\Console\Command;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class GenerateThumbnails extends Command
 {
@@ -42,7 +43,7 @@ class GenerateThumbnails extends Command
             ->get();
 
         if ($files->count() === 0) {
-            $this->info('There is not file to  generate');
+            $this->info('There is not file to generate');
             return true;
         }
 

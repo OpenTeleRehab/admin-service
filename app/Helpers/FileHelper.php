@@ -83,6 +83,10 @@ class FileHelper
         $thumbnailPath = storage_path('app/') . $thumbnailFilePath;
         $thumbnailFileFullPath = storage_path('app/') . $thumbnailFile;
 
+        if (!file_exists($destinationPath)){
+            return null;
+        }
+
         if (!file_exists($thumbnailPath)) {
             mkdir($thumbnailPath);
         }
