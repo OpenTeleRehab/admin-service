@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrganizationController extends Controller
 {
@@ -41,11 +42,12 @@ class OrganizationController extends Controller
     public function store(Request $request)
     {
         DB::beginTransaction();
-        $name = $request->get('name');
+        $name = $request->get('organization_name');
         $adminEmail = $request->get('admin_email');
         $subDomainName = $request->get('sub_domain_name');
         $maxNumberOfTherapist = $request->get('max_number_of_therapist');
         $maxOngoingTreatmentPlan = $request->get('max_ongoing_treatment_plan');
+        $maxSmsPerWeek = $request->get('max_sms_per_week');
 
         $availableEmail = User::where('email', $adminEmail)->count();
 
@@ -72,6 +74,7 @@ class OrganizationController extends Controller
             'sub_domain_name' => $subDomainName,
             'max_number_of_therapist' => $maxNumberOfTherapist,
             'max_ongoing_treatment_plan' => $maxOngoingTreatmentPlan,
+            'max_sms_per_week' => $maxSmsPerWeek,
             'status' => Organization::ONGOING_ORG_STATUS,
             'created_by' => Auth::id()
         ]);
@@ -94,9 +97,10 @@ class OrganizationController extends Controller
     public function update(Request $request, Organization $organization)
     {
         $organization->update([
-            'name' => $request->get('name'),
+            'name' => $request->get('organization_name'),
             'max_number_of_therapist' => $request->get('max_number_of_therapist'),
             'max_ongoing_treatment_plan' => $request->get('max_ongoing_treatment_plan'),
+            'max_sms_per_week' => $request->get('max_sms_per_week')
         ]);
 
         return ['success' => true, 'message' => 'success_message.organization.update'];
