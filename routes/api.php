@@ -219,6 +219,7 @@ Route::get('user-term-condition', [TermAndConditionController::class, 'getUserTe
 Route::get('user-privacy-policy', [PrivacyPolicyController::class, 'getUserPrivacyPolicy']);
 Route::get('update-organization-status', [OrganizationController::class, 'updateOrganizationStatus']);
 Route::get('get-ongoing-organization', [OrganizationController::class, 'getOngoingOrganization']);
+Route::get('org/org-therapist-and-max_sms', [OrganizationController::class, 'getTherapistAndMaxSms']);
 Route::get('country', [CountryController::class, 'index']);
 Route::get('country/list/by-clinic', [CountryController::class, 'getCountryByClinicId']);
 Route::get('country/list/defined-country', [CountryController::class, 'getDefinedCountries']);

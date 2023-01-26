@@ -147,6 +147,24 @@ class OrganizationController extends Controller
     }
 
     /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function getTherapistAndMaxSms(Request $request)
+    {
+        $org = Organization::where('sub_domain_name', $request->get('org_name'))->firstOrFail();
+
+        return [
+            'success' => true,
+            'data' => [
+                'max_therapist' => $org->max_number_of_therapist,
+                'max_sms_per_week' => $org->max_sms_per_week,
+            ],
+        ];
+    }
+
+    /**
      * @return mixed
      */
     public function getOngoingOrganization()
