@@ -22,6 +22,7 @@ class OrganizationResource extends JsonResource
             'sub_domain_name' => $this->sub_domain_name,
             'max_number_of_therapist' => $this->max_number_of_therapist,
             'max_ongoing_treatment_plan' => $this->max_ongoing_treatment_plan,
+            'max_sms_per_week' => $this->max_sms_per_week,
             'status' => $this->status,
         ];
     }
