@@ -242,6 +242,7 @@
     "placeholder.date": "Please select date",
     "placeholder.time": "Please select time",
     "placeholder.therapist": "Please select a therapist",
+    "error.nongsm": "NON GSM 7 character is not supported.",
     "error.treatment_plan.name": "Please fill in diagnostic",
     "error.phone": "Please fill mobile number",
     "error.first_name": "Please fill first name",
