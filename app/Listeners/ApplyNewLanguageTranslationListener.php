@@ -26,6 +26,13 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class ApplyNewLanguageTranslationListener implements ShouldQueue
 {
     /**
+     * The names of the queues to work.
+     *
+     * @var string
+     */
+    public $queue = 'high';
+
+    /**
      * The number of seconds the job can run before timing out.
      *
      * @var integer
