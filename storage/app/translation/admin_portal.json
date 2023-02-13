@@ -160,6 +160,8 @@
     "setting.static_page": "Static Pages",
     "setting.guidance_page": "Guidance Pages",
     "setting.assistive_technology": "Assistive Technology",
+    "setting.translations.over_length_title": "Over translation length",
+    "setting.translations.over_length_content": "The translation of the language(s) below (is/are) over length. Please see the language and its maximum length.",
     "organization_admin": "Organization Admin",
     "global_admin": "Global Admin",
     "country_admin": "Country Admin",
