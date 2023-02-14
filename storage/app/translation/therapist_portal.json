@@ -119,7 +119,7 @@
     "clinic_admin": "Clinic Admin",
     "therapist.management": "Therapist Management",
     "therapist.new": "New Therapist",
-    "sms.reminder.alert": "Reminder-Alert. Come online on dd/mm/yyyy at HH:MM A. Your therapist. Do not reply.",
+    "sms.reminder.alert": "Appointment with your therapist. Please come online on ${date} at ${time}. Do not reply.",
     "therapist.sms.usage": "Please note that you won't be able to receive any reply from the patient.",
     "exercise.translate": "Translate Exercise",
     "education_material.translate": "Translate Education Material",
