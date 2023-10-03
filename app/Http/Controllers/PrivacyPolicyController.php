@@ -100,12 +100,13 @@ class PrivacyPolicyController extends Controller
     }
 
     /**
-     * @param \App\Models\PrivacyPolicy $privacyPolicy
+     * @param int $id
      *
      * @return \App\Http\Resources\PrivacyPolicyResource
      */
-    public function show(PrivacyPolicy $privacyPolicy)
+    public function show($id)
     {
+        $privacyPolicy = PrivacyPolicy::findOrFail($id);
         return new PrivacyPolicyResource($privacyPolicy);
     }
 
