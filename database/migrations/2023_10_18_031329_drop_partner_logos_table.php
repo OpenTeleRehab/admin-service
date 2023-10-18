@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class DropPartnerLogosTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('partner_logos', function (Blueprint $table) {
+            Schema::dropIfExists('partner_logos');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('partner_logos', function (Blueprint $table) {
+            Schema::create('partner_logos', function (Blueprint $table) {
+                $table->id();
+                $table->integer('file_id')->nullable();
+                $table->timestamps();
+            });
+        });
+    }
+}
