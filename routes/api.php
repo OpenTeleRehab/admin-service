@@ -26,7 +26,6 @@ use App\Http\Controllers\QuestionnaireController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ImportController;
-use App\Http\Controllers\PartnerLogoController;
 use App\Http\Controllers\TranslatorController;
 use App\Http\Controllers\ForwarderController;
 use App\Http\Controllers\AssistiveTechnologyController;
@@ -144,7 +143,6 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('system-limit', SystemLimitController::class);
     Route::apiResource('settings', SettingController::class);
     Route::apiResource('static-page', StaticPageController::class);
-    Route::apiResource('partner-logo', PartnerLogoController::class);
     Route::apiResource('term-condition', TermAndConditionController::class);
     Route::apiResource('privacy-policy', PrivacyPolicyController::class);
 
@@ -208,7 +206,6 @@ Route::group(['middleware' => 'auth:api'], function () {
 
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);
-Route::get('partner-logo', [PartnerLogoController::class, 'getPartnerLogo']);
 Route::get('page/static', [StaticPageController::class, 'getStaticPage']);
 Route::get('file/{id}', [FileController::class, 'show']);
 Route::get('page/static-page-data', [StaticPageController::class, 'getStaticPageData']);
