@@ -286,12 +286,6 @@
     "activity.pain_level.description": "Rate your painfulness after you did the activity from scale of 1 to 10",
     "activity.sets_reps.completed_description" : "Number of sets and reps you have done.",
     "activity.sets_reps.recommend" : "Recommend ${number}",
-    "activity.completed.title" : "You have completed the task!",
-    "activity.completed.description": "Just a few more tasks, you can do it.",
-    "activity.completed.button_title": "Got that",
-    "activity.completed.kid_title" : "Yay! You have completed the task!",
-    "activity.completed.kid_description": "Just a few more tasks, you will earn badges as the reward.",
-    "activity.completed.kid_button_title": "Got that",
     "app.update.title": "New version is available",
     "app.update.message": "A new version is available in store now. Do you want to update?",
     "app.update.message.force": "A new version is available in store now. You have to update the app to continue."
