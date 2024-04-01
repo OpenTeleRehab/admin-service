@@ -95,6 +95,8 @@ class GlobalPatientController extends Controller
                                         ->whereDate('end_date', '>=', Carbon::now());
                                 });
                             }
+                        } elseif ($filterObj->columnName === 'gender') {
+                            $query->where($filterObj->columnName, $filterObj->value);
                         } elseif ($filterObj->columnName === 'age') {
                             $query->whereRaw('YEAR(NOW()) - YEAR(date_of_birth) = ? OR ABS(MONTH(date_of_birth) - MONTH(NOW())) = ?  OR ABS(DAY(date_of_birth) - DAY(NOW())) = ?', [$filterObj->value, $filterObj->value, $filterObj->value]);
                         } elseif ($filterObj->columnName === 'ongoing_treatment_plan') {
