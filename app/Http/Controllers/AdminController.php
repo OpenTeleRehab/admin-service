@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Helpers\KeycloakHelper;
 use App\Http\Resources\UserResource;
+use App\Models\EducationMaterial;
+use App\Models\Exercise;
 use App\Models\Language;
+use App\Models\Questionnaire;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -565,5 +568,62 @@ class AdminController extends Controller
         }
 
         return ['success' => false, 'message' => 'error_message.cannot_resend_email'];
+    }
+
+    /**
+     * @OA\Post (
+     *     path="/api/library/delete/by-therapist",
+     *     tags={"Exercise"},
+     *     summary="Library delete by therapist",
+     *     operationId="deleteLibraryByTherapist",
+     *     @OA\Parameter(
+     *         name="therapist_id",
+     *         in="query",
+     *         description="Therapist id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="hard_delete",
+     *         in="query",
+     *         description="Hard delete",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="boolean"
+     *         )
+     *      ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
+     * @param Request $request
+     * @return array
+     */
+    public function deleteLibraryByTherapist(Request $request)
+    {
+        $therapistId = $request->get('therapist_id');
+        $hardDelete = $request->get('hard_delete');
+
+        if ($hardDelete) {
+            Exercise::where('therapist_id', $therapistId)->forceDelete();
+            EducationMaterial::where('therapist_id', $therapistId)->forceDelete();
+            Questionnaire::where('therapist_id', $therapistId)->forceDelete();
+        } else {
+            Exercise::where('therapist_id', $therapistId)->delete();
+            EducationMaterial::where('therapist_id', $therapistId)->delete();
+            Questionnaire::where('therapist_id', $therapistId)->delete();
+        }
     }
 }

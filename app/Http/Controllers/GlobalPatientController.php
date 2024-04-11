@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\GlobalPatientResource;
+use App\Models\Country;
+use App\Models\Forwarder;
 use App\Models\GlobalPatient;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class GlobalPatientController extends Controller
 {
@@ -125,12 +128,35 @@ class GlobalPatientController extends Controller
                 $query->orderBy($data['order_by']);
             }
 
-            $users = $query->paginate($data['page_size']);
+            $users = $query->paginate($data['page_size'] ?? 60);
             $info = [
                 'current_page' => $users->currentPage(),
                 'total_count' => $users->total(),
             ];
         }
         return ['success' => true, 'data' => GlobalPatientResource::collection($users), 'info' => $info];
+    }
+
+    /**
+     * @param integer $patientId
+     * @return array
+     * @throws \Exception
+     */
+    public function destroy($patientId)
+    {
+        $patient = GlobalPatient::where('patient_id', $patientId)->first();
+        $country = Country::find($patient->country_id);
+
+        Http::withHeaders([
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code),
+            'country' => $country->iso_code,
+        ])->post(env('PATIENT_SERVICE_URL') . '/patient/deleteAccount/' . $patientId, [
+            'therapist_id' => $patient->therapist_id,
+            'hard_delete' => true,
+        ]);
+
+        $patient->delete();
+
+        return ['success' => true, 'message' => 'success_message.patient_delete'];
     }
 }
