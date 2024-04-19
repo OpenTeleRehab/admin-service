@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Resources;
+
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -37,6 +38,7 @@ class GlobalPatientResource extends JsonResource
             'date_of_birth' => $this->date_of_birth,
             'enabled' => $this->enabled,
             'patient_id' => $this->patient_id,
+            'gender' => $this->gender,
             'upcomingTreatmentPlan' => $upcomingTreatmentPlan,
             'ongoingTreatmentPlan' => $ongoingTreatmentPlan,
             'lastTreatmentPlan' => $lastTreatmentPlan

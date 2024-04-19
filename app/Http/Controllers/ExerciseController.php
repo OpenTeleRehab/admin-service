@@ -406,46 +406,6 @@ class ExerciseController extends Controller
     }
 
     /**
-     * @OA\Post (
-     *     path="/api/library/delete/by-therapist",
-     *     tags={"Exercise"},
-     *     summary="Library delete by therapist",
-     *     operationId="deleteLibraryByTherapist",
-     *     @OA\Parameter(
-     *         name="therapist_id",
-     *         in="query",
-     *         description="Therapist id",
-     *         required=true,
-     *         @OA\Schema(
-     *             type="integer"
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response="200",
-     *         description="successful operation"
-     *     ),
-     *     @OA\Response(response=400, description="Bad request"),
-     *     @OA\Response(response=404, description="Resource Not Found"),
-     *     @OA\Response(response=401, description="Authentication is required"),
-     *     security={
-     *         {
-     *             "oauth2_security": {}
-     *         }
-     *     },
-     * )
-     *
-     * @param Request $request
-     * @return array
-     */
-    public static function deleteLibraryByTherapist(Request $request)
-    {
-        $therapistId = $request->get('therapist_id');
-        $country = $request->get('country');
-
-        ContentHelper::deleteTherapistContents($therapistId);
-    }
-
-    /**
      * @OA\Delete (
      *     path="/api/exercise/{id}",
      *     tags={"Exercise"},

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Forwarder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class ForwarderController extends Controller
 {

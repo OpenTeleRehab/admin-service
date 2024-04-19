@@ -49,6 +49,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     // Admin
     Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus']);
     Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser']);
+    Route::post('library/delete/by-therapist', [AdminController::class, 'deleteLibraryByTherapist']);
     Route::apiResource('admin', AdminController::class);
 
     // Translator
@@ -90,7 +91,6 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Library
     Route::get('library/count/by-therapist', [ExerciseController::class, 'countTherapistLibrary']);
-    Route::post('library/delete/by-therapist', [ExerciseController::class, 'deleteLibraryByTherapist']);
 
     // Exercise
     Route::apiResource('exercise', ExerciseController::class);
