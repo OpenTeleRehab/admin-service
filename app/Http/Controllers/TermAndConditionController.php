@@ -36,7 +36,7 @@ class TermAndConditionController extends Controller
      */
     public function index()
     {
-        $termAndConditions = TermAndCondition::all();
+        $termAndConditions = TermAndCondition::orderBy('published_date', 'desc')->get();
 
         return ['success' => true, 'data' => TermAndConditionResource::collection($termAndConditions)];
     }

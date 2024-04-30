@@ -36,18 +36,4 @@ class TermAndCondition extends Model
      * @var string[]
      */
     public $translatable = ['content', 'auto_translated'];
-
-    /**
-     * Bootstrap the model and its traits.
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::addGlobalScope('order', function (Builder $builder) {
-            $builder->orderBy('published_date', 'desc');
-        });
-    }
 }
