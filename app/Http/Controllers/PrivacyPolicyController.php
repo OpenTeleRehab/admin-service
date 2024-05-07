@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ApplyPrivacyPolicyAutoTranslationEvent;
 use App\Http\Resources\PrivacyPolicyResource;
+use App\Http\Resources\PrivacyPolicyIndexResource;
 use App\Http\Resources\TermAndConditionResource;
 use App\Models\Forwarder;
 use App\Models\PrivacyPolicy;
@@ -38,9 +39,9 @@ class PrivacyPolicyController extends Controller
      */
     public function index()
     {
-        $privacyPolicies = PrivacyPolicy::all();
+        $privacyPolicies = PrivacyPolicy::select('id', 'version', 'status', 'published_date')->get();
 
-        return ['success' => true, 'data' => PrivacyPolicyResource::collection($privacyPolicies)];
+        return ['success' => true, 'data' => PrivacyPolicyIndexResource::collection($privacyPolicies)];
     }
 
     /**
