@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\ApplyStaticPageAutoTranslationEvent;
 use App\Helpers\FileHelper;
 use App\Http\Resources\StaticPageResource;
+use App\Http\Resources\StaticPageIndexResource;
 use App\Models\StaticPage;
 use Illuminate\Http\Request;
 use App\Models\File;
@@ -35,9 +36,9 @@ class StaticPageController extends Controller
      */
     public function index()
     {
-        $staticPages = StaticPage::all();
+        $staticPages = StaticPage::select('id', 'title', 'platform')->get();
 
-        return ['success' => true, 'data' => StaticPageResource::collection($staticPages)];
+        return ['success' => true, 'data' => StaticPageIndexResource::collection($staticPages)];
     }
 
     /**

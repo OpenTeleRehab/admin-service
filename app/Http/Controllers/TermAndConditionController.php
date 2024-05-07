@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ApplyTermAndConditionAutoTranslationEvent;
 use App\Http\Resources\TermAndConditionResource;
+use App\Http\Resources\TermAndConditionIndexResource;
 use App\Models\Forwarder;
 use App\Models\TermAndCondition;
 use Carbon\Carbon;
@@ -36,9 +37,9 @@ class TermAndConditionController extends Controller
      */
     public function index()
     {
-        $termAndConditions = TermAndCondition::orderBy('published_date', 'desc')->get();
+        $termAndConditions = TermAndCondition::select('id', 'version', 'status', 'published_date')->orderBy('published_date', 'desc')->get();
 
-        return ['success' => true, 'data' => TermAndConditionResource::collection($termAndConditions)];
+        return ['success' => true, 'data' => TermAndConditionIndexResource::collection($termAndConditions)];
     }
 
     /**
