@@ -162,6 +162,7 @@
     "transfer.status.accept": "Accept",
     "transfer.status.decline": "Decline",
     "transfer.status.declined": "Declined",
+    "transfer.pending_accept_decline": "Pending accept or decline",
     "admin": "Admins",
     "admin.management": "Admin Management",
     "admin.new": "New Admin",
