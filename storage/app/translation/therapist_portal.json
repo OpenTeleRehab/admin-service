@@ -313,6 +313,7 @@
     "success_message.transfer_invited": "The patient transfer was successfully invited",
     "success_message.transfer_declined": "The patient transfer was successfully declined",
     "success_message.transfer_accepted": "The patient transfer was successfully accepted",
+    "success_message.transfer_deleted": "The patient transfer was successfully deleted",
     "age.single_year": "year",
     "age.single_month": "month",
     "age.single_day": "day",
