@@ -566,5 +566,9 @@
     "toast_title.activate_deactivate_patient_account": "Activate/Deactivate account",
     "toast_title.new_assistive_technology": "Add Assistive Technology",
     "toast_title.edit_assistive_technology": "Edit Assistive Technology",
-    "toast_title.delete_assistive_technology": "Delete Assistive Technology"
+    "toast_title.delete_assistive_technology": "Delete Assistive Technology",
+    "toast_title.new_transfer": "New Transfer",
+    "toast_title.delete_transfer": "Delete Transfer",
+    "toast_title.decline_transfer": "Decline Transfer",
+    "toast_title.accept_transfer": "Accept Transfer"
 }
