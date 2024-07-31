@@ -143,6 +143,7 @@
     "appointment.invitation.reject": "Reject",
     "appointment.invitation.accepted": "Accepted",
     "appointment.invitation.rejected": "Declined",
+    "appointment.invitation.decline": "Decline",
     "appointment.show_more": "Show more (${number})",
     "appointment.no_appointment": "No appointment",
     "appointment.invitation.accept_title": "Accept Appointment",
