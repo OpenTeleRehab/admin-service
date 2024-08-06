@@ -252,7 +252,7 @@
     "tts.question.answered": "You answered",
     "appointment.status.accept": "Accepted",
     "appointment.status.pending": "Pending acceptation",
-    "appointment.status.cancel": "Cancelled",
+    "appointment.status.cancel": "Declined",
     "appointment.daily_reminder": "You have",
     "register.phone.label": "Enter phone number",
     "register.language.label": "Choose language",
