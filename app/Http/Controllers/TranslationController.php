@@ -239,17 +239,20 @@ class TranslationController extends Controller
      */
     private function getIdsFromSearchValues(string $searchValue, array $languages, string $filterPlatform)
     {
+        $searchTerm = '%' . $searchValue . '%';
         if ($languages) {
             $sql = "
-                SELECT id FROM translations WHERE (value LIKE '%{$searchValue}%' OR `key` LIKE '%{$searchValue}%') AND platform = '{$filterPlatform}'
+                SELECT id FROM translations WHERE (value LIKE ? OR `key` LIKE ?) AND platform = ?
                 UNION DISTINCT
-                SELECT L.translation_id AS id FROM localizations L LEFT JOIN translations T ON L.translation_id = T.id WHERE L.value LIKE '%{$searchValue}%' AND T.platform = '{$filterPlatform}'
+                SELECT L.translation_id AS id FROM localizations L LEFT JOIN translations T ON L.translation_id = T.id WHERE L.value LIKE ? AND T.platform = ?
             ";
+            $queryBindings = [$searchTerm, $searchTerm, $filterPlatform, $searchTerm, $filterPlatform];
         } else {
-            $sql = "SELECT id FROM translations WHERE (value LIKE '%{$searchValue}%' OR `key` LIKE '%{$searchValue}%') AND platform = '{$filterPlatform}'";
+            $sql = "SELECT id FROM translations WHERE (value LIKE ? OR `key` LIKE ?) AND platform = ?";
+            $queryBindings = [$searchTerm, $searchTerm, $filterPlatform];
         }
 
-        $filterIds = DB::select(DB::raw($sql));
+        $filterIds = DB::select($sql, $queryBindings);
 
         return $this->convertFilterIdsToSingleArray($filterIds);
     }
@@ -266,16 +269,20 @@ class TranslationController extends Controller
         $filterValueIds = [];
         foreach ($filterValues as $filterValue) {
             $filter = json_decode($filterValue, true);
+            $searchTerm = '%' . $filter['value'] . '%';
             if ($filter['columnName'] === self::TRANSLATION_KEY) {
-                $sql = "SELECT id FROM translations WHERE `key` LIKE '%{$filter['value']}%' AND platform = '{$filterPlatform}'";
+                $sql = "SELECT id FROM translations WHERE `key` LIKE ? AND platform = ?";
+                $queryBindings = [$searchTerm, $filterPlatform];
             } elseif ($filter['columnName'] === self::DEFAULT_LANG_CODE) {
-                $sql = "SELECT id FROM translations WHERE value LIKE '%{$filter['value']}%' AND platform = '{$filterPlatform}'";
+                $sql = "SELECT id FROM translations WHERE value LIKE ? AND platform = ?";
+                $queryBindings = [$searchTerm, $filterPlatform];
             } else {
                 $index = array_search($filter['columnName'], array_column($languages, 'code'));
                 $language = $languages[$index];
-                $sql = "SELECT L.translation_id AS id FROM localizations L INNER JOIN translations T ON L.translation_id = T.id WHERE L.value LIKE '%{$filter['value']}%' AND L.language_id = {$language['id']} AND T.platform = '{$filterPlatform}'";
+                $sql = "SELECT L.translation_id AS id FROM localizations L INNER JOIN translations T ON L.translation_id = T.id WHERE L.value LIKE ? AND L.language_id = ? AND T.platform = ?";
+                $queryBindings = [$searchTerm, $language['id'], $filterPlatform];
             }
-            $filterIds = DB::select(DB::raw($sql));
+            $filterIds = DB::select($sql, $queryBindings);
 
             $filterIdsArr = $this->convertFilterIdsToSingleArray($filterIds);
             if ($filterValueIds) {
