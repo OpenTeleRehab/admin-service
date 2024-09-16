@@ -47,11 +47,28 @@ class ApplyTranslationAutoTranslationListener
                 continue;
             }
 
-            $translationValue = $translate->translate($translation->value, $languageCode);
+            // Create placeholders for skipped words.
+            $placeholders = ['&#39;' => '\''];
+            $count = 0;
+
+            // Replace words to skip with placeholders.
+            $pattern = '/\$\{[^}]*\}/';
+            $modifiedText = preg_replace_callback($pattern, function ($matches) use (&$placeholders, &$count) {
+                $placeholder = '{' . $count . '}';
+                $placeholders[$placeholder] = $matches[0];
+                $count++;
+                return $placeholder;
+            }, $translation->value);
+
+            $translatedText = $translate->translate($modifiedText, $languageCode);
+
+            // Replace placeholders with original words.
+            $translatedText = str_replace(array_keys($placeholders), array_values($placeholders), $translatedText);
+
             Localization::create([
                 'translation_id' => $translation->id,
                 'language_id' => $language->id,
-                'value' => $translationValue,
+                'value' => $translatedText,
                 'auto_translated' => true,
             ]);
         }
