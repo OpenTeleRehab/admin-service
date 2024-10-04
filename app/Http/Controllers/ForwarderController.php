@@ -51,11 +51,15 @@ class ForwarderController extends Controller
 
         if ($service_name !== null && str_contains($service_name, Forwarder::THERAPIST_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-            $response = Http::withToken($access_token)
+            return Http::withToken($access_token)
                 ->post(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
+        } elseif ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+            return Http::withToken($access_token)
+                ->post(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
         }
 
-        return $response;
+        abort('400');
     }
 
     /**
