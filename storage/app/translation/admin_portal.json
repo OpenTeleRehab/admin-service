@@ -45,6 +45,8 @@
     "common.new_content": "New Content",
     "common.delete_confirmation_message": "Are you sure want to delete this record?",
     "common.transfer_confirmation_message": "Do you want to transfer this therapist's patient(s) to other therapist ?",
+    "common.transfer_confirmation_message.number_of_on_going_treatment_plans": "Number of on-going treatment plans: ${numberOfOnGoingTreatmentPlans}",
+    "common.transfer_confirmation_message.number_of_in_progress_patient_transfer_requests": "Number of in-progress patient transfer requests: ${numberOfActiveTransfers}",
     "common.switchStatus_confirmation_message": "Are you sure want to switch the status of this record?",
     "common.total_edit_translations": "Available suggestions",
     "common.next": "Next",
