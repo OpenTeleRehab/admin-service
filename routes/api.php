@@ -187,6 +187,7 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::post('therapist/delete/by-id/{id}', [ForwarderController::class, 'store']);
         Route::post('therapist/resend-email/{id}', [ForwarderController::class, 'store']);
         Route::apiResource('therapist', ForwarderController::class);
+        Route::get('transfer/number/by-therapist', [ForwarderController::class, 'index']);
     });
 
     // Patient Service
