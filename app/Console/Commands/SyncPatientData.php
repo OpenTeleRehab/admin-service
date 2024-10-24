@@ -49,42 +49,46 @@ class SyncPatientData extends Command
                 $treatmentPlanData = json_decode(Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global'));
             }
 
-            foreach ($patientData as $patient) {
-                GlobalPatient::updateOrCreate(
-                    [
-                        'patient_id' => $patient->id,
-                        'country_id' => $patient->country_id
-                    ],
-                    [
-                        'patient_id' => $patient->id,
-                        'gender' => $patient->gender,
-                        'date_of_birth' => $patient->date_of_birth,
-                        'identity' => $patient->identity,
-                        'clinic_id' => $patient->clinic_id,
-                        'country_id' => $patient->country_id,
-                        'enabled' => $patient->enabled,
-                        'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : $patient->deleted_at,
-                    ],
-                );
+            if ($patientData) {
+                foreach ($patientData as $patient) {
+                    GlobalPatient::updateOrCreate(
+                        [
+                            'patient_id' => $patient->id,
+                            'country_id' => $patient->country_id
+                        ],
+                        [
+                            'patient_id' => $patient->id,
+                            'gender' => $patient->gender,
+                            'date_of_birth' => $patient->date_of_birth,
+                            'identity' => $patient->identity,
+                            'clinic_id' => $patient->clinic_id,
+                            'country_id' => $patient->country_id,
+                            'enabled' => $patient->enabled,
+                            'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : $patient->deleted_at,
+                        ],
+                    );
+                }
             }
 
-            foreach ($treatmentPlanData as $treatmentPlan) {
-                GlobalTreatmentPlan::updateOrCreate(
-                    [
-                        'treatment_id' => $treatmentPlan->id,
-                        'patient_id' => $treatmentPlan->patient_id,
-                        'country_id' => $country->id
-                    ],
-                    [
-                        'treatment_id' => $treatmentPlan->id,
-                        'name' => $treatmentPlan->name,
-                        'patient_id' => $treatmentPlan->patient_id,
-                        'country_id' => $country->id,
-                        'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
-                        'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
-                        'status' => $treatmentPlan->status,
-                    ],
-                );
+            if ($treatmentPlanData) {
+                foreach ($treatmentPlanData as $treatmentPlan) {
+                    GlobalTreatmentPlan::updateOrCreate(
+                        [
+                            'treatment_id' => $treatmentPlan->id,
+                            'patient_id' => $treatmentPlan->patient_id,
+                            'country_id' => $country->id
+                        ],
+                        [
+                            'treatment_id' => $treatmentPlan->id,
+                            'name' => $treatmentPlan->name,
+                            'patient_id' => $treatmentPlan->patient_id,
+                            'country_id' => $country->id,
+                            'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
+                            'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
+                            'status' => $treatmentPlan->status,
+                        ],
+                    );
+                }
             }
         }
 
@@ -101,44 +105,48 @@ class SyncPatientData extends Command
             $treatmentPlanGlobal = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global'));
         }
 
-        foreach ($patientGlobal as $patient) {
-            GlobalPatient::updateOrCreate(
-                [
-                    'patient_id' => $patient->id,
-                    'country_id' => $patient->country_id,
-                ],
-                [
-                    'patient_id' => $patient->id,
-                    'gender' => $patient->gender,
-                    'date_of_birth' => $patient->date_of_birth,
-                    'identity' => $patient->identity,
-                    'clinic_id' => $patient->clinic_id,
-                    'country_id' => $patient->country_id,
-                    'enabled' => $patient->enabled,
-                    'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : $patient->deleted_at,
-                ],
-            );
+        if ($patientGlobal) {
+            foreach ($patientGlobal as $patient) {
+                GlobalPatient::updateOrCreate(
+                    [
+                        'patient_id' => $patient->id,
+                        'country_id' => $patient->country_id,
+                    ],
+                    [
+                        'patient_id' => $patient->id,
+                        'gender' => $patient->gender,
+                        'date_of_birth' => $patient->date_of_birth,
+                        'identity' => $patient->identity,
+                        'clinic_id' => $patient->clinic_id,
+                        'country_id' => $patient->country_id,
+                        'enabled' => $patient->enabled,
+                        'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : $patient->deleted_at,
+                    ],
+                );
+            }
         }
 
-        foreach ($treatmentPlanGlobal as $treatmentPlan) {
-            $patient = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $treatmentPlan->patient_id));
-
-            GlobalTreatmentPlan::updateOrCreate(
-                [
-                    'treatment_id' => $treatmentPlan->id,
-                    'patient_id' => $treatmentPlan->patient_id,
-                    'country_id' => $patient && is_object($patient) ? $patient->country_id : $patient,
-                ],
-                [
-                    'treatment_id' => $treatmentPlan->id,
-                    'name' => $treatmentPlan->name,
-                    'patient_id' => $treatmentPlan->patient_id,
-                    'country_id' => $patient && is_object($patient) ? $patient->country_id : $patient,
-                    'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
-                    'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
-                    'status' => $treatmentPlan->status,
-                ],
-            );
+        if ($treatmentPlanGlobal) {
+            foreach ($treatmentPlanGlobal as $treatmentPlan) {
+                $patient = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $treatmentPlan->patient_id));
+    
+                GlobalTreatmentPlan::updateOrCreate(
+                    [
+                        'treatment_id' => $treatmentPlan->id,
+                        'patient_id' => $treatmentPlan->patient_id,
+                        'country_id' => $patient && is_object($patient) ? $patient->country_id : $patient,
+                    ],
+                    [
+                        'treatment_id' => $treatmentPlan->id,
+                        'name' => $treatmentPlan->name,
+                        'patient_id' => $treatmentPlan->patient_id,
+                        'country_id' => $patient && is_object($patient) ? $patient->country_id : $patient,
+                        'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
+                        'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
+                        'status' => $treatmentPlan->status,
+                    ],
+                );
+            }
         }
 
         $this->info('Data has been sync successfully');
