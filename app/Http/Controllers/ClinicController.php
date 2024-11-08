@@ -68,6 +68,19 @@ class ClinicController extends Controller
         return ['success' => true, 'data' => ClinicResource::collection($clinics)];
     }
 
+
+    /**
+     * Display the specified resource.
+     *
+     * @param Clinic $clinic
+     *
+     * @return ClinicResource
+     */
+    public function show(Clinic $clinic)
+    {
+        return new ClinicResource($clinic);
+    }
+
     /**
      * @OA\Post(
      *     path="/api/clinic",
@@ -154,6 +167,8 @@ class ClinicController extends Controller
             'region' => $request->get('region'),
             'province' => $request->get('province'),
             'city' => $request->get('city'),
+            'phone' => $request->get('phone'),
+            'dial_code' => $request->get('dial_code'),
             'therapist_limit' => $request->get('therapist_limit')
         ]);
 
@@ -255,6 +270,8 @@ class ClinicController extends Controller
             'region' => $request->get('region'),
             'province' => $request->get('province'),
             'city' => $request->get('city'),
+            'phone' => $request->get('phone'),
+            'dial_code' => $request->get('dial_code'),
             'therapist_limit' => $request->get('therapist_limit')
         ]);
 

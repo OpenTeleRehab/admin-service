@@ -69,6 +69,7 @@
     "menu.user.profile": "User Profile",
     "menu.privacy": "Privacy Policy",
     "menu.about.app": "About the App",
+    "menu.help": "Help/Contact",
     "user.download_my_data": "Download My Data",
     "user.delete": "Delete User",
     "user.request_to_delete": "User Deletion",
@@ -301,5 +302,7 @@
     "activity.sets_reps.recommend" : "Recommend ${number}",
     "app.update.title": "New version is available",
     "app.update.message": "A new version is available in store now. Do you want to update?",
-    "app.update.message.force": "A new version is available in store now. You have to update the app to continue."
+    "app.update.message.force": "A new version is available in store now. You have to update the app to continue.",
+    "therapist.phone.numbers": "Therapist Number(s)",
+    "clinic.phone.number": "Clinic Number"
 }
