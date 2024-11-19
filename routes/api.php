@@ -229,3 +229,4 @@ Route::get('term-condition', [TermAndConditionController::class, 'index']);
 Route::get('privacy-policy', [PrivacyPolicyController::class, 'index']);
 Route::get('language', [LanguageController::class, 'index']);
 Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'index']);
+Route::get('clinic/get-by-id/{clinic}', [ClinicController::class, 'getById']);

@@ -68,19 +68,6 @@ class ClinicController extends Controller
         return ['success' => true, 'data' => ClinicResource::collection($clinics)];
     }
 
-
-    /**
-     * Display the specified resource.
-     *
-     * @param Clinic $clinic
-     *
-     * @return ClinicResource
-     */
-    public function show(Clinic $clinic)
-    {
-        return new ClinicResource($clinic);
-    }
-
     /**
      * @OA\Post(
      *     path="/api/clinic",
@@ -457,5 +444,17 @@ class ClinicController extends Controller
             'success' => true,
             'data' => $therapistData
         ];
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param Clinic $clinic
+     *
+     * @return ClinicResource
+     */
+    public function getById(Clinic $clinic)
+    {
+        return new ClinicResource($clinic);
     }
 }
