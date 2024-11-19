@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\AuditLogResource;
 use Spatie\Activitylog\Models\Activity;
 
@@ -41,5 +42,22 @@ class AuditLogController extends Controller
             'total_count' => $auditLogs->total()
         ];
         return ['success' => true, 'data' => AuditLogResource::collection($auditLogs), 'info' => $info];
+    }
+
+    public function store(Request $request)
+    {
+        $user = Auth::user();
+        $type = $request->get('type');
+        $storeData = [
+            'attributes' => ['user_id' => $user->id]
+        ];
+
+        activity()
+           ->performedOn($user)
+           ->causedBy($user)
+           ->withProperties($storeData)
+           ->useLog('Auth')
+           ->log($type);
+        return ['success' => true];
     }
 }

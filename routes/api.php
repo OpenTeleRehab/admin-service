@@ -207,6 +207,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Audit logs
     Route::get('audit-logs', [AuditLogController::class, 'index']);
+    Route::post('audit-logs/auth', [AuditLogController::class, 'store']);
 });
 
 // Public Access
