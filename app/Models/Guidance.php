@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Guidance extends Model
 {
-    use HasTranslations;
+    use HasTranslations, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -17,6 +18,15 @@ class Guidance extends Model
      * @var string[]
      */
     protected $fillable = ['content', 'order', 'title', 'auto_translated'];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'Guidance';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * The attributes that are translatable

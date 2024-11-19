@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class PrivacyPolicy extends Model
 {
-    use HasTranslations;
+    use HasTranslations, LogsActivity;
 
     const STATUS_DRAFT = 'draft';
     const STATUS_PUBLISHED = 'published';
@@ -20,6 +21,15 @@ class PrivacyPolicy extends Model
      * @var string[]
      */
     protected $fillable = ['version', 'content', 'status', 'published_date', 'auto_translated'];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'PrivacyPolicy';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * The attributes that should be cast.

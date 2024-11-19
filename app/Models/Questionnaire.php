@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Questionnaire extends Model
 {
-    use HasTranslations;
-    use SoftDeletes;
+    use HasTranslations, SoftDeletes, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -19,6 +19,15 @@ class Questionnaire extends Model
      * @var string[]
      */
     protected $fillable = ['title', 'description', 'is_used', 'therapist_id', 'global', 'questionnaire_id', 'auto_translated', 'parent_id', 'suggested_lang', 'share_to_hi_library'];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'Questionnaire';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * The attributes that are translatable

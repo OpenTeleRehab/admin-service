@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class GlobalTreatmentPlan extends Model
 {
+    use LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +23,15 @@ class GlobalTreatmentPlan extends Model
         'end_date',
         'status',
     ];
+
+     /**
+      * Spatie\Activitylog config
+      */
+    protected static $logName = 'GlobalTreatmentPlan';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * The attributes that should be cast to native types.

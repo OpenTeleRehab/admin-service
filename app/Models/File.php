@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class File extends Model
 {
+    use LogsActivity;
+
     const EXERCISE_PATH = 'exercise';
     const EDUCATION_MATERIAL_PATH = 'education_material';
     const QUESTIONNAIRE_PATH = 'questionnaire';
@@ -23,6 +26,15 @@ class File extends Model
      * @var string[]
      */
     protected $fillable = ['filename', 'path', 'content_type', 'metadata', 'thumbnail', 'size'];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'File';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * Bootstrap the model and its traits.

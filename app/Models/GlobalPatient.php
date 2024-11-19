@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class GlobalPatient extends Model
 {
+    use LogsActivity;
+
     const ADMIN_GROUP_ORG_ADMIN = 'organization_admin';
     const ADMIN_GROUP_GLOBAL_ADMIN = 'global_admin';
     const ADMIN_GROUP_COUNTRY_ADMIN = 'country_admin';
@@ -28,6 +31,15 @@ class GlobalPatient extends Model
         'enabled',
         'deleted_at',
     ];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'GlobalPatient';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

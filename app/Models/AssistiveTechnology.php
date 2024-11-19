@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Http;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class AssistiveTechnology extends Model
 {
-    use HasTranslations;
-    use SoftDeletes;
+    use HasTranslations, SoftDeletes, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -25,6 +25,15 @@ class AssistiveTechnology extends Model
         'file_id',
         'auto_translated'
     ];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'AssistiveTechnology';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * Bootstrap the model and its traits.

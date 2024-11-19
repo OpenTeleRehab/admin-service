@@ -29,6 +29,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\TranslatorController;
 use App\Http\Controllers\ForwarderController;
 use App\Http\Controllers\AssistiveTechnologyController;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -203,6 +204,9 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Global Assistive Technology Patients
     Route::apiResource('global-at-patients', GlobalAssistiveTechnologyPatientController::class);
+
+    // Audit logs
+    Route::get('audit-logs', [AuditLogController::class, 'index']);
 });
 
 // Public Access

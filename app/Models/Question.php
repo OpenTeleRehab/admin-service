@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Question extends Model
 {
-    use HasTranslations;
+    use HasTranslations, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -16,6 +17,15 @@ class Question extends Model
      * @var string[]
      */
     protected $fillable = ['title', 'questionnaire_id', 'type', 'file_id', 'order', 'auto_translated', 'parent_id', 'suggested_lang'];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'Question';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * The attributes that are translatable

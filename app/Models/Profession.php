@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Profession extends Model
 {
+    use LogsActivity;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -17,6 +20,14 @@ class Profession extends Model
         'name',
         'country_id'
     ];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'Profession';
+    protected static $logAttributes = ['name', 'country_id'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * Indicates if the model should be timestamped.

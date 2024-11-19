@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class InternationalClassificationDisease extends Model
 {
-    use HasTranslations;
+    use HasTranslations, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -20,6 +21,14 @@ class InternationalClassificationDisease extends Model
     protected $fillable = [
         'name'
     ];
+
+    / **
+      * Spatie\Activitylog config
+      */
+    protected static $logName = 'InternationalClassificationDisease';
+    protected static $logAttributes = ['name'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * The attributes that are translatable

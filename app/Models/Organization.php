@@ -6,10 +6,11 @@ use App\Helpers\OrganizationHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Organization extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, LogsActivity;
 
     const NON_HI_TYPE = 'non_hi';
     const HI_TYPE = 'hi';
@@ -35,6 +36,15 @@ class Organization extends Model
         'status',
         'created_by',
     ];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'Organization';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * Bootstrap the model and its traits.

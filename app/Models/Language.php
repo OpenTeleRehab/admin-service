@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Language extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     /**
      * Indicates if the model should be timestamped.
@@ -25,6 +26,14 @@ class Language extends Model
     protected $fillable = [
         'code', 'name', 'rtl', 'auto_translated',
     ];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'Language';
+    protected static $logAttributes = ['code', 'name', 'rtl', 'auto_translated'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * Bootstrap the model and its traits.

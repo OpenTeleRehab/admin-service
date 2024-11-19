@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Exercise extends Model
 {
-    use HasTranslations;
-    use SoftDeletes;
+    use HasTranslations, SoftDeletes, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +32,15 @@ class Exercise extends Model
         'suggested_lang',
         'share_to_hi_library',
     ];
+
+    / **
+      * Spatie\Activitylog config
+      */
+    protected static $logName = 'Exercise';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
 
     /**

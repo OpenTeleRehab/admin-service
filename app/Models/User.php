@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, LogsActivity;
 
     const ADMIN_GROUP_SUPER_ADMIN = 'super_admin';
     const ADMIN_GROUP_ORG_ADMIN = 'organization_admin';
@@ -26,6 +28,15 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name', 'last_name', 'email', 'password', 'type', 'country_id', 'clinic_id', 'gender', 'language_id', 'enabled', 'last_login'
     ];
+
+    /**
+     * Spatie\Activitylog config
+     */
+    protected static $logName = 'User';
+    protected static $logAttributes = ['*'];
+    protected static $logAttributesToIgnore = ['id', 'password', 'last_login', 'created_at', 'updated_at'];
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     /**
      * The attributes that should be hidden for arrays.
@@ -76,5 +87,15 @@ class User extends Authenticatable
     public function clinic()
     {
         return $this->belongsTo(Clinic::class);
+    }
+
+    /**
+     * Get the user's full name.
+     *
+     * @return string
+     */
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
     }
 }
