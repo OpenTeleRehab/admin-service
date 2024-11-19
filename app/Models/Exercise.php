@@ -33,7 +33,7 @@ class Exercise extends Model
         'share_to_hi_library',
     ];
 
-    / **
+    /**
       * Spatie\Activitylog config
       */
     protected static $logName = 'Exercise';
