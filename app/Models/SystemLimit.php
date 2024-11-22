@@ -29,7 +29,6 @@ class SystemLimit extends Model
     /**
      * Spatie\Activitylog config
      */
-    protected static $logName = 'StaticPage';
     protected static $logAttributes = ['content_type', 'value'];
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;

@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Helpers\KeycloakHelper;
 use App\Models\User;
 
 class AuditLogResource extends JsonResource
@@ -16,12 +17,14 @@ class AuditLogResource extends JsonResource
     public function toArray($request)
     {
         $user = User::find($this->causer_id);
+        $userGroups = KeycloakHelper::getUserGroup();
         $changes = $this->changes;
         return [
             'id' => $this->id,
             'resource' => $this->log_name,
             'type_of_changes' => $this->description,
             'who' => empty($user) ? '' : $user->full_name,
+            'user_groups' => $userGroups,
             'date_time' => $this->created_at,
             'before_changed' => $changes['old'] ?? null,
             'after_changed' => $changes['attributes']

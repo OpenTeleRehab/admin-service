@@ -40,7 +40,6 @@ class Organization extends Model
     /**
      * Spatie\Activitylog config
      */
-    protected static $logName = 'Organization';
     protected static $logAttributes = ['*'];
     protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
     protected static $logOnlyDirty = true;

@@ -25,7 +25,6 @@ class TermAndCondition extends Model
     /**
      * Spatie\Activitylog config
      */
-    protected static $logName = 'TermAndCondition';
     protected static $logAttributes = ['*'];
     protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
     protected static $logOnlyDirty = true;

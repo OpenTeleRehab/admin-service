@@ -25,7 +25,6 @@ class InternationalClassificationDisease extends Model
     / **
       * Spatie\Activitylog config
       */
-    protected static $logName = 'InternationalClassificationDisease';
     protected static $logAttributes = ['name'];
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;

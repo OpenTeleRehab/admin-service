@@ -271,6 +271,7 @@
     "audit_logs": "Audit Logs",
     "audit_logs.type_of_changes": "Type of changes",
     "audit_logs.who": "Who",
+    "audit_logs.user_groups": "User group",
     "audit_logs.date_time": "Date and time",
     "audit_logs.change_items": "What has been changed",
     "audit_logs.before_changed": "Before changed",

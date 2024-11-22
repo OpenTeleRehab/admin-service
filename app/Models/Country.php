@@ -30,7 +30,6 @@ class Country extends Model
      /**
       * Spatie\Activitylog config
       */
-    protected static $logName = 'Country';
     protected static $logAttributes = ['*'];
     protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
     protected static $logOnlyDirty = true;

@@ -30,7 +30,6 @@ class Language extends Model
     /**
      * Spatie\Activitylog config
      */
-    protected static $logName = 'Language';
     protected static $logAttributes = ['code', 'name', 'rtl', 'auto_translated'];
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;

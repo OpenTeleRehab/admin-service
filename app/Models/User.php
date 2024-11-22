@@ -32,7 +32,6 @@ class User extends Authenticatable
     /**
      * Spatie\Activitylog config
      */
-    protected static $logName = 'User';
     protected static $logAttributes = ['*'];
     protected static $logAttributesToIgnore = ['id', 'password', 'last_login', 'created_at', 'updated_at'];
     protected static $logOnlyDirty = true;

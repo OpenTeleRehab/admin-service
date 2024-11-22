@@ -24,7 +24,6 @@ class Profession extends Model
     /**
      * Spatie\Activitylog config
      */
-    protected static $logName = 'Profession';
     protected static $logAttributes = ['name', 'country_id'];
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
