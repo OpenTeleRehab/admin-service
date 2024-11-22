@@ -206,8 +206,10 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('global-at-patients', GlobalAssistiveTechnologyPatientController::class);
 
     // Audit logs
-    Route::get('audit-logs', [AuditLogController::class, 'index']);
-    Route::post('audit-logs/auth', [AuditLogController::class, 'store']);
+    Route::group(['prefix' => 'audit-logs'], function() {
+        Route::get('/', [AuditLogController::class, 'index']);
+        Route::post('/', [AuditLogController::class, 'store']);
+    });
 });
 
 // Public Access
