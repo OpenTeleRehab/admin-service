@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class FavoriteActivitiesTherapist extends Model
 {
@@ -29,9 +30,15 @@ class FavoriteActivitiesTherapist extends Model
     ];
 
     /**
-     * Spatie\Activitylog config
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
      */
-    protected static $logAttributes = ['activity_id', 'therapist_id', 'type', 'is_favorite'];
-    protected static $logOnlyDirty = true;
-    protected static $submitEmptyLogs = false;
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['activity_id', 'therapist_id', 'type', 'is_favorite'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 }

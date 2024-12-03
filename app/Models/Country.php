@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Country extends Model
 {
@@ -27,13 +28,19 @@ class Country extends Model
         'name', 'iso_code', 'phone_code', 'language_id', 'therapist_limit',
     ];
 
-     /**
-      * Spatie\Activitylog config
-      */
-    protected static $logAttributes = ['*'];
-    protected static $logAttributesToIgnore = ['id', 'created_at', 'updated_at'];
-    protected static $logOnlyDirty = true;
-    protected static $submitEmptyLogs = false;
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['id', 'created_at', 'updated_at']);
+    }
 
     /**
      * Bootstrap the model and its traits.

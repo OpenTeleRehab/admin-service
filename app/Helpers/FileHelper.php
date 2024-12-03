@@ -7,8 +7,8 @@ use \Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
-use Lakshmaji\Thumbnail\Facade\Thumbnail;
 use Spatie\PdfToImage\Pdf;
+use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 /**
  * @package App\Helpers
@@ -97,7 +97,11 @@ class FileHelper
                 ->save($thumbnailFileFullPath);
             return $thumbnailFile;
         } elseif ($file->content_type === 'video/mp4') {
-            Thumbnail::getThumbnail($destinationPath, $thumbnailPath, $thumbnailImage, 1);
+            FFMpeg::open($file->path)
+            ->getFrameFromSeconds(1)
+            ->export()
+            ->save($thumbnailFile);
+            
             return $thumbnailFile;
         } elseif ($file->content_type === 'application/pdf') {
             $pdf = new Pdf($destinationPath);

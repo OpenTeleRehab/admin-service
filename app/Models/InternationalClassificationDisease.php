@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use Spatie\Translatable\HasTranslations;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class InternationalClassificationDisease extends Model
 {
@@ -22,12 +23,18 @@ class InternationalClassificationDisease extends Model
         'name'
     ];
 
-    / **
-      * Spatie\Activitylog config
-      */
-    protected static $logAttributes = ['name'];
-    protected static $logOnlyDirty = true;
-    protected static $submitEmptyLogs = false;
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * The attributes that are translatable

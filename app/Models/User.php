@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+use Spatie\Activitylog\LogOptions;
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, LogsActivity;
@@ -29,13 +31,19 @@ class User extends Authenticatable
         'first_name', 'last_name', 'email', 'password', 'type', 'country_id', 'clinic_id', 'gender', 'language_id', 'enabled', 'last_login'
     ];
 
-    /**
-     * Spatie\Activitylog config
+     /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
      */
-    protected static $logAttributes = ['*'];
-    protected static $logAttributesToIgnore = ['id', 'password', 'last_login', 'created_at', 'updated_at'];
-    protected static $logOnlyDirty = true;
-    protected static $submitEmptyLogs = false;
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['id', 'password', 'last_login', 'created_at', 'updated_at']);
+    }
 
     /**
      * The attributes that should be hidden for arrays.

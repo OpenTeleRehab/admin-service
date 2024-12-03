@@ -24,7 +24,7 @@ class AuditLogResource extends JsonResource
             $changes = $this->changes;
             $user = User::find($this->causer_id);
             $userGroups = KeycloakHelper::getUserGroup();
-            $fullName = $user->full_name;
+            $fullName = $user?->full_name;
         } else {
             $changes = $this->getExtraProperty('customProperty');
             if (isset($changes['meta'])) {
