@@ -25,6 +25,7 @@ class QuestionResource extends JsonResource
             'fallback' => [
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
             ],
+            'mark_as_countable' => $this->mark_as_countable,
         ];
     }
 }

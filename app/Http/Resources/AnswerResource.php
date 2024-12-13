@@ -22,6 +22,8 @@ class AnswerResource extends JsonResource
             'fallback' => [
                 'description' => $this->getTranslation('description', config('app.fallback_locale'))
             ],
+            'value' => $this->value,
+            'threshold' => $this->threshold,
         ];
     }
 }

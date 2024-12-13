@@ -168,6 +168,8 @@ class QuestionnaireController extends Controller
                     'share_to_hi_library' => $data->share_to_hi_library ?? false,
                     'therapist_id' => $therapistId,
                     'global' => env('APP_NAME') == 'hi',
+                    'include_at_the_start' => $data->include_at_the_start ?? false,
+                    'include_at_the_end' => $data->include_at_the_end ?? false,
                 ]);
             }
 
@@ -199,13 +201,16 @@ class QuestionnaireController extends Controller
                     'questionnaire_id' => $questionnaire->id,
                     'file_id' => $file ? $file->id : null,
                     'order' => $index,
+                    'mark_as_countable' => $question->mark_as_countable ?? false,
                 ]);
 
                 if (isset($question->answers)) {
                     foreach ($question->answers as $answer) {
                         Answer::create([
-                            'description' => $answer->description,
+                            'description' => $answer->description ?? [],
                             'question_id' => $newQuestion->id,
+                            'value' => $answer->value ?? null,
+                            'threshold' => $answer->threshold ?? null,
                         ]);
                     }
                 }
@@ -433,7 +438,9 @@ class QuestionnaireController extends Controller
             $questionnaire->update([
                 'title' => $data->title,
                 'description' => $data->description,
-                'share_to_hi_library' => $data->share_to_hi_library ?? false
+                'share_to_hi_library' => $data->share_to_hi_library ?? false,
+                'include_at_the_start' => $data->include_at_the_start ?? false,
+                'include_at_the_end' => $data->include_at_the_end ?? false,
             ]);
 
             // Attach category to exercise.
@@ -458,6 +465,7 @@ class QuestionnaireController extends Controller
                         'type' => $question->type,
                         'questionnaire_id' => $questionnaire->id,
                         'order' => $index,
+                        'mark_as_countable' => $question->mark_as_countable ?? false,
                     ]
                 );
 
@@ -497,8 +505,10 @@ class QuestionnaireController extends Controller
                                 'id' => isset($answer->id) ? $answer->id : null,
                             ],
                             [
-                                'description' => $answer->description,
+                                'description' => $answer->description ?? [],
                                 'question_id' => $questionObj->id,
+                                'value' => $answer->value ?? null,
+                                'threshold' => $answer->threshold ?? null,
                             ]
                         );
 

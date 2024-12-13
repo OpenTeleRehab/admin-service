@@ -17,7 +17,7 @@ class Question extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'questionnaire_id', 'type', 'file_id', 'order', 'auto_translated', 'parent_id', 'suggested_lang'];
+    protected $fillable = ['title', 'questionnaire_id', 'type', 'file_id', 'order', 'auto_translated', 'parent_id', 'suggested_lang', 'mark_as_countable'];
 
     /**
      * Get the options for activity logging.
