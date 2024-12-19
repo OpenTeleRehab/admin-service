@@ -30,6 +30,7 @@ use App\Http\Controllers\TranslatorController;
 use App\Http\Controllers\ForwarderController;
 use App\Http\Controllers\AssistiveTechnologyController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\SurveyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -147,6 +148,12 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('term-condition', TermAndConditionController::class);
     Route::apiResource('privacy-policy', PrivacyPolicyController::class);
 
+    // Survey
+    Route::apiResource('survey', SurveyController::class);
+    Route::post('survey/publish/{survey}', [SurveyController::class, 'publish']);
+    Route::post('survey/submit', [SurveyController::class, 'submit']);
+    Route::post('survey/skip', [SurveyController::class, 'skipSurvey']);
+
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData']);
     Route::get('get-categories-for-open-library', [CategoryController::class, 'getCategoriesForOpenLibrary']);
@@ -233,3 +240,4 @@ Route::get('privacy-policy', [PrivacyPolicyController::class, 'index']);
 Route::get('language', [LanguageController::class, 'index']);
 Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'index']);
 Route::get('clinic/get-by-id/{clinic}', [ClinicController::class, 'getById']);
+Route::get('get-publish-survey', [SurveyController::class, 'getPublishSurveyByUserType']);

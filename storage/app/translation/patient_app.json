@@ -61,6 +61,8 @@
     "common.activities.progress": "Activity progress",
     "common.permissions.audio.message": "Open Telerehab needs to access the microphone. Please allow the permission in settings.",
     "common.permissions.video.message": "Open Telerehab needs to access the camera. Please allow the permission in settings.",
+    "common.previous": "Previous",
+    "common.skip": "Skip",
     "app.permission.setting.title": "App Permissions",
     "preferences": "Preferences",
     "tab.home": "Home",
@@ -308,5 +310,6 @@
     "app.update.message": "A new version is available in store now. Do you want to update?",
     "app.update.message.force": "A new version is available in store now. You have to update the app to continue.",
     "therapist.phone.numbers": "Therapist Number(s)",
-    "clinic.phone.number": "Clinic Number"
+    "clinic.phone.number": "Clinic Number",
+    "survey.answer.required": "Please provide an answer before proceeding."
 }

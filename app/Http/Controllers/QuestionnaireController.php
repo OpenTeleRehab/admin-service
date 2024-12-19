@@ -60,7 +60,7 @@ class QuestionnaireController extends Controller
         $therapistId = $request->get('therapist_id');
         $filter = json_decode($request->get('filter'), true);
 
-        $query = Questionnaire::select('questionnaires.*')->where('questionnaires.parent_id', null);
+        $query = Questionnaire::select('questionnaires.*')->where('questionnaires.parent_id', null)->where('is_survey', false);
 
         if (!empty($filter['favorites_only'])) {
             $query->join('favorite_activities_therapists', function ($join) use ($therapistId) {
@@ -164,12 +164,13 @@ class QuestionnaireController extends Controller
             } else {
                 $questionnaire = Questionnaire::create([
                     'title' => $data->title,
-                    'description' => $data->description,
+                    'description' => $data->description ?? [],
                     'share_to_hi_library' => $data->share_to_hi_library ?? false,
                     'therapist_id' => $therapistId,
                     'global' => env('APP_NAME') == 'hi',
                     'include_at_the_start' => $data->include_at_the_start ?? false,
                     'include_at_the_end' => $data->include_at_the_end ?? false,
+                    'is_survey' => $data->is_survey ?? false,
                 ]);
             }
 
@@ -221,7 +222,7 @@ class QuestionnaireController extends Controller
             // Add automatic translation for Exercise.
             event(new ApplyQuestionnaireAutoTranslationEvent($questionnaire));
 
-            return ['success' => true, 'message' => 'success_message.questionnaire_create'];
+            return ['success' => true, 'message' => 'success_message.questionnaire_create', 'id' => $questionnaire->id];
         } catch (\Exception $e) {
             DB::rollBack();
             return ['success' => false, 'message' => $e->getMessage()];

@@ -114,6 +114,10 @@
     "common.rural_area": "Rural area",
     "common.urban_area": "Urban area",
     "common.n/a": "N/A",
+    "common.next": "Next",
+    "common.previous": "Previous",
+    "common.skip": "Skip",
+    "common.submit": "Submit",
     "portal.name": "Therapist Portal",
     "home": "Home",
     "login": "Login",
@@ -587,5 +591,10 @@
     "toast_title.new_transfer": "New Transfer",
     "toast_title.delete_transfer": "Delete Transfer",
     "toast_title.decline_transfer": "Decline Transfer",
-    "toast_title.accept_transfer": "Accept Transfer"
+    "toast_title.accept_transfer": "Accept Transfer",
+    "toast_title.submit_survey": "Submit survey",
+    "toast_title.skip_survey": "Skip survey",
+    "success_message.survey_submitted": "Survey submitted successfully",
+    "success_message.survey_skipped": "Survey skipped successfully",
+    "survey.answer.required": "Please provide an answer before proceeding."
 }
