@@ -8,7 +8,6 @@ use App\Helpers\FileHelper;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\QuestionnaireResource;
 use App\Models\Answer;
-use App\Models\Category;
 use App\Models\File;
 use App\Models\Language;
 use App\Models\Question;
@@ -753,5 +752,17 @@ class QuestionnaireController extends Controller
     {
         $question = Question::findOrFail($request->get('question_id'));
         return $question->answers()->get();
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * 
+     * @return \App\Http\Resources\QuestionnaireResource
+     */
+    public function getById(Request $request)
+    {
+        $questionnaireId = $request->get('id');
+        $questionnaire = Questionnaire::find($questionnaireId);
+        return new QuestionnaireResource($questionnaire);
     }
 }

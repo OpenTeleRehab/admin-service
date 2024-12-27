@@ -61,6 +61,7 @@
     "common.assistive_technology_history": "Assistive Technology History",
     "common.provision_date": "Provision Date",
     "common.follow_up_date": "Follow Up Date",
+    "common.submitted_date": "Submitted Date",
     "treatment_plan.back_to_list": "Back To Treatment History",
     "treatment_plan.back_to_preset_list": "Back To Preset Treatments",
     "common.status": "Status",
@@ -367,6 +368,7 @@
     "questionnaire.create": "Add new questionnaire",
     "questionnaire.edit": "Edit questionnaire",
     "questionnaire.copy": "Copy questionnaire",
+    "questionnaire.download_report": "Download questionnaire result",
     "exercise.single_upload": "Upload single exercise",
     "exercise.bulk_upload": "Upload bulk exercises",
     "exercise.media": "MEDIA",
@@ -596,5 +598,10 @@
     "toast_title.skip_survey": "Skip survey",
     "success_message.survey_submitted": "Survey submitted successfully",
     "success_message.survey_skipped": "Survey skipped successfully",
-    "survey.answer.required": "Please provide an answer before proceeding."
+    "survey.answer.required": "Please provide an answer before proceeding.",
+    "report.questionnaire_result.patient_id": "Patient Id",
+    "report.questionnaire_result.diagnostic": "Diagnostic",
+    "report.questionnaire_result.answer": "Answer",
+    "report.questionnaire_result.value": "Value",
+    "report.questionnaire_result.threshold": "Threshold"
 }

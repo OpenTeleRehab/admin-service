@@ -130,6 +130,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('questionnaire/mark-as-used/by-ids', [QuestionnaireController::class, 'markAsUsed']);
     Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation']);
     Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite']);
+    Route::get('get-questionnaire-by-id', [QuestionnaireController::class, 'getById']);
 
     // Additional Fields
     Route::get('get-exercise-additional-fields-for-open-library', [ExerciseController::class, 'getExerciseAdditionalFieldsForOpenLibrary']);
