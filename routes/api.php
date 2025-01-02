@@ -182,6 +182,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Global Patients
     Route::apiResource('global-patients', GlobalPatientController::class);
+    Route::get('patient-raw-data/export', [GlobalPatientController::class, 'export']);
 
     // Color Scheme
     Route::post('color-scheme', [ColorSchemeController::class, 'store']);

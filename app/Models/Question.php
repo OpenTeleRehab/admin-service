@@ -12,6 +12,11 @@ class Question extends Model
 {
     use HasTranslations, LogsActivity;
 
+    const QUESTION_TYPE_CHECKBOX = 'checkbox';
+    const QUESTION_TYPE_MULTIPLE = 'multiple';
+    const QUESTION_TYPE_OPEN_NUMBER = 'open-number';
+
+
     /**
      * The attributes that are mass assignable.
      *

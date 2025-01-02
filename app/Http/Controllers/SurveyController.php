@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Resources\SurveyResource;
 use App\Models\Survey;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Http\Controllers\QuestionnaireController;
@@ -134,7 +133,6 @@ class SurveyController extends Controller
         // Update the all previous published survey to expired.
         Survey::where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
             ->update(['status' => Survey::STATUS_EXPIRED]);
-
         // Set the current survey to published.
         $survey->update([
             'status' => Survey::STATUS_PUBLISHED,
@@ -154,7 +152,7 @@ class SurveyController extends Controller
     {
         $type = $request->get('type');
         $survey = null;
-        $organization = Organization::where('name', $request->get('organization'))->first();
+        $organization = Organization::where('sub_domain_name', $request->get('organization'))->first();
         switch ($type) {
             case User::ADMIN_GROUP_ORG_ADMIN:
                 $survey = Survey::where('role', $type)
@@ -166,7 +164,7 @@ class SurveyController extends Controller
                         $query->whereNull('user_surveys.id')
                             ->orWhereNull('user_surveys.answer');
                     })
-                    ->whereJsonContains('organization', $organization->id)
+                    ->whereJsonContains('organization', $organization?->id)
                     ->whereDate('start_date', '<=', Carbon::now())
                     ->whereDate('end_date', '>=', Carbon::now())
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
@@ -183,7 +181,7 @@ class SurveyController extends Controller
                         $query->whereNull('user_surveys.id')
                             ->orWhereNull('user_surveys.answer');
                     })
-                    ->whereJsonContains('organization', $organization->id)
+                    ->whereJsonContains('organization', $organization?->id)
                     ->whereDate('start_date', '<=', Carbon::now())
                     ->whereDate('end_date', '>=', Carbon::now())
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
@@ -201,7 +199,7 @@ class SurveyController extends Controller
                         $query->whereNull('user_surveys.id')
                             ->orWhereNull('user_surveys.answer');
                     })
-                    ->whereJsonContains('organization', $organization->id)
+                    ->whereJsonContains('organization', $organization?->id)
                     ->whereDate('start_date', '<=', Carbon::now())
                     ->whereDate('end_date', '>=', Carbon::now())
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
@@ -220,7 +218,7 @@ class SurveyController extends Controller
                         $query->whereNull('user_surveys.id')
                             ->orWhereNull('user_surveys.answer');
                     })
-                    ->whereJsonContains('organization', $organization->id)
+                    ->whereJsonContains('organization', $organization?->id)
                     ->whereDate('start_date', '<=', Carbon::now())
                     ->whereDate('end_date', '>=', Carbon::now())
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
@@ -233,19 +231,46 @@ class SurveyController extends Controller
                 $survey = Survey::where('role', $type)
                     ->leftJoin('user_surveys', function ($join) use ($request) {
                         $join->on('surveys.id', '=', 'user_surveys.survey_id')
-                            ->where('user_surveys.user_id', '=', $request->integer('user_id'));
+                            ->where('user_surveys.user_id', $request->integer('user_id'))
+                            ->where('user_surveys.treatment_plan_id', $request->integer('treatment_plan_id'))
+                            ->where('user_surveys.survey_phase', $request->get('survey_phase'));
                     })
                     ->where(function ($query) {
                         $query->whereNull('user_surveys.id')
                             ->orWhereNull('user_surveys.answer');
                     })
-                    ->whereJsonContains('organization', $organization->id)
+                    ->whereJsonContains('organization', $organization?->id)
                     ->whereJsonContains('location', $request->get('location'))
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->whereJsonContains('country', $request->integer('country_id'))
                     ->whereJsonContains('clinic', $request->integer('clinic_id'))
+                    ->where(function ($query) {
+                        $query->where('surveys.include_at_the_start', 1)
+                            ->orWhere('surveys.include_at_the_end', 1);
+                    })
                     ->select('surveys.*')
                     ->first();
+
+                if (empty($survey)) {
+                    $survey = Survey::where('role', $type)
+                        ->leftJoin('user_surveys', function ($join) use ($request) {
+                            $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                                ->where('user_surveys.user_id', '=', $request->integer('user_id'));
+                        })
+                        ->where(function ($query) {
+                            $query->whereNull('user_surveys.id')
+                                ->orWhereNull('user_surveys.answer');
+                        })
+                        ->whereJsonContains('organization', $organization?->id)
+                        ->whereDate('start_date', '<=', Carbon::now())
+                        ->whereDate('end_date', '>=', Carbon::now())
+                        ->whereJsonContains('location', $request->get('location'))
+                        ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                        ->whereJsonContains('country', $request->integer('country_id'))
+                        ->whereJsonContains('clinic', $request->integer('clinic_id'))
+                        ->select('surveys.*')
+                        ->first();
+                }
                 break;
             default:
                 return ['success' => false, 'data' => []];
@@ -262,17 +287,34 @@ class SurveyController extends Controller
      */
     public function submit(Request $request)
     {
-        UserSurvey::updateOrCreate(
-            [
-                'user_id' => $request->integer('user_id'),
-                'survey_id' => $request->integer('survey_id'),
-            ],
-            [
-                'answer' => json_decode($request->get('answers')),
-                'status' => UserSurvey::STATUS_COMPLETED,
-                'completed_at' => Carbon::now(),
-            ]);
-
+        $survey = Survey::find($request->integer('survey_id'));
+        if ($survey->role === User::GROUP_PATIENT && ($survey->include_at_the_start || $survey->include_at_the_end)) {
+            UserSurvey::updateOrCreate(
+                [
+                    'user_id' => $request->integer('user_id'),
+                    'survey_id' => $request->integer('survey_id'),
+                    'treatment_plan_id' => $request->integer('treatment_plan_id'),
+                    'survey_phase' => $request->string('survey_phase'),
+                ],
+                [
+                    'answer' => json_decode($request->get('answers')),
+                    'status' => UserSurvey::STATUS_COMPLETED,
+                    'completed_at' => Carbon::now(),
+                    'survey_phase' => $request->string('survey_phase'),
+                ]);
+        } else {
+            UserSurvey::updateOrCreate(
+                [
+                    'user_id' => $request->integer('user_id'),
+                    'survey_id' => $request->integer('survey_id'),
+                ],
+                [
+                    'answer' => json_decode($request->get('answers')),
+                    'status' => UserSurvey::STATUS_COMPLETED,
+                    'completed_at' => Carbon::now(),
+                ]);    
+        }
+        
         return ['success' => true, 'message' => 'success_message.survey_submitted'];
     }
 

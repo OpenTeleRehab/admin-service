@@ -8,6 +8,8 @@ class UserSurvey extends Model
 {
     const STATUS_COMPLETED = 'completed';
     const STATUS_SKIPPED = 'skipped';
+    const SURVEY_PHASE_START = 'start';
+    const SURVEY_PHASE_END = 'end';
 
     /**
      * The attributes that are mass assignable.
@@ -17,10 +19,12 @@ class UserSurvey extends Model
     protected $fillable = [
         'user_id',
         'survey_id',
+        'treatment_plan_id',
         'answer',
         'status',
         'completed_at',
         'skipped_at',
+        'survey_phase',
     ];
 
     /**

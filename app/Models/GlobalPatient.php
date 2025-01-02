@@ -30,6 +30,7 @@ class GlobalPatient extends Model
         'country_id',
         'clinic_id',
         'enabled',
+        'location',
         'deleted_at',
     ];
 

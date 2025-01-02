@@ -29,6 +29,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('hi:sync-questionnaire-data')->runInBackground();
         $schedule->command('hi:sync-patient-data')->runInBackground();
         $schedule->command('hi:sync-assistive-technology-patient-data')->runInBackground();
+        $schedule->command('hi:sync-patient-twilio-call-data')->runInBackground();
     }
 
     /**
