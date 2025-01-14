@@ -7,7 +7,7 @@ use App\Models\Forwarder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
-class SyncPatientData extends Command
+class SyncPatientCallData extends Command
 {
     /**
      * The name and signature of the console command.
