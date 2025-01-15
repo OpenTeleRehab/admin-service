@@ -54,8 +54,6 @@ class GlobalPatientController extends Controller
                 } else {
                     $query->where(function ($query) use ($data) {
                         $query->where('identity', 'like', '%' . $data['search_value'] . '%')
-                            ->orWhere('first_name', 'like', '%' . $data['search_value'] . '%')
-                            ->orWhere('last_name', 'like', '%' . $data['search_value'] . '%')
                             ->orWhereHas('treatmentPlans', function (Builder $query) use ($data) {
                                 $query->where('name', 'like', '%' . $data['search_value'] . '%');
                             });

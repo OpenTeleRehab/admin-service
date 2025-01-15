@@ -117,7 +117,7 @@ class PatientRawDataExport
             if (count((array) $patient->treatmentPlans) > 0) {
                 foreach ($patient->treatmentPlans as $index => $treatmentPlan) {
                     $disease = InternationalClassificationDisease::find($treatmentPlan->disease_id);
-                    $diseasName = $disease->getTranslation('name', $language?->code ?? 'en');
+                    $diseasName = $disease?->getTranslation('name', $language?->code ?? 'en');
                     $startDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->start_date)->format('Y-m-d');
                     $endDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->end_date)->format('Y-m-d');
                     $treatmentStatus = self::getTreatmentPlanStatus($startDate, $endDate, $translations);
@@ -129,10 +129,10 @@ class PatientRawDataExport
                     $numberOfSubmittedWeeklyGoal = array_sum(array_map(fn($item) => (int) ($item->number_of_submitted_goal ?? 0), $treatmentPlan->weeklyGoals));
                     $totalSatisfactionDailyGoal = array_sum(array_map(fn($item) => (int) ($item->satisfaction ?? 0), $treatmentPlan->dailyGoals));
                     $totalSatisfactionWeeklyGoal = array_sum(array_map(fn($item) => (int) ($item->satisfaction ?? 0), $treatmentPlan->weeklyGoals));
-                    $averageExercise = $numberOfExercise > 0 ? $numberOfcompletedExercise / $numberOfExercise : 0;
-                    $averagePainLevel = $numberOfSubmittedPainLevel > 0 ? $totalPainLevel / $numberOfSubmittedPainLevel : 0;
-                    $averageDailyGoal = $numberOfSubmittedDailyGoal > 0 ? $totalSatisfactionDailyGoal / $numberOfSubmittedDailyGoal : 0;
-                    $averageWeeklyGoal = $numberOfSubmittedWeeklyGoal > 0 ? $totalSatisfactionWeeklyGoal / $numberOfSubmittedWeeklyGoal : 0;
+                    $averageExercise = $numberOfExercise > 0 ? round($numberOfcompletedExercise / $numberOfExercise, 2) : 0;
+                    $averagePainLevel = $numberOfSubmittedPainLevel > 0 ? round($totalPainLevel / $numberOfSubmittedPainLevel, 2) : 0;
+                    $averageDailyGoal = $numberOfSubmittedDailyGoal > 0 ? round($totalSatisfactionDailyGoal / $numberOfSubmittedDailyGoal, 2) : 0;
+                    $averageWeeklyGoal = $numberOfSubmittedWeeklyGoal > 0 ? round($totalSatisfactionWeeklyGoal / $numberOfSubmittedWeeklyGoal, 2) : 0;
                     
                     // Find questionnaire that include at start and end 
                     $treatmentPlanQuestionnaireIds = array_column($treatmentPlan->questionnaires, 'id');
@@ -324,9 +324,10 @@ class PatientRawDataExport
         if (count((array) $patientAssistiveTechnologies) > 0) {
             foreach ($patientAssistiveTechnologies as $index => $assistiveTechnology) {
                 $assistive = AssistiveTechnology::find($assistiveTechnology->assistive_technology_id);
+                $provisionDate = Carbon::createFromFormat('d/m/Y', $assistiveTechnology->provision_date);
                 $assistiveData = array_merge($patientData, [
                     $assistive?->getTranslation('name', $language?->code ?? 'en'),
-                    Carbon::parse($assistiveTechnology->provision_date)->toDateString()
+                    $provisionDate->format('Y-m-d')
                 ]);
                 $data[] = $assistiveData;
             }
