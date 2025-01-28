@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Http\Controllers\QuestionnaireController;
+use App\Models\Clinic;
+use App\Models\Country;
 use App\Models\Organization;
 use App\Models\UserSurvey;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +18,8 @@ class SurveyController extends Controller
 {
     const SUPER_ADMIN = 'super_admin';
     const ORGANIZATION_ADMIN = 'organization_admin';
+    const COUNTRY_ADMIN = 'country_admin';
+    const CLINIC_ADMIN = 'clinic_admin';
 
     /**
      * Display a listing of the resource.
@@ -25,7 +29,24 @@ class SurveyController extends Controller
     public function index()
     {
         $user = Auth::user();
-        return ['success' => true, 'data' => SurveyResource::collection(Survey::where('author', $user->id)->get())];
+
+        if ($user->type === self::SUPER_ADMIN) {
+            $surveys = $this->getSurveysForSuperAdmin()->get();
+        }
+
+        if ($user->type === self::ORGANIZATION_ADMIN) {
+            $surveys = $this->getSurveysForOrganizationAdmin()->get();
+        }
+
+        if ($user->type === self::COUNTRY_ADMIN) {
+            $surveys = $this->getSurveysForCountryAdmin()->get();
+        }
+
+        if ($user->type === self::CLINIC_ADMIN) {
+            $surveys = $this->getSurveysForClinicAdmin()->get();
+        }
+
+        return ['success' => true, 'data' => SurveyResource::collection($surveys)];
     }
 
     /**
@@ -76,6 +97,15 @@ class SurveyController extends Controller
             } else {
                 $surveyData['organization'] = [$organization->id];
                 $surveyData['global'] = false;
+            }
+
+            if ($user->type === self::COUNTRY_ADMIN) {
+                $surveyData['country'] = [(int)$user->country_id];
+            }
+
+            if ($user->type === self::CLINIC_ADMIN) {
+                $surveyData['country'] = [(int)$user->country_id];
+                $surveyData['clinic'] = [(int)$user->clinic_id];
             }
 
             Survey::create($surveyData);
@@ -146,11 +176,71 @@ class SurveyController extends Controller
                 $surveyData['global'] = false;
             }
 
+            if ($user->type === self::COUNTRY_ADMIN) {
+                $surveyData['country'] = [(int)$user->country_id];
+            }
+
+            if ($user->type === self::CLINIC_ADMIN) {
+                $surveyData['country'] = [(int)$user->country_id];
+                $surveyData['clinic'] = [(int)$user->clinic_id];
+            }
+
             $survey->update($surveyData);
             return ['success' => true, 'message' => 'success_message.survey_update'];
         } else {
             return ['success' => false, 'message' => 'error_message.survey_update'];
         }
+    }
+
+    /**
+     * Get surveys for Super Admin.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function getSurveysForSuperAdmin()
+    {
+        return Survey::where('global', true);
+    }
+
+    /**
+     * Get surveys for Organization Admin.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function getSurveysForOrganizationAdmin()
+    {
+        $userIds = User::where('type', self::ORGANIZATION_ADMIN)->pluck('id');
+        return Survey::whereIn('author', $userIds);
+    }
+
+    /**
+     * Get surveys for Country Admin.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function getSurveysForCountryAdmin()
+    {
+        $user = Auth::user();
+        $country = Country::firstWhere('id', $user->country_id);
+        $userIds = User::where('country_id', $country->id)
+                    ->where('type', self::COUNTRY_ADMIN)
+                    ->pluck('id');
+        return Survey::whereIn('author', $userIds);
+    }
+
+    /**
+     * Get surveys for Clinic Admin.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function getSurveysForClinicAdmin()
+    {
+        $user = Auth::user();
+        $clinic = Clinic::firstWhere('id', $user->clinic_id);
+        $userIds = User::where('clinic_id', $clinic->id)
+                    ->where('type', self::CLINIC_ADMIN)
+                    ->pluck('id');
+        return Survey::whereIn('author', $userIds);
     }
 
     /**
@@ -161,8 +251,24 @@ class SurveyController extends Controller
     public function publish(Survey $survey)
     {
         $user = Auth::user();
+
+        if ($user->type === self::SUPER_ADMIN) {
+            $surveys = $this->getSurveysForSuperAdmin();
+        }
+
+        if ($user->type === self::ORGANIZATION_ADMIN) {
+            $surveys = $this->getSurveysForOrganizationAdmin();
+        }
+
+        if ($user->type === self::COUNTRY_ADMIN) {
+            $surveys = $this->getSurveysForCountryAdmin();
+        }
+
+        if ($user->type === self::CLINIC_ADMIN) {
+            $surveys = $this->getSurveysForClinicAdmin();
+        }
         // Update the all previous published survey to expired.
-        Survey::where("author", $user->id)->where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
+        $surveys->where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
             ->update(['status' => Survey::STATUS_EXPIRED]);
         // Set the current survey to published.
         $survey->update([
