@@ -159,8 +159,9 @@ class SurveyController extends Controller
      */
     public function publish(Survey $survey)
     {
+        $user = Auth::user();
         // Update the all previous published survey to expired.
-        Survey::where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
+        Survey::where("author", $user->id)->where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
             ->update(['status' => Survey::STATUS_EXPIRED]);
         // Set the current survey to published.
         $survey->update([
