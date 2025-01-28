@@ -24,6 +24,7 @@ class SurveyResource extends JsonResource
             'organization' => $this->organization,
             'role' => $this->role,
             'country' => $this->country,
+            'gender' => $this->gender,
             'location' => $this->location,
             'clinic' => $this->clinic,
             'date' => $this->date,
@@ -35,7 +36,7 @@ class SurveyResource extends JsonResource
             'questionnaire' => new QuestionnaireResource($this->questionnaire),
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
-            'frequency' => $this->frequency
+            'frequency' => $this->frequency,
         ];
     }
 }
