@@ -6,10 +6,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\AuditLogResource;
-use Spatie\Activitylog\Models\Activity;
+use App\Models\ExtendActivity;
+use Illuminate\Support\Facades\Schema;
 
 class AuditLogController extends Controller
 {
+    const COUNTRY_ADMIN = 'country_admin';
+    const CLINIC_ADMIN = 'clinic_admin';
+    const SUPER_ADMIN = 'super_admin';
+    const ORGANIZATION_ADMIN = 'organization_admin';
     /**
      * @OA\Get(
      *     path="/api/audit-logs",
@@ -36,8 +41,116 @@ class AuditLogController extends Controller
      */
     public function index(Request $request)
     {
-        $pageSize = $request->get('page_size');
-        $auditLogs = Activity::paginate($pageSize);
+        $user = Auth::user();
+        $data = $request->all();
+
+        if (!in_array($user->type, [self::SUPER_ADMIN, self::COUNTRY_ADMIN, self::CLINIC_ADMIN, self::ORGANIZATION_ADMIN])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'error_message.permission'
+            ], 403);
+        }
+
+        $auditLogs = ExtendActivity::latest('created_at');
+
+        if (!empty($data['type_of_changes'])) {
+            $auditLogs->where('description', $data['type_of_changes']);
+        }
+
+        if (!empty($data['who'])) {
+            $auditLogs->whereHas('user', function ($query) use ($data) {
+                $query->whereRaw("CONCAT(first_name, ' ', last_name) = ?", [$data['who']]);
+            });
+        }
+
+        if (!empty($data['user_group'])) {
+            $auditLogs->whereHas('user', function ($query) use ($data) {
+                $query->where('type', $data['user_group']);
+            });
+        }
+
+        if (!empty($data['clinic'])) {
+            $auditLogs->whereHas('user.clinic', function ($query) use ($data) {
+                $query->where('name', $data['clinic']);
+            });
+        }
+
+        if (!empty($data['country'])) {
+            $auditLogs->whereHas('user.country', function ($query) use ($data) {
+                $query->where('name', $data['country']);
+            });
+        }
+
+        if (!empty($data['search_value'])) {
+            $searchValue = $data['search_value'];
+            $auditLogs->where(function ($query) use ($searchValue) {
+                $columns = Schema::getColumnListing('activity_log');
+
+                foreach ($columns as $column) {
+                    $query->orWhere($column, 'LIKE', "{$searchValue}%");
+                }
+
+                $query->orWhereHas('user', function ($subQuery) use ($searchValue) {
+                    $subQuery->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["{$searchValue}%"])
+                             ->orWhere('email', 'LIKE', "{$searchValue}%");
+                });
+
+                $query->orWhereHas('user.clinic', function ($subQuery) use ($searchValue) {
+                    $subQuery->where('name', 'LIKE', "{$searchValue}%");
+                });
+
+                $query->orWhereHas('user.country', function ($subQuery) use ($searchValue) {
+                    $subQuery->where('name', 'LIKE', "{$searchValue}%");
+                });
+            });
+        }
+
+        if (!empty($data['filters'])) {
+            $filters = $request->get('filters');
+            $auditLogs->where(function ($query) use ($filters) {
+                foreach ($filters as $filter) {
+                    $filterObj = json_decode($filter);
+                    if ($filterObj->columnName === 'type_of_changes') {
+                        $query->where('description', 'LIKE', "%{$filterObj->value}%");
+                    } elseif ($filterObj->columnName === 'who') {
+                        $query->whereHas('user', function ($subQuery) use ($filterObj) {
+                            $subQuery->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["{$filterObj->value}%"]);
+                        });
+                    } elseif ($filterObj->columnName === 'user_group') {
+                        $query->orWhereHas('user', function ($subQuery) use ($filterObj) {
+                            $subQuery->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["{$filterObj->value}%"])
+                                     ->orWhere('email', 'LIKE', "{$filterObj->value}%");
+                        });
+                    } elseif ($filterObj->columnName === 'clinic') {
+                        $query->orWhereHas('user.clinic', function ($subQuery) use ($filterObj) {
+                            $subQuery->where('id', 'LIKE', "{$filterObj->value}%");
+                        });
+                    } elseif ($filterObj->columnName === 'country') {
+                        $query->orWhereHas('user.country', function ($subQuery) use ($filterObj) {
+                            $subQuery->where('id', 'LIKE', "%{$filterObj->value}%");
+                        });
+                    } else {
+                        $query->where($filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
+                    }
+                }
+            });
+        }
+
+        if ($user->type === self::COUNTRY_ADMIN) {
+            $auditLogs->whereHas('user.country', function ($query) use ($user) {
+                $query->where('id', $user->country_id);
+            });
+        } elseif ($user->type === self::CLINIC_ADMIN) {
+            $auditLogs->whereHas('user.clinic', function ($query) use ($user) {
+                $query->where('id', $user->clinic_id);
+            });
+
+            $auditLogs->whereHas('user.country', function ($query) use ($user) {
+                $query->where('id', $user->country_id);
+            });
+        }
+
+        $auditLogs = $auditLogs->paginate($data['page_size'] ?? 10);
         $info = [
             'current_page' => $auditLogs->currentPage(),
             'total_count' => $auditLogs->total()

@@ -35,13 +35,19 @@ class AuditLogResource extends JsonResource
 
         $beforeChanged = isset($changes['old']) ? $changes['old'] : [];
         $afterChanged = isset($changes['attributes']) ? $changes['attributes'] : [];
+        $subjectType = last(explode('\\', $this->subject_type));
         return [
             'id' => $this->id,
             'resource' => $logName,
             'type_of_changes' => $this->description,
             'who' => $fullName,
+            'organization' => $this->user?->organization?->name,
+            'country' => $this->user?->country?->name,
+            'clinic' => $this->user?->clinic?->name,
+            'user_group' => $this->user?->type,
             'user_groups' => $userGroups,
             'date_time' => $this->created_at,
+            'subject_type' => $subjectType,
             'before_changed' => $beforeChanged,
             'after_changed' => $afterChanged
         ];
