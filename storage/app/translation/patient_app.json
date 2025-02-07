@@ -311,5 +311,7 @@
     "app.update.message.force": "A new version is available in store now. You have to update the app to continue.",
     "therapist.phone.numbers": "Therapist Number(s)",
     "clinic.phone.number": "Clinic Number",
-    "survey.answer.required": "Please provide an answer before proceeding."
+    "survey.answer.required": "Please provide an answer before proceeding.",
+    "device.root.detected": "Root Device Detected",
+    "device.root.detected.message": "We detected that the device is rooted. For security reason, OpenTeleRehab cannot be opened on this device."
 }
