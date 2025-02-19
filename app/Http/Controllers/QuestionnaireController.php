@@ -202,6 +202,7 @@ class QuestionnaireController extends Controller
                     'file_id' => $file ? $file->id : null,
                     'order' => $index,
                     'mark_as_countable' => $question->mark_as_countable ?? false,
+                    'mandatory' => isset($question->mandatory) && is_bool($question->mandatory) ? $question->mandatory : false,
                 ]);
 
                 if (isset($question->answers)) {
@@ -209,8 +210,8 @@ class QuestionnaireController extends Controller
                         Answer::create([
                             'description' => $answer->description ?? [],
                             'question_id' => $newQuestion->id,
-                            'value' => $answer->value ?? null,
-                            'threshold' => $answer->threshold ?? null,
+                            'value' => isset($answer->value) && is_numeric($answer->value) ? $answer->value : null,
+                            'threshold' => isset($answer->threshold) && is_numeric($answer->threshold) ? $answer->threshold : null,
                         ]);
                     }
                 }
@@ -271,6 +272,7 @@ class QuestionnaireController extends Controller
                     'order' => $index,
                     'parent_id' => $question->id,
                     'suggested_lang' => App::getLocale(),
+                    'mandatory' => $question->mandatory,
                 ]);
 
                 if (isset($question->answers)) {
@@ -466,6 +468,7 @@ class QuestionnaireController extends Controller
                         'questionnaire_id' => $questionnaire->id,
                         'order' => $index,
                         'mark_as_countable' => $question->mark_as_countable ?? false,
+                        'mandatory' => $question->mandatory ?? false,
                     ]
                 );
 
@@ -756,7 +759,7 @@ class QuestionnaireController extends Controller
 
     /**
      * @param \Illuminate\Http\Request $request
-     * 
+     *
      * @return \App\Http\Resources\QuestionnaireResource
      */
     public function getById(Request $request)

@@ -23,6 +23,7 @@ class Survey extends Model
         'organization',
         'role',
         'country',
+        'gender',
         'location',
         'clinic',
         'start_date',
@@ -33,6 +34,7 @@ class Survey extends Model
         'status',
         'frequency',
         'published_date',
+        'global'
     ];
 
     /**
@@ -42,6 +44,7 @@ class Survey extends Model
      */
     protected $casts = [
         'country' => 'array',
+        'gender' => 'array',
         'organization' => 'array',
         'location' => 'array',
         'clinic' => 'array',

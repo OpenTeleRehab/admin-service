@@ -26,6 +26,7 @@ class QuestionResource extends JsonResource
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
             ],
             'mark_as_countable' => $this->mark_as_countable,
+            'mandatory' => $this->mandatory,
         ];
     }
 }

@@ -10,9 +10,13 @@ use Carbon\Carbon;
 use App\Http\Controllers\QuestionnaireController;
 use App\Models\Organization;
 use App\Models\UserSurvey;
+use Illuminate\Support\Facades\Auth;
 
 class SurveyController extends Controller
 {
+    const SUPER_ADMIN = 'super_admin';
+    const ORGANIZATION_ADMIN = 'organization_admin';
+
     /**
      * Display a listing of the resource.
      *
@@ -47,10 +51,13 @@ class SurveyController extends Controller
         $newRequest = new Request(['data' => $request->get('questionnaire')]);
         $response = $questionnaireController->store($newRequest);
         if ($response['success'] === true) {
-            Survey::create([
-                'organization' => json_decode($request->get('organization'), true),
+            $user = Auth::user();
+            $organization = Organization::where('name', env('APP_NAME'))->firstOrFail();
+
+            $surveyData = [
                 'role' => $request->get('role'),
                 'country' => json_decode($request->get('country'), true),
+                'gender' => json_decode($request->get('gender'), true),
                 'location' => json_decode($request->get('location'), true),
                 'clinic' => json_decode($request->get('clinic'), true),
                 'start_date' => $startDate,
@@ -60,12 +67,21 @@ class SurveyController extends Controller
                 'include_at_the_end' => $request->boolean('include_at_the_end') ?? false,
                 'status' => Survey::STATUS_DRAFT,
                 'frequency' => $request->integer('frequency'),
-            ]);
+            ];
+
+            if ($user->type === self::SUPER_ADMIN && env('APP_NAME') == 'hi') {
+                $surveyData['organization'] = json_decode($request->get('organization'), true);
+                $surveyData['global'] = true;
+            } else {
+                $surveyData['organization'] = [$organization->id];
+                $surveyData['global'] = false;
+            }
+
+            Survey::create($surveyData);
             return ['success' => true, 'message' => 'success_message.survey_add'];
         } else {
             return ['success' => false, 'message' => 'error_message.survey_add'];
         }
-            
     }
 
     /**
@@ -105,10 +121,13 @@ class SurveyController extends Controller
         $newRequest = new Request(['data' => $request->get('questionnaire')]);
         $response = $questionnaireController->update($newRequest, $survey->questionnaire);
         if ($response['success'] === true) {
-            $survey->update([
-                'organization' => json_decode($request->get('organization'), true),
+            $user = Auth::user();
+            $organization = Organization::where('name', env('APP_NAME'))->firstOrFail();
+
+            $surveyData = [
                 'role' => $request->get('role'),
                 'country' => json_decode($request->get('country'), true),
+                'gender' => json_decode($request->get('gender'), true),
                 'location' => json_decode($request->get('location'), true),
                 'clinic' => json_decode($request->get('clinic'), true),
                 'start_date' => $startDate,
@@ -116,7 +135,17 @@ class SurveyController extends Controller
                 'include_at_the_start' => $request->boolean('include_at_the_start'),
                 'include_at_the_end' => $request->boolean('include_at_the_end'),
                 'frequency' => $request->integer('frequency'),
-            ]);
+            ];
+
+            if ($user->type === self::SUPER_ADMIN && env('APP_NAME') == 'hi') {
+                $surveyData['organization'] = json_decode($request->get('organization'), true);
+                $surveyData['global'] = true;
+            } else {
+                $surveyData['organization'] = [$organization->id];
+                $surveyData['global'] = false;
+            }
+
+            $survey->update($surveyData);
             return ['success' => true, 'message' => 'success_message.survey_update'];
         } else {
             return ['success' => false, 'message' => 'error_message.survey_update'];
@@ -312,9 +341,9 @@ class SurveyController extends Controller
                     'answer' => json_decode($request->get('answers')),
                     'status' => UserSurvey::STATUS_COMPLETED,
                     'completed_at' => Carbon::now(),
-                ]);    
+                ]);
         }
-        
+
         return ['success' => true, 'message' => 'success_message.survey_submitted'];
     }
 
