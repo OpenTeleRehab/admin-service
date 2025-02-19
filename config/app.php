@@ -177,7 +177,7 @@ return [
 
         // Other Service Providers
         Intervention\Image\ImageServiceProvider::class,
-        Lakshmaji\Thumbnail\ThumbnailServiceProvider::class,
+        ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
     ],
 
     /*
@@ -230,7 +230,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Image' => Intervention\Image\Facades\Image::class,
-        'Thumbnail' => Lakshmaji\Thumbnail\Facade\Thumbnail::class,
+        'FFMpeg' => ProtoneMedia\LaravelFFMpeg\Support\FFMpeg::class,
     ],
 
 ];

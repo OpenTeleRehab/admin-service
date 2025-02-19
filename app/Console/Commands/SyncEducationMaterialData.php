@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Helpers\FileHelper;
 use App\Models\EducationMaterial;
 use App\Models\File;
+use App\Models\Forwarder;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;

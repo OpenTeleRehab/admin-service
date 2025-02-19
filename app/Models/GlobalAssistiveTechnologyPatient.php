@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class GlobalAssistiveTechnologyPatient extends Model
 {
+    use LogsActivity;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -24,4 +28,18 @@ class GlobalAssistiveTechnologyPatient extends Model
         'provision_date',
         'deleted_at',
     ];
+
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+    */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['id', 'created_at', 'updated_at']);
+    }
 }

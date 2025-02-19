@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class StaticPage extends Model
 {
-    use HasTranslations;
+    use HasTranslations, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -17,6 +19,20 @@ class StaticPage extends Model
      * @var string[]
      */
     protected $fillable = ['title', 'private', 'content', 'url_path_segment', 'file_id', 'platform', 'background_color', 'text_color', 'auto_translated'];
+    
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['id', 'created_at', 'updated_at']);
+    }
 
     /**
      * The attributes that are translatable

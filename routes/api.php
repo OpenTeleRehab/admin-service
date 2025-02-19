@@ -29,6 +29,8 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\TranslatorController;
 use App\Http\Controllers\ForwarderController;
 use App\Http\Controllers\AssistiveTechnologyController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\SurveyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -128,6 +130,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('questionnaire/mark-as-used/by-ids', [QuestionnaireController::class, 'markAsUsed']);
     Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation']);
     Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite']);
+    Route::get('get-questionnaire-by-id', [QuestionnaireController::class, 'getById']);
 
     // Additional Fields
     Route::get('get-exercise-additional-fields-for-open-library', [ExerciseController::class, 'getExerciseAdditionalFieldsForOpenLibrary']);
@@ -145,6 +148,12 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('static-page', StaticPageController::class);
     Route::apiResource('term-condition', TermAndConditionController::class);
     Route::apiResource('privacy-policy', PrivacyPolicyController::class);
+
+    // Survey
+    Route::apiResource('survey', SurveyController::class);
+    Route::post('survey/publish/{survey}', [SurveyController::class, 'publish']);
+    Route::post('survey/submit', [SurveyController::class, 'submit']);
+    Route::post('survey/skip', [SurveyController::class, 'skipSurvey']);
 
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData']);
@@ -173,6 +182,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Global Patients
     Route::apiResource('global-patients', GlobalPatientController::class);
+    Route::get('patient-raw-data/export', [GlobalPatientController::class, 'export']);
 
     // Color Scheme
     Route::post('color-scheme', [ColorSchemeController::class, 'store']);
@@ -203,6 +213,12 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Global Assistive Technology Patients
     Route::apiResource('global-at-patients', GlobalAssistiveTechnologyPatientController::class);
+
+    // Audit logs
+    Route::group(['prefix' => 'audit-logs'], function() {
+        Route::get('/', [AuditLogController::class, 'index']);
+        Route::post('/', [AuditLogController::class, 'store']);
+    });
 });
 
 // Public Access
@@ -225,3 +241,5 @@ Route::get('term-condition', [TermAndConditionController::class, 'index']);
 Route::get('privacy-policy', [PrivacyPolicyController::class, 'index']);
 Route::get('language', [LanguageController::class, 'index']);
 Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'index']);
+Route::get('clinic/get-by-id/{clinic}', [ClinicController::class, 'getById']);
+Route::get('get-publish-survey', [SurveyController::class, 'getPublishSurveyByUserType']);

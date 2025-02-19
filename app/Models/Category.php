@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Category extends Model
 {
-    use HasTranslations, HasFactory;
+    use HasTranslations, HasFactory, LogsActivity;
 
     const TYPE_EXERCISE = 'exercise';
     const TYPE_EDUCATION_MATERIAL = 'education';
@@ -29,6 +31,20 @@ class Category extends Model
      * @var string[]
      */
     protected $fillable = ['title', 'type', 'parent_id', 'auto_translated'];
+
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['id', 'created_at', 'updated_at']);
+    }
 
     /**
      * The attributes that are translatable

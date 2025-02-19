@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\File;
 use App\Models\Question;
 use App\Models\Questionnaire;
+use App\Models\Forwarder;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;

@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Exercise extends Model
 {
-    use HasTranslations;
-    use SoftDeletes;
+    use HasTranslations, SoftDeletes, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -33,6 +34,19 @@ class Exercise extends Model
         'share_to_hi_library',
     ];
 
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['id', 'created_at', 'updated_at']);
+    }
 
     /**
      * The attributes that should be cast to native types.

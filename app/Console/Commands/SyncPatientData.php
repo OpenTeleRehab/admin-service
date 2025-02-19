@@ -64,6 +64,7 @@ class SyncPatientData extends Command
                             'clinic_id' => $patient->clinic_id,
                             'country_id' => $patient->country_id,
                             'enabled' => $patient->enabled,
+                            'location' => $patient->location,
                             'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : $patient->deleted_at,
                         ],
                     );
@@ -120,6 +121,7 @@ class SyncPatientData extends Command
                         'clinic_id' => $patient->clinic_id,
                         'country_id' => $patient->country_id,
                         'enabled' => $patient->enabled,
+                        'location' => $patient->location,
                         'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : $patient->deleted_at,
                     ],
                 );
