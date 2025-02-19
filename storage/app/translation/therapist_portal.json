@@ -604,6 +604,7 @@
     "success_message.survey_submitted": "Survey submitted successfully",
     "success_message.survey_skipped": "Survey skipped successfully",
     "survey.answer.required": "Please provide an answer before proceeding.",
+    "survey.error.thereshold_value": "Value must be between ${minValue} and ${threshold}",
     "report.questionnaire_result.patient_id": "Patient Id",
     "report.questionnaire_result.diagnostic": "Diagnostic",
     "report.questionnaire_result.answer": "Answer",
