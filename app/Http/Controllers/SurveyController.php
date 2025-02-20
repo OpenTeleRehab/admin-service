@@ -24,7 +24,8 @@ class SurveyController extends Controller
      */
     public function index()
     {
-        return ['success' => true, 'data' => SurveyResource::collection(Survey::all())];
+        $user = Auth::user();
+        return ['success' => true, 'data' => SurveyResource::collection(Survey::where('author', $user->id)->get())];
     }
 
     /**
