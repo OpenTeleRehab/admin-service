@@ -47,6 +47,7 @@ class ImportDefaultTranslation extends Command
 
         $translate = new GoogleTranslateHelper();
         $supportedLanguages = $translate->supportedLanguages();
+        $errors = [];
         foreach ($platforms as $platform) {
             $this->alert('Start importing: ' . $platform);
             $localeContent = Storage::get("translation/$platform.json");
@@ -69,19 +70,34 @@ class ImportDefaultTranslation extends Command
                         if (!in_array($languageCode, $supportedLanguages)) {
                             continue;
                         }
-
-                        $translationValue = $translate->translate($translation->value, $languageCode);
-                        Localization::create([
-                            'translation_id' => $translation->id,
-                            'language_id' => $language['id'],
-                            'value' => $translationValue,
-                            'auto_translated' => true,
-                        ]);
+                        try {
+                            $translationValue = $translate->translate($translation->value, $languageCode);
+                            Localization::create([
+                                'translation_id' => $translation->id,
+                                'language_id' => $language['id'],
+                                'value' => $translationValue,
+                                'auto_translated' => true,
+                            ]);
+                        } catch (\Exception $e) {
+                            $errorCode = $e->getCode();
+                            $errorMessage = $e->getMessage();
+                    
+                            // Ensure the same error (code + message) is not stored twice
+                            $existError = collect($errors)->contains(fn($err) => $err['code'] === $errorCode && $err['message'] === $errorMessage);
+                    
+                            if (!$existError) {
+                                $errors[] = ['code' => $errorCode, 'message' => $errorMessage];
+                            }
+                        }
                     }
                 }
                 $this->output->progressAdvance();
             }
             $this->output->progressFinish();
+        }
+        if (!empty($errors)) {
+            $this->warn("Translation completed with errors:");
+            $this->error(json_encode($errors, JSON_PRETTY_PRINT));
         }
         return 0;
     }

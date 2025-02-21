@@ -95,7 +95,7 @@ class PatientRawDataExport
             $gender = $translations[$patient->gender];
             $therapist = current(array_filter($therapists->data, fn($therapist) => $therapist->id === $patient->therapist_id));
             $secondaryTherapists = array_filter($therapists->data, fn($therapist) => in_array($therapist->id, $patient->secondary_therapists));
-            $therapistName = $therapist?->last_name . ' ' . $therapist?->first_name;
+            $therapistName = ($therapist?->last_name ?? '') . ' ' . ($therapist?->first_name ?? '');
             $secondaryTherapistsNames = implode(', ', array_map(fn($therapist) => $therapist->last_name . ' ' . $therapist->first_name, $secondaryTherapists));
             $patientData = [
                 $clinic?->name,
