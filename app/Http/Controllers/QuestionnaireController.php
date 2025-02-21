@@ -516,7 +516,7 @@ class QuestionnaireController extends Controller
                                 'description' => $answer->description ?? [],
                                 'question_id' => $questionObj->id,
                                 'value' => $answer->value ?? null,
-                                'threshold' => $answer->threshold ?? null,
+                                'threshold' => isset($answer->threshold) && is_numeric($answer->threshold) ? $answer->threshold : null,
                             ]
                         );
 
