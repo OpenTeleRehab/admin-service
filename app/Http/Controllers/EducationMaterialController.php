@@ -14,6 +14,7 @@ use App\Models\SystemLimit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EducationMaterialController extends Controller
 {
@@ -228,8 +229,12 @@ class EducationMaterialController extends Controller
         // Attach category to education material.
         $this->attachCategories($educationMaterial, $request->get('categories'));
 
-        // Add automatic translation for Exercise.
-        event(new ApplyMaterialAutoTranslationEvent($educationMaterial));
+        // Add automatic translation for Education material.
+        try {
+            event(new ApplyMaterialAutoTranslationEvent($educationMaterial));
+        } catch (\Exception $e) {
+            Log::warning("Translation failed: " . $e->getMessage());
+        }
 
         return ['success' => true, 'message' => 'success_message.education_material_create'];
     }

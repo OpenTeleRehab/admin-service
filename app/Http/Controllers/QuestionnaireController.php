@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class QuestionnaireController extends Controller
 {
@@ -220,7 +221,11 @@ class QuestionnaireController extends Controller
             DB::commit();
 
             // Add automatic translation for Exercise.
-            event(new ApplyQuestionnaireAutoTranslationEvent($questionnaire));
+            try {
+                event(new ApplyQuestionnaireAutoTranslationEvent($questionnaire));
+            } catch (\Exception $e) {
+                Log::warning("Translation failed: " . $e->getMessage());
+            }
 
             return ['success' => true, 'message' => 'success_message.questionnaire_create', 'id' => $questionnaire->id];
         } catch (\Exception $e) {

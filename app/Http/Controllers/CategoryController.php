@@ -7,6 +7,7 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\CategoryTreeResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CategoryController extends Controller
 {
@@ -134,7 +135,11 @@ class CategoryController extends Controller
             ]);
 
             // Add automatic translation for Category.
-            event(new ApplyCategoryAutoTranslationEvent($parentCategory));
+            try {
+                event(new ApplyCategoryAutoTranslationEvent($parentCategory));
+            } catch (\Exception $e) {
+                Log::warning("Translation failed: " . $e->getMessage());
+            }
         }
 
         $subCategoryTitles = explode(';', $request->get('category_value', ''));
@@ -147,7 +152,11 @@ class CategoryController extends Controller
                 ]);
 
                 // Add automatic translation for Category.
-                event(new ApplyCategoryAutoTranslationEvent($category));
+                try {
+                    event(new ApplyCategoryAutoTranslationEvent($category));
+                } catch (\Exception $e) {
+                    Log::warning("Translation failed: " . $e->getMessage());
+                }
             }
         }
 

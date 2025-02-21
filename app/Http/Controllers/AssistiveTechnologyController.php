@@ -8,6 +8,7 @@ use App\Http\Resources\AssistiveTechnologyResource;
 use App\Models\AssistiveTechnology;
 use App\Models\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AssistiveTechnologyController extends Controller
 {
@@ -49,7 +50,11 @@ class AssistiveTechnologyController extends Controller
         ]);
 
         // Add automatic translation for Assistive Technology.
-        event(new ApplyAssistiveTechnologyAutoTranslationEvent($assistive_technology));
+        try {
+            event(new ApplyAssistiveTechnologyAutoTranslationEvent($assistive_technology));
+        } catch (\Exception $e) {
+            Log::warning("Translation failed: " . $e->getMessage());
+        }
 
         return ['success' => true, 'message' => 'success_message.assistive_technology_add'];
     }
