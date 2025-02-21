@@ -12,6 +12,7 @@ use App\Models\TermAndCondition;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PrivacyPolicyController extends Controller
 {
@@ -95,7 +96,11 @@ class PrivacyPolicyController extends Controller
         ]);
 
         // Add automatic translation for Privacy Policy.
-        event(new ApplyPrivacyPolicyAutoTranslationEvent($privacyPolicy));
+        try {
+            event(new ApplyPrivacyPolicyAutoTranslationEvent($privacyPolicy));
+        } catch (\Exception $e) {
+            Log::warning("Translation failed: " . $e->getMessage());
+        }
 
         return ['success' => true, 'message' => 'success_message.privacy_policy_add'];
     }

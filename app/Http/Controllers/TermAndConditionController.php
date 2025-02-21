@@ -10,6 +10,7 @@ use App\Models\TermAndCondition;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TermAndConditionController extends Controller
 {
@@ -93,7 +94,11 @@ class TermAndConditionController extends Controller
         ]);
 
         // Add automatic translation for Term and Conditions.
-        event(new ApplyTermAndConditionAutoTranslationEvent($termAndConditions));
+        try {
+            event(new ApplyTermAndConditionAutoTranslationEvent($termAndConditions));
+        } catch (\Exception $e) {
+            Log::warning("Translation failed: " . $e->getMessage());
+        }
 
         return ['success' => true, 'message' => 'success_message.team_and_condition_add'];
     }

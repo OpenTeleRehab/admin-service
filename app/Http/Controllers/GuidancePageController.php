@@ -10,6 +10,7 @@ use App\Models\StaticPage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use App\Models\File;
+use Illuminate\Support\Facades\Log;
 
 class GuidancePageController extends Controller
 {
@@ -95,7 +96,11 @@ class GuidancePageController extends Controller
         ]);
 
         // Add automatic translation for Guidance.
-        event(new ApplyGuidanceAutoTranslationEvent($guidance));
+        try {
+            event(new ApplyGuidanceAutoTranslationEvent($guidance));
+        } catch (\Exception $e) {
+            Log::warning("Translation failed: " . $e->getMessage());
+        }
 
         return ['success' => true, 'message' => 'success_message.guidance_add'];
     }

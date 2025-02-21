@@ -9,6 +9,7 @@ use App\Http\Resources\StaticPageIndexResource;
 use App\Models\StaticPage;
 use Illuminate\Http\Request;
 use App\Models\File;
+use Illuminate\Support\Facades\Log;
 
 class StaticPageController extends Controller
 {
@@ -178,7 +179,11 @@ class StaticPageController extends Controller
         ]);
 
         // Add automatic translation for Static page.
-        event(new ApplyStaticPageAutoTranslationEvent($staticPage));
+        try {
+            event(new ApplyStaticPageAutoTranslationEvent($staticPage));
+        } catch (\Exception $e) {
+            Log::warning("Translation failed: " . $e->getMessage());
+        }
 
         return ['success' => true, 'message' => 'success_message.static_page_add'];
     }

@@ -53,7 +53,7 @@ class SurveyController extends Controller
         $response = $questionnaireController->store($newRequest);
         if ($response['success'] === true) {
             $user = Auth::user();
-            $organization = Organization::where('name', env('APP_NAME'))->firstOrFail();
+            $organization = Organization::where('sub_domain_name', env('APP_NAME'))->firstOrFail();
 
             $surveyData = [
                 'role' => $request->get('role'),
@@ -123,7 +123,7 @@ class SurveyController extends Controller
         $response = $questionnaireController->update($newRequest, $survey->questionnaire);
         if ($response['success'] === true) {
             $user = Auth::user();
-            $organization = Organization::where('name', env('APP_NAME'))->firstOrFail();
+            $organization = Organization::where('sub_domain_name', env('APP_NAME'))->firstOrFail();
 
             $surveyData = [
                 'role' => $request->get('role'),

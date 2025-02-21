@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ExerciseController extends Controller
@@ -164,7 +165,11 @@ class ExerciseController extends Controller
         $this->attachCategories($exercise, $request->get('categories'));
 
         // Add automatic translation for Exercise.
-        event(new ApplyExerciseAutoTranslationEvent($exercise));
+        try {
+            event(new ApplyExerciseAutoTranslationEvent($exercise));
+        } catch (\Exception $e) {
+            Log::warning("Translation failed: " . $e->getMessage());
+        }
 
         return ['success' => true, 'message' => 'success_message.exercise_create'];
     }
