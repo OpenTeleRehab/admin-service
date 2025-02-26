@@ -30,6 +30,7 @@ use App\Http\Controllers\TranslatorController;
 use App\Http\Controllers\ForwarderController;
 use App\Http\Controllers\AssistiveTechnologyController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\SupersetController;
 use App\Http\Controllers\SurveyController;
 
 /*
@@ -219,8 +220,10 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::get('/', [AuditLogController::class, 'index']);
         Route::post('/', [AuditLogController::class, 'store']);
     });
-});
 
+    // Superset
+    Route::get('/superset-guest-token', [SupersetController::class, 'index']);
+});
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);
 Route::get('page/static', [StaticPageController::class, 'getStaticPage']);
