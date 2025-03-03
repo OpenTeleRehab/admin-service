@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Firebase\JWT\JWT as JWT;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -99,9 +100,29 @@ class SupersetController extends Controller
             ], 500);
         }
 
+        // Step 4: Decode the guest token and extract expiration time.
+        $guestToken = $guestResponse->json()['token'];
+
+        // Decode the JWT token to get payload
+        $tokenParts = explode('.', $guestToken); // Split the JWT into parts
+        if (count($tokenParts) === 3) {
+            // Decode the payload part (index 1)
+            $payload = JWT::urlsafeB64Decode($tokenParts[1]);
+
+            // Convert the payload from JSON into an array
+            $payloadData = json_decode($payload, true);
+
+            // Extract expiration time (exp) from the payload
+            $expirationTime = isset($payloadData['exp']) ? $payloadData['exp'] : null;
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $guestResponse->json()['token'],
+            'data' => [
+                'guest_token' => $guestToken,
+                'expiration_time' => $expirationTime,
+            ],
         ]);
     }
 }
+
