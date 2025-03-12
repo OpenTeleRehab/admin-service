@@ -152,7 +152,7 @@
   {
     "iso_code": "BV",
     "name": "Bouvet Island",
-    "phone_code": ""
+    "phone_code": "47"
   },
   {
     "iso_code": "BR",
@@ -167,7 +167,7 @@
   {
     "iso_code": "UM",
     "name": "United States Minor Outlying Islands",
-    "phone_code": ""
+    "phone_code": "1"
   },
   {
     "iso_code": "VG",
@@ -402,7 +402,7 @@
   {
     "iso_code": "TF",
     "name": "French Southern Territories",
-    "phone_code": ""
+    "phone_code": "262"
   },
   {
     "iso_code": "GA",
@@ -492,7 +492,7 @@
   {
     "iso_code": "HM",
     "name": "Heard Island and McDonald Islands",
-    "phone_code": ""
+    "phone_code": "672"
   },
   {
     "iso_code": "VA",
