@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 class GlobalPatient extends Model
 {
@@ -46,6 +47,30 @@ class GlobalPatient extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logExcept(['id', 'created_at', 'updated_at']);
+    }
+
+    /**
+     * Modify the activity properties before it is saved.
+     *
+     * @param \Spatie\Activitylog\Models\Activity $activity
+     * @return void
+     */
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        if ($eventName === 'created') {
+            $activity->properties = [
+                'attributes' => ['identity' => $this->identity],
+            ];
+        } else if ($eventName === 'updated') {
+            $activity->properties = [
+                'old' => ['identity' => $this->identity],
+                'attributes' => ['identity' => $this->identity],
+            ];
+        } else {
+            $activity->properties = [
+                'old' => ['identity' => $this->identity],
+            ];
+        }
     }
 
     /**

@@ -145,6 +145,7 @@ class GlobalPatientController extends Controller
     {
         $patient = GlobalPatient::where('patient_id', $patientId)->first();
         $country = Country::find($patient->country_id);
+        $user = auth()->user();
 
         Http::withHeaders([
             'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code),
@@ -152,6 +153,11 @@ class GlobalPatientController extends Controller
         ])->post(env('PATIENT_SERVICE_URL') . '/patient/deleteAccount/' . $patientId, [
             'therapist_id' => $patient->therapist_id,
             'hard_delete' => true,
+            'user_id' => $user->id,
+            'group' => $user->type,
+            'user_name' => $user->last_name . ' ' . $user->first_name,
+            'clinic_id' => $user->clinic_id,
+            'country_id' => $user->country_id,
         ]);
 
         $patient->delete();

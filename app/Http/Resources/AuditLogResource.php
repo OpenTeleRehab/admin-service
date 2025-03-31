@@ -3,8 +3,10 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Helpers\KeycloakHelper;
+use App\Models\Clinic;
 use App\Models\User;
+use App\Models\Country;
+use Carbon\Carbon;
 
 class AuditLogResource extends JsonResource
 {
@@ -16,36 +18,52 @@ class AuditLogResource extends JsonResource
      */
     public function toArray($request)
     {
-        $logName = $this->log_name;
         $fullName = '';
-        $userGroups = [];
-        $changes = [];
-        if ($logName === 'admin_service') {
-            $changes = $this->changes;
-            $user = User::find($this->causer_id);
-            $userGroups = KeycloakHelper::getUserGroup();
-            $fullName = $user?->full_name;
+        $userGroup = '';
+        $userClinic = '';
+        $userCountry = '';
+        $changes = $this->changes;
+        $user = User::find($this->causer_id);
+        if ($user) {
+            $fullName = $user->last_name . ' ' . $user->first_name;
+            $userGroup = $user->type;
+            $userClinic = $user->clinic?->name;
+            $userCountry = $user->country?->name;
         } else {
-            $changes = $this->getExtraProperty('customProperty');
-            if (isset($changes['meta'])) {
-                $fullName = $changes['meta']['user_full_name'];
-                $userGroups = $changes['meta']['user_groups'];
-            }
+            $fullName = $this->full_name;
+            $userGroup = $this->group;
+            $clinic = Clinic::find($this->clinic_id);
+            $country = Country::find($this->country_id);
+            $userClinic = $clinic?->name;
+            $userCountry = $country?->name;
         }
 
         $beforeChanged = isset($changes['old']) ? $changes['old'] : [];
         $afterChanged = isset($changes['attributes']) ? $changes['attributes'] : [];
         $subjectType = last(explode('\\', $this->subject_type));
+        unset($beforeChanged['auto_translated']);
+        unset($afterChanged['auto_translated']);
+        if (isset($beforeChanged['created_at'])) {
+            $beforeChanged['created_at'] = Carbon::parse($beforeChanged['created_at'])->format('Y-m-d');
+        }
+        if (isset($beforeChanged['updated_at'])) {
+            $beforeChanged['updated_at'] = Carbon::parse($beforeChanged['updated_at'])->format('Y-m-d');
+        }
+        if (isset($afterChanged['created_at'])) {
+            $afterChanged['created_at'] = Carbon::parse($afterChanged['created_at'])->format('Y-m-d');
+        }
+        if (isset($afterChanged['updated_at'])) {
+            $afterChanged['updated_at'] = Carbon::parse($afterChanged['updated_at'])->format('Y-m-d');
+        }
+
         return [
             'id' => $this->id,
-            'resource' => $logName,
+            'resource' => $this->log_name,
             'type_of_changes' => $this->description,
             'who' => $fullName,
-            'organization' => $this->user?->organization?->name,
-            'country' => $this->user?->country?->name,
-            'clinic' => $this->user?->clinic?->name,
-            'user_group' => $this->user?->type,
-            'user_groups' => $userGroups,
+            'country' => $userCountry,
+            'clinic' => $userClinic,
+            'user_group' => $userGroup,
             'date_time' => $this->created_at,
             'subject_type' => $subjectType,
             'before_changed' => $beforeChanged,

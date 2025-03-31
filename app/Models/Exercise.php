@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\App;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Support\Facades\Http;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Support\Facades\Auth;
 
 class Exercise extends Model
 {
@@ -35,20 +38,6 @@ class Exercise extends Model
     ];
 
     /**
-     * Get the options for activity logging.
-     *
-     * @return \Spatie\Activitylog\LogOptions
-     */
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->logExcept(['id', 'created_at', 'updated_at']);
-    }
-
-    /**
      * The attributes that should be cast to native types.
      *
      * @var array
@@ -64,6 +53,20 @@ class Exercise extends Model
      * @var string[]
      */
     public $translatable = ['title', 'auto_translated'];
+
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['id', 'auto_translated', 'parent_id', 'exercise_id', 'global', 'suggested_lang', 'created_at', 'updated_at', 'deleted_at']);
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -87,6 +90,32 @@ class Exercise extends Model
     public function children()
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /**
+     * Modify the activity properties before it is saved.
+     *
+     * @param \Spatie\Activitylog\Models\Activity $activity
+     * @return void
+     */
+    public function tapActivity(Activity $activity)
+    {
+        $user = Auth::user();
+        $therapist = null;
+        if ($this->therapist_id) {
+            $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+            $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/therapist/by-id', [
+                'id' => $this->therapist_id,
+            ]);
+            if (!empty($response) && $response->successful()) {
+                $therapist = json_decode($response);
+            } 
+        }
+        $activity->causer_id = $therapist ? $therapist->id : $user->id;
+        $activity->full_name = $therapist ? $therapist->last_name . ' ' . $therapist->first_name : null; 
+        $activity->clinic_id = $therapist ? $therapist->clinic_id : null;
+        $activity->country_id = $therapist ? $therapist->country_id : null;
+        $activity->group = $therapist ? 'therapist' : null;
     }
 
     /**
