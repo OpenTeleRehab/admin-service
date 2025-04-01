@@ -495,12 +495,16 @@ class QuestionnaireController extends Controller
                 if ($questionObj->wasRecentlyCreated) {
                     foreach ($languages as $language) {
                         $languageCode = $language->code;
-
+                        
                         // Auto translate question.
-                        $translatedTitle = $translate->translate($questionObj->title, $languageCode);
-                        $questionObj->setTranslation('title', $languageCode, $translatedTitle);
-                        $questionObj->setTranslation('auto_translated', $languageCode, true);
-                        $questionObj->save();
+                        try {
+                            $translatedTitle = $translate->translate($questionObj->title, $languageCode);
+                            $questionObj->setTranslation('title', $languageCode, $translatedTitle);
+                            $questionObj->setTranslation('auto_translated', $languageCode, true);
+                            $questionObj->save();
+                        } catch (\Exception $e) {
+                            Log::warning("Translation failed: " . $e->getMessage());
+                        }
                     }
                 }
 
@@ -527,10 +531,14 @@ class QuestionnaireController extends Controller
                                 $languageCode = $language->code;
 
                                 // Auto translate answer.
-                                $translatedAnswerDescription = $translate->translate($answerObj->description, $languageCode);
-                                $answerObj->setTranslation('description', $languageCode, $translatedAnswerDescription);
-                                $answerObj->setTranslation('auto_translated', $languageCode, true);
-                                $answerObj->save();
+                                try {
+                                    $translatedAnswerDescription = $translate->translate($answerObj->description, $languageCode);
+                                    $answerObj->setTranslation('description', $languageCode, $translatedAnswerDescription);
+                                    $answerObj->setTranslation('auto_translated', $languageCode, true);
+                                    $answerObj->save();
+                                } catch (\Exception $e) {
+                                    Log::warning("Translation failed: " . $e->getMessage());
+                                }
                             }
                         }
                     }
