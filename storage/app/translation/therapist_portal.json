@@ -124,6 +124,7 @@
     "common.joined": "Joined",
     "common.participants": "Participants",
     "common.add_participants": "Add Participants",
+    "common.transcript.not.available": "Speech recognition is not available.",
     "portal.name": "Therapist Portal",
     "home": "Home",
     "login": "Login",
