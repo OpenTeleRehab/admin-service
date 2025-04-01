@@ -314,5 +314,6 @@
     "survey.answer.required": "Please provide an answer before proceeding.",
     "survey.number.validation": "Value must be between ${minValue} and ${maxValue}",
     "device.root.detected": "Root Device Detected",
-    "device.root.detected.message": "We detected that the device is rooted. For security reason, OpenTeleRehab cannot be opened on this device."
+    "device.root.detected.message": "We detected that the device is rooted. For security reason, OpenTeleRehab cannot be opened on this device.",
+    "question.threshold.validation": "Value must be between ${minValue} and ${maxValue}"
 }
