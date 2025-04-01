@@ -288,7 +288,10 @@ class ExerciseController extends Controller
         // Remove deleted additional field.
         AdditionalField::where('exercise_id', $exercise->id)
             ->whereNotIn('id', $additionalFieldIds)
-            ->delete();
+            ->get()
+            ->each(function ($additionalFieldId) {
+                $additionalFieldId->delete();
+            });
 
         // Remove files.
         $exerciseFileIDs = $exercise->files()->pluck('id')->toArray();

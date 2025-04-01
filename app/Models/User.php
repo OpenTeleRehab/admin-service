@@ -44,7 +44,7 @@ class User extends Authenticatable
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->logExcept(['id', 'password', 'last_login', 'created_at', 'updated_at']);
+            ->logExcept(['id', 'password', 'last_login', 'created_at', 'updated_at', 'email_verified_at', 'remember_token']);
     }
 
     /**

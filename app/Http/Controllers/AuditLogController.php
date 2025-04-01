@@ -53,34 +53,6 @@ class AuditLogController extends Controller
 
         $auditLogs = ExtendActivity::latest('created_at');
 
-        if (!empty($data['type_of_changes'])) {
-            $auditLogs->where('description', $data['type_of_changes']);
-        }
-
-        if (!empty($data['who'])) {
-            $auditLogs->whereHas('user', function ($query) use ($data) {
-                $query->whereRaw("CONCAT(first_name, ' ', last_name) = ?", [$data['who']]);
-            });
-        }
-
-        if (!empty($data['user_group'])) {
-            $auditLogs->whereHas('user', function ($query) use ($data) {
-                $query->where('type', $data['user_group']);
-            });
-        }
-
-        if (!empty($data['clinic'])) {
-            $auditLogs->whereHas('user.clinic', function ($query) use ($data) {
-                $query->where('name', $data['clinic']);
-            });
-        }
-
-        if (!empty($data['country'])) {
-            $auditLogs->whereHas('user.country', function ($query) use ($data) {
-                $query->where('name', $data['country']);
-            });
-        }
-
         if (!empty($data['search_value'])) {
             $searchValue = $data['search_value'];
             $auditLogs->where(function ($query) use ($searchValue) {
@@ -91,8 +63,7 @@ class AuditLogController extends Controller
                 }
 
                 $query->orWhereHas('user', function ($subQuery) use ($searchValue) {
-                    $subQuery->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["{$searchValue}%"])
-                             ->orWhere('email', 'LIKE', "{$searchValue}%");
+                    $subQuery->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["{$searchValue}%"]);
                 });
 
                 $query->orWhereHas('user.clinic', function ($subQuery) use ($searchValue) {
@@ -110,25 +81,49 @@ class AuditLogController extends Controller
             $auditLogs->where(function ($query) use ($filters) {
                 foreach ($filters as $filter) {
                     $filterObj = json_decode($filter);
+        
                     if ($filterObj->columnName === 'type_of_changes') {
                         $query->where('description', 'LIKE', "%{$filterObj->value}%");
                     } elseif ($filterObj->columnName === 'who') {
-                        $query->whereHas('user', function ($subQuery) use ($filterObj) {
-                            $subQuery->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["{$filterObj->value}%"]);
+                        $query->where(function ($subQuery) use ($filterObj) {
+                            $subQuery->whereHas('user', function ($subQuery) use ($filterObj) {
+                                $subQuery->whereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$filterObj->value}%"]);
+                            })
+                            ->orWhere('full_name', 'LIKE', "%{$filterObj->value}%");
                         });
                     } elseif ($filterObj->columnName === 'user_group') {
-                        $query->orWhereHas('user', function ($subQuery) use ($filterObj) {
-                            $subQuery->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["{$filterObj->value}%"])
-                                     ->orWhere('email', 'LIKE', "{$filterObj->value}%");
+                        $query->where(function ($subQuery) use ($filterObj) {
+                            $subQuery->whereHas('user', function ($subQuery) use ($filterObj) {
+                                $subQuery->where('type', $filterObj->value);
+                            })
+                            ->orWhere('group', $filterObj->value);
                         });
                     } elseif ($filterObj->columnName === 'clinic') {
-                        $query->orWhereHas('user.clinic', function ($subQuery) use ($filterObj) {
-                            $subQuery->where('id', 'LIKE', "{$filterObj->value}%");
+                        $query->where(function ($subQuery) use ($filterObj) {
+                            $subQuery->orWhereHas('user.clinic', function ($subQuery) use ($filterObj) {
+                                $subQuery->where('id', $filterObj->value);
+                            })
+                            ->orWhere('clinic_id', $filterObj->value);
                         });
                     } elseif ($filterObj->columnName === 'country') {
-                        $query->orWhereHas('user.country', function ($subQuery) use ($filterObj) {
-                            $subQuery->where('id', 'LIKE', "%{$filterObj->value}%");
+                        $query->where(function ($subQuery) use ($filterObj) {
+                            $subQuery->orWhereHas('user.country', function ($subQuery) use ($filterObj) {
+                                $subQuery->where('id', $filterObj->value);
+                            })
+                            ->orWhere('country_id', $filterObj->value);
                         });
+                    } elseif ($filterObj->columnName === 'date_time') {
+                        $dates = explode(' - ', $filterObj->value);
+                        $startDate = date_create_from_format('d/m/Y', $dates[0]);
+                        $endDate = date_create_from_format('d/m/Y', $dates[1]);
+                        $startDate->format('Y-m-d');
+                        $endDate->format('Y-m-d');
+                        $query->whereDate('created_at', '>=', $startDate)
+                            ->whereDate('created_at', '<=', $endDate);
+                    } elseif ($filterObj->columnName === 'before_changed') {
+                        $query->whereRaw("JSON_SEARCH(properties->'$.old', 'one', ?) IS NOT NULL", ["%{$filterObj->value}%"]);
+                    } elseif ($filterObj->columnName === 'after_changed') {
+                        $query->whereRaw("JSON_SEARCH(properties->'$.attributes', 'one', ?) IS NOT NULL", ["%{$filterObj->value}%"]);
                     } else {
                         $query->where($filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
                     }
@@ -136,17 +131,26 @@ class AuditLogController extends Controller
             });
         }
 
-        if ($user->type === self::COUNTRY_ADMIN) {
-            $auditLogs->whereHas('user.country', function ($query) use ($user) {
-                $query->where('id', $user->country_id);
+        if ($user->type === self::ORGANIZATION_ADMIN) {
+            $auditLogs->where(function ($subQuery) use ($user) {
+                $subQuery->orWhereHas('user', function ($subQuery) use ($user) {
+                    $subQuery->where('type', '<>', self::SUPER_ADMIN);
+                })
+                ->orWhere('group', '<>', self::SUPER_ADMIN);
+            });
+        } else if ($user->type === self::COUNTRY_ADMIN) {
+            $auditLogs->where(function ($subQuery) use ($user) {
+                $subQuery->orWhereHas('user.country', function ($subQuery) use ($user) {
+                    $subQuery->where('id', $user->country_id);
+                })
+                ->orWhere('country_id', $user->country_id);
             });
         } elseif ($user->type === self::CLINIC_ADMIN) {
-            $auditLogs->whereHas('user.clinic', function ($query) use ($user) {
-                $query->where('id', $user->clinic_id);
-            });
-
-            $auditLogs->whereHas('user.country', function ($query) use ($user) {
-                $query->where('id', $user->country_id);
+            $auditLogs->where(function ($subQuery) use ($user) {
+                $subQuery->orWhereHas('user.clinic', function ($subQuery) use ($user) {
+                    $subQuery->where('id', $user->clinic_id);
+                })
+                ->orWhere('clinic_id', $user->clinic_id);
             });
         }
 
