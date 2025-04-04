@@ -175,7 +175,7 @@ class QuestionnaireController extends Controller
             }
 
             // Attach category to questionnaire.
-            $categories = $data->categories ?: [];
+            $categories = $data->categories ?? [];
             foreach ($categories as $category) {
                 $questionnaire->categories()->attach($category);
             }
@@ -451,7 +451,7 @@ class QuestionnaireController extends Controller
             ]);
 
             // Attach category to exercise.
-            $categories = $data->categories ?: [];
+            $categories = $data->categories ?? [];
             QuestionnaireCategory::where('questionnaire_id', $questionnaire->id)->delete();
             foreach ($categories as $category) {
                 $questionnaire->categories()->attach($category);
