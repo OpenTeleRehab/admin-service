@@ -55,6 +55,7 @@
     "common.reject": "Reject",
     "common.translator": "Translator",
     "common.phone": "Mobile Number",
+    "common.phone.number": "Phone Number",
     "common.patient": "Patient",
     "common.rural_area": "Rural area",
     "common.urban_area": "Urban area",
