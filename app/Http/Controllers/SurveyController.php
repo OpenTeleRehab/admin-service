@@ -88,7 +88,7 @@ class SurveyController extends Controller
                 'include_at_the_start' => $request->boolean('include_at_the_start') ?? false,
                 'include_at_the_end' => $request->boolean('include_at_the_end') ?? false,
                 'status' => Survey::STATUS_DRAFT,
-                'frequency' => $request->integer('frequency'),
+                'frequency' => $request->string('frequency'),
             ];
 
             if ($user->type === self::SUPER_ADMIN && env('APP_NAME') == 'hi') {
@@ -165,7 +165,7 @@ class SurveyController extends Controller
                 'end_date' => $endDate,
                 'include_at_the_start' => $request->boolean('include_at_the_start'),
                 'include_at_the_end' => $request->boolean('include_at_the_end'),
-                'frequency' => $request->integer('frequency'),
+                'frequency' => $request->string('frequency'),
             ];
 
             if ($user->type === self::SUPER_ADMIN && env('APP_NAME') == 'hi') {
@@ -306,7 +306,7 @@ class SurveyController extends Controller
                     ->whereDate('end_date', '>=', Carbon::now())
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->select('surveys.*')
-                    ->first();
+                    ->get();
                 break;
             case User::ADMIN_GROUP_COUNTRY_ADMIN:
                 $survey = Survey::where('role', $type)
@@ -324,7 +324,7 @@ class SurveyController extends Controller
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->whereJsonContains('country', $request->integer('country_id'))
                     ->select('surveys.*')
-                    ->first();
+                    ->get();
                 break;
             case User::ADMIN_GROUP_CLINIC_ADMIN:
                 $survey = Survey::where('role', $type)
@@ -343,7 +343,7 @@ class SurveyController extends Controller
                     ->whereJsonContains('country', $request->integer('country_id'))
                     ->whereJsonContains('clinic', $request->integer('clinic_id'))
                     ->select('surveys.*')
-                    ->first();
+                    ->get();
                 break;
             case User::GROUP_THERAPIST:
                 $survey = Survey::where('role', $type)
@@ -362,10 +362,10 @@ class SurveyController extends Controller
                     ->whereJsonContains('country', $request->integer('country_id'))
                     ->whereJsonContains('clinic', $request->integer('clinic_id'))
                     ->select('surveys.*')
-                    ->first();
+                    ->get();
                 break;
             case User::GROUP_PATIENT:
-                $survey = Survey::where('role', $type)
+                $treatmentSurvey = Survey::where('role', $type)
                     ->leftJoin('user_surveys', function ($join) use ($request) {
                         $join->on('surveys.id', '=', 'user_surveys.survey_id')
                             ->where('user_surveys.user_id', $request->integer('user_id'))
@@ -378,6 +378,7 @@ class SurveyController extends Controller
                     })
                     ->whereJsonContains('organization', $organization?->id)
                     ->whereJsonContains('location', $request->get('location'))
+                    ->whereJsonContains('gender', $request->get('gender'))
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->whereJsonContains('country', $request->integer('country_id'))
                     ->whereJsonContains('clinic', $request->integer('clinic_id'))
@@ -386,34 +387,35 @@ class SurveyController extends Controller
                             ->orWhere('surveys.include_at_the_end', 1);
                     })
                     ->select('surveys.*')
-                    ->first();
+                    ->get();
+                
+                $generalSurvey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($request) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $request->integer('user_id'));
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->whereJsonContains('location', $request->get('location'))
+                    ->whereJsonContains('gender', $request->get('gender'))
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $request->integer('country_id'))
+                    ->whereJsonContains('clinic', $request->integer('clinic_id'))
+                    ->select('surveys.*')
+                    ->get();
 
-                if (empty($survey)) {
-                    $survey = Survey::where('role', $type)
-                        ->leftJoin('user_surveys', function ($join) use ($request) {
-                            $join->on('surveys.id', '=', 'user_surveys.survey_id')
-                                ->where('user_surveys.user_id', '=', $request->integer('user_id'));
-                        })
-                        ->where(function ($query) {
-                            $query->whereNull('user_surveys.id')
-                                ->orWhereNull('user_surveys.answer');
-                        })
-                        ->whereJsonContains('organization', $organization?->id)
-                        ->whereDate('start_date', '<=', Carbon::now())
-                        ->whereDate('end_date', '>=', Carbon::now())
-                        ->whereJsonContains('location', $request->get('location'))
-                        ->where('surveys.status', Survey::STATUS_PUBLISHED)
-                        ->whereJsonContains('country', $request->integer('country_id'))
-                        ->whereJsonContains('clinic', $request->integer('clinic_id'))
-                        ->select('surveys.*')
-                        ->first();
-                }
+                $survey = $generalSurvey->merge($treatmentSurvey);
                 break;
             default:
                 return ['success' => false, 'data' => []];
                 break;
         }
-        return ['success' => true, 'data' => $survey ?  new SurveyResource($survey) : []];
+        return ['success' => true, 'data' => SurveyResource::collection($survey)];
     }
 
     /**
