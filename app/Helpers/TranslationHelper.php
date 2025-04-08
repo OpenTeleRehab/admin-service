@@ -15,7 +15,7 @@ class TranslationHelper
     *
     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     */
-    public static function getTranslations($languageId = '')
+    public static function getTranslations($languageId = '', $platform = Translation::ADMIN_PORTAL)
     {
         if (!$languageId && Auth::user()) {
             $languageId = Auth::user()->language_id;
@@ -27,10 +27,10 @@ class TranslationHelper
                     $join->on('localizations.translation_id', '=', 'translations.id');
                     $join->where('localizations.language_id', '=', $languageId);
                 })
-                ->where('platform', Translation::ADMIN_PORTAL)
+                ->where('platform', $platform)
                 ->get();
         } else {
-            $translations = Translation::where('platform', Translation::ADMIN_PORTAL)->get();
+            $translations = Translation::where('platform', $platform)->get();
         }
 
         $data = [];
