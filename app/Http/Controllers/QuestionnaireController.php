@@ -495,7 +495,7 @@ class QuestionnaireController extends Controller
                 if ($questionObj->wasRecentlyCreated) {
                     foreach ($languages as $language) {
                         $languageCode = $language->code;
-                        
+
                         // Auto translate question.
                         try {
                             $translatedTitle = $translate->translate($questionObj->title, $languageCode);
@@ -780,5 +780,18 @@ class QuestionnaireController extends Controller
         $questionnaireId = $request->get('id');
         $questionnaire = Questionnaire::find($questionnaireId);
         return new QuestionnaireResource($questionnaire);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function getByTherapist(Request $request)
+    {
+        $questionnaires = Questionnaire::where('therapist_id', $request->get('therapist_id'))
+            ->orWhere('global', true)
+            ->get();
+        return QuestionnaireResource::collection($questionnaires);
     }
 }

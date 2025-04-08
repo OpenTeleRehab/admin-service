@@ -1,37 +1,37 @@
 <?php
 
-use App\Http\Controllers\GlobalAssistiveTechnologyPatientController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AssistiveTechnologyController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ClinicController;
+use App\Http\Controllers\ColorSchemeController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\EducationMaterialController;
+use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\FileController;
+use App\Http\Controllers\ForwarderController;
+use App\Http\Controllers\GlobalAssistiveTechnologyPatientController;
 use App\Http\Controllers\GlobalPatientController;
 use App\Http\Controllers\GuidancePageController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\OrganizationController;
-use App\Http\Controllers\ColorSchemeController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QuestionnaireController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StaticPageController;
-use App\Http\Controllers\SystemLimitController;
-use App\Http\Controllers\TranslationController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ExerciseController;
-use App\Http\Controllers\FileController;
-use App\Http\Controllers\TermAndConditionController;
-use App\Http\Controllers\EducationMaterialController;
-use App\Http\Controllers\QuestionnaireController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ChartController;
-use App\Http\Controllers\ImportController;
-use App\Http\Controllers\TranslatorController;
-use App\Http\Controllers\ForwarderController;
-use App\Http\Controllers\AssistiveTechnologyController;
-use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\SupersetController;
 use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\SystemLimitController;
+use App\Http\Controllers\TermAndConditionController;
+use App\Http\Controllers\TranslationController;
+use App\Http\Controllers\TranslatorController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -132,6 +132,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation']);
     Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite']);
     Route::get('get-questionnaire-by-id', [QuestionnaireController::class, 'getById']);
+    Route::get('get-questionnaire-by-therapist', [QuestionnaireController::class, 'getByTherapist']);
 
     // Additional Fields
     Route::get('get-exercise-additional-fields-for-open-library', [ExerciseController::class, 'getExerciseAdditionalFieldsForOpenLibrary']);
