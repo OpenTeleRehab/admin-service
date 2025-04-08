@@ -127,6 +127,10 @@
     "common.auto_translate": "Auto Translate",
     "common.auto_translate_confirmation_message": "Are you sure want to auto translate this language?",
     "common.share_to_hi_library": "Share to OTR Library",
+    "common.download.history": "Download History",
+    "common.download.history.clear": "Clear history",
+    "common.download.failed": "Failed",
+    "common.download.history.message": "Important: The generated file will be deleted after 7 days.",
     "translator": "Translator",
     "patient_transfer_therapist": "Transfer '${patientName}' to below therapist:",
     "profile.current_password": "Current Passwords",
@@ -829,6 +833,8 @@
     "toast_title.publish_survey": "Publish survey",
     "toast_title.submit_survey": "Submit survey",
     "toast_title.skip_survey": "Skip survey",
+    "toast_title.export": "Export",
+    "toast_title.download_history": "Download history",
     "survey.organization": "Organization",
     "survey.questionnaire": "Questionnaire",
     "survey.frequency": "Frequency",
@@ -873,5 +879,10 @@
     "report.patient_raw_data.patient_assistive_technology": "Patient Assistive technologies",
     "report.patient_raw_data.patient_treatment_survey": "Patient Treatment Survey",
     "report.patient_raw_data.patient_survey": "Patient Survey",
-    "report.patient_raw_data.number_of_online_encounter": "Number of Online Encounters"
+    "report.patient_raw_data.number_of_online_encounter": "Number of Online Encounters",
+    "success_message.download_history_delete": "Download history cleared successfully",
+    "success_message.export": "Exported successfully",
+    "error_message.export": "Export failed",
+    "export.name.questionnaire_result": "Questionnaire result",
+    "questionnaire.download_report": "Download questionnaire result"
 }

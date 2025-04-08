@@ -8,8 +8,10 @@ use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\ColorSchemeController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\DownloadTrackerController;
 use App\Http\Controllers\EducationMaterialController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\ForwarderController;
 use App\Http\Controllers\GlobalAssistiveTechnologyPatientController;
@@ -133,6 +135,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite']);
     Route::get('get-questionnaire-by-id', [QuestionnaireController::class, 'getById']);
     Route::get('get-questionnaire-by-therapist', [QuestionnaireController::class, 'getByTherapist']);
+    Route::get('get-questionnaire-by-clinic-admin', [QuestionnaireController::class, 'getByClinicAdmin']);
+    Route::get('get-questionnaire-by-country-admin', [QuestionnaireController::class, 'getByCountryAdmin']);
 
     // Additional Fields
     Route::get('get-exercise-additional-fields-for-open-library', [ExerciseController::class, 'getExerciseAdditionalFieldsForOpenLibrary']);
@@ -224,6 +228,18 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Superset
     Route::get('/superset-guest-token', [SupersetController::class, 'index']);
+
+    // Download trackers
+    Route::get('download-trackers', [DownloadTrackerController::class, 'index']);
+    Route::put('download-trackers', [DownloadTrackerController::class, 'updateProgress']);
+    Route::delete('download-trackers', [DownloadTrackerController::class, 'destroy']);
+
+    Route::get('export', [ExportController::class, 'export']);
+
+    // Patient Service
+    Route::name('patient.')->group(function () {
+        Route::get('download-file', [ForwarderController::class, 'index']);
+    });
 });
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);
