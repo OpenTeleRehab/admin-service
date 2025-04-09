@@ -238,7 +238,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Patient Service
     Route::name('patient.')->group(function () {
-        Route::get('download-file', [ForwarderController::class, 'index']);
+        Route::get('download-file', [FileController::class, 'download']);
     });
 });
 // Public Access
