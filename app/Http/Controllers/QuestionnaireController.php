@@ -9,15 +9,18 @@ use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\QuestionnaireResource;
 use App\Models\Answer;
 use App\Models\File;
+use App\Models\Forwarder;
 use App\Models\Language;
 use App\Models\Question;
 use App\Models\Questionnaire;
 use App\Models\QuestionnaireCategory;
 use App\Models\SystemLimit;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class QuestionnaireController extends Controller
@@ -495,7 +498,7 @@ class QuestionnaireController extends Controller
                 if ($questionObj->wasRecentlyCreated) {
                     foreach ($languages as $language) {
                         $languageCode = $language->code;
-                        
+
                         // Auto translate question.
                         try {
                             $translatedTitle = $translate->translate($questionObj->title, $languageCode);
@@ -780,5 +783,64 @@ class QuestionnaireController extends Controller
         $questionnaireId = $request->get('id');
         $questionnaire = Questionnaire::find($questionnaireId);
         return new QuestionnaireResource($questionnaire);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function getByTherapist(Request $request)
+    {
+        $questionnaires = Questionnaire::where('is_survey', false)
+            ->where(function ($query) use ($request) {
+                $query->where('therapist_id', $request->get('therapist_id'))
+                    ->orWhere('therapist_id', null);
+            })->get();
+        return QuestionnaireResource::collection($questionnaires);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function getByClinicAdmin(Request $request)
+    {
+        $clinicAdmin = User::findOrFail($request->get('clinic_admin_id'));
+        $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/therapist/list/by-clinic-id', [
+            'clinic_id' => $clinicAdmin->clinic_id,
+        ]);
+        $therapists = $response->json('data');
+        $ids = collect($therapists)->pluck('id')->all();
+        $questionnaires = Questionnaire::where('is_survey', false)
+                ->where(function ($query) use ($ids) {
+                    $query->whereIn('therapist_id', $ids)
+                    ->orWhere('therapist_id', null);
+                })->get();
+        return QuestionnaireResource::collection($questionnaires);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function getByCountryAdmin(Request $request)
+    {
+        $countryAdmin = User::findOrFail($request->get('country_admin_id'));
+        $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/therapist/list/by-country-id', [
+            'country_id' => $countryAdmin->country_id,
+        ]);
+        $therapists = $response->json('data');
+        $ids = collect($therapists)->pluck('id')->all();
+        $questionnaires = Questionnaire::where('is_survey', false)
+            ->where(function ($query) use ($ids) {
+                $query->whereIn('therapist_id', $ids)
+                    ->orWhere('therapist_id', null);
+            })->get();
+        return QuestionnaireResource::collection($questionnaires);
     }
 }

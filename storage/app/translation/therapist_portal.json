@@ -62,6 +62,10 @@
     "common.provision_date": "Provision Date",
     "common.follow_up_date": "Follow Up Date",
     "common.submitted_date": "Submitted Date",
+    "common.download.history": "Download History",
+    "common.download.history.clear": "Clear history",
+    "common.download.failed": "Failed",
+    "common.download.history.message": "Important: The generated file will be deleted after 7 days.",
     "treatment_plan.back_to_list": "Back To Treatment History",
     "treatment_plan.back_to_preset_list": "Back To Preset Treatments",
     "common.status": "Status",
@@ -605,6 +609,8 @@
     "toast_title.submit_survey": "Submit survey",
     "toast_title.skip_survey": "Skip survey",
     "toast_title.jitsi_call_busy": "Call busy",
+    "toast_title.export": "Export",
+    "toast_title.download_history": "Download history",
     "success_message.survey_submitted": "Survey submitted successfully",
     "success_message.survey_skipped": "Survey skipped successfully",
     "survey.answer.required": "Please provide an answer before proceeding.",
@@ -613,5 +619,9 @@
     "report.questionnaire_result.diagnostic": "Diagnostic",
     "report.questionnaire_result.answer": "Answer",
     "report.questionnaire_result.value": "Value",
-    "report.questionnaire_result.threshold": "Threshold"
+    "report.questionnaire_result.threshold": "Threshold",
+    "success_message.download_history_delete": "Download history cleared successfully",
+    "success_message.export": "Exported successfully",
+    "error_message.export": "Export failed",
+    "export.name.questionnaire_result": "Questionnaire result"
 }
