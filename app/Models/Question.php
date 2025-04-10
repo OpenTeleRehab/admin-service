@@ -18,6 +18,7 @@ class Question extends Model
     const QUESTION_TYPE_CHECKBOX = 'checkbox';
     const QUESTION_TYPE_MULTIPLE = 'multiple';
     const QUESTION_TYPE_OPEN_NUMBER = 'open-number';
+    const QUESTION_TYPE_OPEN_TEXT = 'open-text';
 
     /**
      * The attributes that are mass assignable.
