@@ -151,6 +151,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('privacy-policy', PrivacyPolicyController::class);
 
     // Survey
+    Route::get('survey/export', [SurveyController::class, 'export']);
     Route::apiResource('survey', SurveyController::class);
     Route::post('survey/publish/{survey}', [SurveyController::class, 'publish']);
     Route::post('survey/submit', [SurveyController::class, 'submit']);

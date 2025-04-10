@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SurveyExport;
 use App\Http\Resources\SurveyResource;
 use App\Models\Survey;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Carbon\Carbon;
-use App\Http\Controllers\QuestionnaireController;
 use App\Models\Clinic;
 use App\Models\Country;
 use App\Models\Organization;
@@ -388,7 +388,7 @@ class SurveyController extends Controller
                     })
                     ->select('surveys.*')
                     ->get();
-                
+
                 $generalSurvey = Survey::where('role', $type)
                     ->leftJoin('user_surveys', function ($join) use ($request) {
                         $join->on('surveys.id', '=', 'user_surveys.survey_id')
@@ -476,5 +476,16 @@ class SurveyController extends Controller
             ]);
 
         return ['success' => true, 'message' => 'success_message.survey_skipped'];
+    }
+
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function export(Request $request)
+    {
+        $filePath = SurveyExport::export($request);
+        $absolutePath = storage_path($filePath);
+        return response()->download($absolutePath)->deleteFileAfterSend(true);
     }
 }
