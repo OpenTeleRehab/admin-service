@@ -352,6 +352,7 @@
     "questionnaire.search": "Search questionnaires",
     "questionnaire.title": "Title",
     "questionnaire.description": "Description",
+    "questionnaire.total_score": "Total Score",
     "questionnaire.number_of_question": "No. of Questions",
     "questionnaire.submitted_date": "Submitted Date",
     "questionnaire.question_number": "Question ${number}",
