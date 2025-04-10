@@ -221,6 +221,8 @@ class AnswerSurveyTemplate
     {
         if ($survey->role === User::GROUP_THERAPIST) {
             $surveyor = User::getTherapistById($userSurvey->user_id);
+        } else if ($survey->role === User::GROUP_PATIENT) {
+            $surveyor = User::getPatientById($userSurvey->user_id);
         } else {
             $surveyor = $userSurvey->user;
         }
@@ -271,7 +273,7 @@ class AnswerSurveyTemplate
             $includeEnd = $survey->include_at_the_end ? $translations['common.yes'] : $translations['common.no'];
 
             array_splice($data, 6, 0, array($genderLabel, $locationLabel));
-            array_splice($data, 11, 0, array($includeStart, $includeEnd, $userSurvey->user_id));
+            array_splice($data, 11, 0, array($includeStart, $includeEnd, $surveyor->identity ?? ''));
             array_splice($data, 14, 2); // Remove first name and last name.
         }
 

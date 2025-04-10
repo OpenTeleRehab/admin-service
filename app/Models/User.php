@@ -127,4 +127,22 @@ class User extends Authenticatable
 
         return false;
     }
+
+    /**
+     * @param int $patientId
+     * @return false|\GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response
+     * @throws \Illuminate\Http\Client\ConnectionException
+     */
+    public static function getPatientById(int $patientId)
+    {
+        $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
+        $response = Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $patientId);
+
+        if ($response->successful()) {
+            return json_decode($response->body());
+        }
+
+        return false;
+    }
 }
