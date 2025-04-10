@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
@@ -94,5 +96,21 @@ class Survey extends Model
     public function questionnaire()
     {
         return $this->belongsTo(Questionnaire::class, 'questionnaire_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'author', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function userSurveys(): HasMany
+    {
+        return $this->hasMany(UserSurvey::class, 'survey_id', 'id');
     }
 }

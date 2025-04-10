@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Http;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 use Spatie\Activitylog\LogOptions;
@@ -106,5 +106,25 @@ class User extends Authenticatable
     public function getFullNameAttribute()
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * @param int $therapistId
+     * @return false|\GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response
+     * @throws \Illuminate\Http\Client\ConnectionException
+     */
+    public static function getTherapistById(int $therapistId)
+    {
+        $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+
+        $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/therapist/by-id', [
+            'id' => $therapistId,
+        ]);
+
+        if ($response->successful()) {
+            return json_decode($response->body());
+        }
+
+        return false;
     }
 }
