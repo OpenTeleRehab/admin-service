@@ -317,5 +317,6 @@
     "device.root.detected.message": "We detected that the device is rooted. For security reason, OpenTeleRehab cannot be opened on this device.",
     "question.threshold.validation": "Value must be between ${minValue} and ${maxValue}",
     "question.answer_threshold": "Threshold",
-    "questionnaire.total_score": "Total Score"
+    "questionnaire.total_score": "Total Score",
+    "question.answer_value": "Value"
 }
