@@ -6,13 +6,12 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
-class PatientTreatmentTemplate
+class PatientQuestionnaireStartEndResultTemplate
 {
     /**
      * Renders data to the given sheet.
      *
-     * @param array $data.
-     * @param array $therapists.
+     * @param array $patient.
      * @return void
      */
     public function template($data, $sheet, $translations)
@@ -34,16 +33,9 @@ class PatientTreatmentTemplate
             $translations['report.patient_raw_data.treatment_status'],
             $translations['report.patient_raw_data.treatment_start_date'],
             $translations['report.patient_raw_data.treatment_end_date'],
-            $translations['report.patient_raw_data.treatment_initial_adherence'],
-            $translations['report.patient_raw_data.treatment_final_adherence'],
-            $translations['report.patient_raw_data.treatment_initial_pain'],
-            $translations['report.patient_raw_data.treatment_final_pain'],
-            $translations['report.patient_raw_data.treatment_daily_goal.initial_achievement_satisfaction'],
-            $translations['report.patient_raw_data.treatment_daily_goal.final_achievement_satisfaction'],
-            $translations['report.patient_raw_data.treatment_average_daily_goal.achievement_satisfaction'],
-            $translations['report.patient_raw_data.treatment_weekly_goal.initial_achievement_satisfaction'],
-            $translations['report.patient_raw_data.treatment_weekly_goal.final_achievement_satisfaction'],
-            $translations['report.patient_raw_data.treatment_average_weekly_goal.achievement_satisfaction']
+            $translations['report.patient_raw_data.questionnaire_title'],
+            $translations['report.patient_raw_data.questionnaire_phase'],
+            $translations['report.patient_raw_data.questionnaire_result']
         ];
 
         $headerColIndex = 1;
@@ -64,6 +56,7 @@ class PatientTreatmentTemplate
         $sheet->getStyle('A1:' . $endCol . '1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('A1:' . $endCol . '1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
+        //Render data
         $row = 2;
         foreach ($data as $dataRow) {
             $colIndex = 1;

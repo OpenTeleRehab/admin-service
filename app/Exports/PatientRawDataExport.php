@@ -21,6 +21,7 @@ use App\Exports\Templates\PatientTreatmentTemplate;
 use App\Exports\Templates\PatientAssistiveTemplate;
 use App\Exports\Templates\PatientSurveyTemplate;
 use App\Exports\Templates\PatientTreatmentPlanSurveyTemplate;
+use App\Exports\Templates\PatientQuestionnaireStartEndResultTemplate;
 use App\Models\Survey;
 use App\Models\User;
 
@@ -82,6 +83,7 @@ class PatientRawDataExport
         
         $patientTreatmentPlanData = [];
         $patientTreatmentPlanSurveyData = [];
+        $patientTreatmentQuestionnaireStartEndData = [];
         $patientAssistiveData = [];
         $patientSurveyData = [];
 
@@ -121,36 +123,6 @@ class PatientRawDataExport
                     $startDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->start_date)->format('Y-m-d');
                     $endDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->end_date)->format('Y-m-d');
                     $treatmentStatus = self::getTreatmentPlanStatus($startDate, $endDate, $translations);
-                    $numberOfExercise = array_sum(array_map(fn($item) => (int) $item->number_of_exercise ?? 0, $treatmentPlan->activities));
-                    $numberOfcompletedExercise = array_sum(array_map(fn($item) => (int) $item->number_of_completed_exercise ?? 0, $treatmentPlan->activities));
-                    $totalPainLevel = array_sum(array_map(fn($item) => (int) ($item->total_pain_level ?? 0), $treatmentPlan->activities));
-                    $numberOfSubmittedPainLevel = array_sum(array_map(fn($item) => (int) ($item->number_of_submitted_pain_level ?? 0), $treatmentPlan->activities));
-                    $numberOfSubmittedDailyGoal = array_sum(array_map(fn($item) => (int) ($item->number_of_submitted_goal ?? 0), $treatmentPlan->dailyGoals));
-                    $numberOfSubmittedWeeklyGoal = array_sum(array_map(fn($item) => (int) ($item->number_of_submitted_goal ?? 0), $treatmentPlan->weeklyGoals));
-                    $totalSatisfactionDailyGoal = array_sum(array_map(fn($item) => (int) ($item->satisfaction ?? 0), $treatmentPlan->dailyGoals));
-                    $totalSatisfactionWeeklyGoal = array_sum(array_map(fn($item) => (int) ($item->satisfaction ?? 0), $treatmentPlan->weeklyGoals));
-                    $averageExercise = $numberOfExercise > 0 ? round($numberOfcompletedExercise / $numberOfExercise, 2) : 0;
-                    $averagePainLevel = $numberOfSubmittedPainLevel > 0 ? round($totalPainLevel / $numberOfSubmittedPainLevel, 2) : 0;
-                    $averageDailyGoal = $numberOfSubmittedDailyGoal > 0 ? round($totalSatisfactionDailyGoal / $numberOfSubmittedDailyGoal, 2) : 0;
-                    $averageWeeklyGoal = $numberOfSubmittedWeeklyGoal > 0 ? round($totalSatisfactionWeeklyGoal / $numberOfSubmittedWeeklyGoal, 2) : 0;
-                    
-                    // Find questionnaire that include at start and end 
-                    $treatmentPlanQuestionnaireIds = array_column($treatmentPlan->questionnaires, 'id');
-                    $questionnaireAtStart = Questionnaire::where('include_at_the_start', 1)->whereIn('id', $treatmentPlanQuestionnaireIds)->first();
-                    $questionnaireAtEnd = Questionnaire::where('include_at_the_end', 1)->whereIn('id', $treatmentPlanQuestionnaireIds)->first();
-                    
-                    $questionnResultAtStart = 0;
-                    $questionnResultAtEnd = 0;
-
-                    // Get answer result of questionnaire at start and end of treatment plan
-                    if (!empty($questionnaireAtStart)) {
-                        $treatmentQuestionAtStart = current(array_filter($treatmentPlan->questionnaires, fn($treatmentQuestionnaire) => $treatmentQuestionnaire->id === $questionnaireAtStart->id));
-                        $questionnResultAtStart = self::getQuestionnaireResult($questionnaireAtStart, $treatmentQuestionAtStart->answer);
-                    }
-                    if (!empty($questionnaireAtEnd)) {
-                        $treatmentQuestionAtEnd = current(array_filter($treatmentPlan->questionnaires, fn($treatmentQuestionnaire) => $treatmentQuestionnaire->id === $questionnaireAtEnd->id));
-                        $questionnResultAtEnd = self::getQuestionnaireResult($questionnaireAtEnd, $treatmentQuestionAtEnd->answer);
-                    }
 
                     $treatmentPlanData = array_merge($patientData, [
                         $treatmentPlan->name,
@@ -158,21 +130,19 @@ class PatientRawDataExport
                         $treatmentStatus,
                         $startDate,
                         $endDate,
-                        $numberOfExercise,
-                        $numberOfcompletedExercise,
-                        $averageExercise,
-                        $totalPainLevel,
-                        $averagePainLevel,
-                        $totalSatisfactionDailyGoal,
-                        $averageDailyGoal,
-                        $totalSatisfactionWeeklyGoal,
-                        $averageWeeklyGoal,
-                        $questionnResultAtStart,
-                        $questionnResultAtEnd,
+                        round($treatmentPlan->initialAverageAdherence ?? 0, 2),
+                        round($treatmentPlan->finalAverageAdherence ?? 0, 2),
+                        round($treatmentPlan->initialAveragePainLevel ?? 0, 2),
+                        round($treatmentPlan->finalAveragePainLevel ?? 0, 2),
+                        round($treatmentPlan->initialAverageDailyGoal ?? 0, 2),
+                        round($treatmentPlan->finalAverageDailyGoal ?? 0, 2),
+                        round($treatmentPlan->averageDailyGoal ?? 0, 2),
+                        round($treatmentPlan->initialAverageWeeklyGoal ?? 0, 2),
+                        round($treatmentPlan->finalAverageWeeklyGoal ?? 0, 2),
+                        round($treatmentPlan->averageWeeklyGoal ?? 0, 2)
                     ]);
 
                     $patientTreatmentPlanData[] = $treatmentPlanData;
-
 
                     // Get treatment survey data
                     $patientTreatmentSurveys = self::getPatientTreatmentSurveys($treatmentPlan->id, $patient->id);
@@ -213,11 +183,47 @@ class PatientRawDataExport
                             $endDate,
                         ]);
                     }
+
+                    // Get questionnaire that include at start and end
+                    if (count((array) $treatmentPlan->questionnaires) > 0) {
+                        foreach ($treatmentPlan->questionnaires as $questionnaire) {
+                            $foundQuestionnaire = Questionnaire::find($questionnaire->id);
+                            if ($foundQuestionnaire && ($foundQuestionnaire->include_at_the_start || $foundQuestionnaire->include_at_the_end)) {
+                                $phase = match (true) {
+                                    $foundQuestionnaire->include_at_the_start && !$foundQuestionnaire->include_at_the_end => $translations['questionnaire.include_at_the_start'],
+                                    !$foundQuestionnaire->include_at_the_start && $foundQuestionnaire->include_at_the_end => $translations['questionnaire.include_at_the_end'],
+                                    $foundQuestionnaire->include_at_the_start && $foundQuestionnaire->include_at_the_end && $questionnaire->day === 1 => $translations['questionnaire.include_at_the_start'],
+                                    $foundQuestionnaire->include_at_the_start && $foundQuestionnaire->include_at_the_end && $questionnaire->day !== 1 => $translations['questionnaire.include_at_the_end'],
+                                    default => '',
+                                };
+
+                                $patientTreatmentQuestionnaireStartEndData[] = array_merge($patientData, [
+                                    $treatmentPlan->name,
+                                    $diseasName,
+                                    $treatmentStatus,
+                                    $startDate,
+                                    $endDate,
+                                    $foundQuestionnaire->getTranslation('title', $language?->code ?? 'en'),
+                                    $phase,
+                                    self::getQuestionnaireResult($foundQuestionnaire, $questionnaire->answer)
+                                ]);
+                            }
+                        }
+                    } else {
+                        $patientTreatmentQuestionnaireStartEndData[] = array_merge($patientData, [
+                            $treatmentPlan->name,
+                            $diseasName,
+                            $treatmentStatus,
+                            $startDate,
+                            $endDate,
+                        ]);
+                    }
                     
                 }
             } else {
                 $patientTreatmentPlanData[] = $patientData;
                 $patientTreatmentPlanSurveyData[] = $patientData;
+                $patientTreatmentQuestionnaireStartEndData[] = $patientData;
             }
         }
 
@@ -226,6 +232,11 @@ class PatientRawDataExport
         $patientTreatmentSheet->setTitle($translations['report.patient_raw_data.patient_treatment']);
         $patientTreatmentTemplate = new PatientTreatmentTemplate();
         $patientTreatmentTemplate->template($patientTreatmentPlanData, $patientTreatmentSheet, $translations);
+
+        $patientTreatmentQuestionnaireStartEndSheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet, $translations['report.patient_raw_data.patient_treatment_questionnaire_start_end']);
+        $spreadsheet->addSheet($patientTreatmentQuestionnaireStartEndSheet);
+        $patientTreatmentQuestionnaireStartEndTemplate = new PatientQuestionnaireStartEndResultTemplate();
+        $patientTreatmentQuestionnaireStartEndTemplate->template($patientTreatmentQuestionnaireStartEndData, $patientTreatmentQuestionnaireStartEndSheet, $translations);
 
         $patientAssistiveSheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet, $translations['report.patient_raw_data.patient_assistive_technology']);
         $spreadsheet->addSheet($patientAssistiveSheet);
