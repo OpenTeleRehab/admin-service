@@ -282,9 +282,9 @@ class PatientRawDataExport
         $totalAnswerValue = 0;
         foreach ($questionnaire->questions as $question) {
             $answer = null;
-            foreach ($answers as $answer) {
-                if ($answer->question_id === $question->id) {
-                    $answer = $answer->answer;
+            foreach ($answers as $patientAnswer) {
+                if ($patientAnswer->question_id === $question->id) {
+                    $answer = $patientAnswer->answer;
                     break;
                 }
             }
