@@ -108,32 +108,38 @@ class AnswerSurveyTemplate
                             // Increase row height based on answers.
                             $rowHeight = $rowHeight * count($question->answers);
 
+                            $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
+                            $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
                             $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $sheet->setCellValue($startCol . $row, self::bulletList($question->answers->pluck('description')->toArray()));
+                            $sheet->setCellValue($startCol . $row, self::bulletList($answer['description']));
                             $sheet->getRowDimension($row)->setRowHeight(100);
 
                             $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
-                            $sheet->setCellValue($startCol . $row, self::bulletList($question->answers->pluck('value')->toArray()));
+                            $sheet->setCellValue($startCol . $row, self::bulletList($answer['value']));
                             $sheet->getRowDimension($row)->setRowHeight(100);
 
                             break;
                         case Question::QUESTION_TYPE_MULTIPLE:
                             $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $sheet->setCellValue($startCol . $row, $question->answers[0]->description ?? '');
+                            $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
+                            $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
+                            $sheet->setCellValue($startCol . $row, $answer['description'][0] ?? '');
 
                             $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
-                            $sheet->setCellValue($startCol . $row, $question->answers[0]->value ?? '');
+                            $sheet->setCellValue($startCol . $row, $answer['value'][0] ?? '');
 
                             break;
                         case Question::QUESTION_TYPE_OPEN_NUMBER:
                             $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $sheet->setCellValue($startCol . $row, $question->answers[0]->description ?? '');
+                            $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
+                            $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
+                            $sheet->setCellValue($startCol . $row, $answer['description'][0] ?? '');
 
                             $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
-                            $sheet->setCellValue($startCol . $row, $question->answers[0]->value ?? '');
+                            $sheet->setCellValue($startCol . $row, $answer['value'][0] ?? '');
 
                             $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 2);
-                            $sheet->setCellValue($startCol . $row, $question->answers[0]->threshold ?? '');
+                            $sheet->setCellValue($startCol . $row, $answer['threshold'][0] ?? '');
 
                             break;
                         default:
@@ -334,4 +340,39 @@ class AnswerSurveyTemplate
             return "• $item";
         }, $items));
     }
+
+    /**
+     * @param Question $question
+     * @param array $userAnswers
+     * @return array
+     */
+    private function getAnswerData($question, $answer)
+    {
+        $answerDescription = [];
+        $value = [];
+        $threshold = [];
+        if ($answer) {
+            if ($question->type === Question::QUESTION_TYPE_CHECKBOX) {
+                $foundAnswers = $question->answers->filter(fn($questionAnswer) => in_array($questionAnswer->id, $answer))->all();
+                $answerDescription = array_column($foundAnswers, 'description');
+                $value = array_column($foundAnswers, 'value');
+            } else if ($question->type === Question::QUESTION_TYPE_MULTIPLE) {
+                $foundAnswer = $question->answers->first(fn($questionAnswer) => $questionAnswer->id === $answer);
+                $answerDescription[] = $foundAnswer->description;
+                $value[] = $foundAnswer->value ?? '';
+            } else if ($question->type === Question::QUESTION_TYPE_OPEN_NUMBER) {
+                $foundAnswer = $question->answers->first(fn($questionAnswer) => $questionAnswer->question_id === $question->id);
+                $answerDescription[] = $answer;
+                $value[] = $foundAnswer ? $foundAnswer->value : '';
+                $threshold[] = $foundAnswer ? $foundAnswer->threshold : '';
+            } else {
+                $answerDescription[] = $answer;
+            }
+        }
+        return [
+            'description' => $answerDescription,
+            'value' => $value,
+            'threshold' => $threshold,
+        ];
+    }   
 }
