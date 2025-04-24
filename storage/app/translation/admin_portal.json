@@ -900,5 +900,6 @@
     "success_message.export": "Exported successfully",
     "error_message.export": "Export failed",
     "export.name.questionnaire_result": "Questionnaire result",
+    "export.name.patient_raw_data": "Patient raw data",
     "questionnaire.download_report": "Download questionnaire result"
 }

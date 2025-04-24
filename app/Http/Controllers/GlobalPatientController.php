@@ -7,7 +7,6 @@ use App\Models\Country;
 use App\Models\Forwarder;
 use App\Models\GlobalPatient;
 use Carbon\Carbon;
-use App\Exports\PatientRawDataExport;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -163,11 +162,5 @@ class GlobalPatientController extends Controller
         $patient->delete();
 
         return ['success' => true, 'message' => 'success_message.patient_delete'];
-    }
-
-    public function export(Request $request) {
-        $filePath = PatientRawDataExport::export($request);
-        $absolutePath = storage_path($filePath);
-        return response()->download($absolutePath)->deleteFileAfterSend(true);
     }
 }

@@ -3,21 +3,20 @@
 namespace App\Jobs;
 
 use App\Enums\ExportStatus;
+use App\Exports\PatientRawDataExport;
 use App\Exports\QuestionnaireResultExport;
 use App\Models\DownloadTracker;
-use App\Models\Forwarder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
 
 class GenerateExport implements ShouldQueue
 {
 
     const TYPE_QUESTIONNAIRE_RESULT = 'questionnaire_result';
+    const TYPE_PATIENT_RAW_DATA = 'patient_raw_data';
 
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -46,6 +45,10 @@ class GenerateExport implements ShouldQueue
         $type = $this->payload['type'];
         if ($type === self::TYPE_QUESTIONNAIRE_RESULT) {
             $filePath = QuestionnaireResultExport::export($this->payload);
+        }
+
+        if ($type === self::TYPE_PATIENT_RAW_DATA) {
+            $filePath = PatientRawDataExport::export($this->payload);
         }
 
         if ($filePath) {

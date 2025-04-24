@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Http;
 
 class FileController extends Controller
 {
+    const TYPE_PATIENT_RAW_DATA = 'patient_raw_data';
+
     /**
      * @param \Illuminate\Http\Request $request
      * @param integer $id
@@ -53,27 +55,35 @@ class FileController extends Controller
      */
     public function download(Request $request)
     {
+        $type = $request->get('type');
+        $filePath = storage_path($request->get('path'));
         $user = Auth::user();
-        if ($user->type === User::ADMIN_GROUP_GLOBAL_ADMIN ||
-            $user->type === User::ADMIN_GROUP_ORG_ADMIN ||
-            $user->type === User::ADMIN_GROUP_SUPER_ADMIN) {
-            $filePath = storage_path($request->get('path'));
+        if ($type === self::TYPE_PATIENT_RAW_DATA) {
             if (file_exists($filePath) && is_file($filePath)) {
                 return response()->download($filePath);
             }
             return null;
         } else {
-            $country = $request->header('country');
-            $endpoint = str_replace('api/', '/', $request->path());
-            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
-            $response = Http::withToken($access_token)->withHeaders([
-                'country' => $country
-            ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
-            return response($response->body(), $response->status())
-                ->withHeaders([
-                    'Content-Type' => $response->header('Content-Type'),
-                    'Content-Disposition' => $response->header('Content-Disposition'),
-                ]);
+            if ($user->type === User::ADMIN_GROUP_GLOBAL_ADMIN ||
+                $user->type === User::ADMIN_GROUP_ORG_ADMIN ||
+                $user->type === User::ADMIN_GROUP_SUPER_ADMIN) {
+                if (file_exists($filePath) && is_file($filePath)) {
+                    return response()->download($filePath);
+                }
+                return null;
+            } else {
+                $country = $request->header('country');
+                $endpoint = str_replace('api/', '/', $request->path());
+                $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
+                $response = Http::withToken($access_token)->withHeaders([
+                    'country' => $country
+                ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
+                return response($response->body(), $response->status())
+                    ->withHeaders([
+                        'Content-Type' => $response->header('Content-Type'),
+                        'Content-Disposition' => $response->header('Content-Disposition'),
+                    ]);
+            }
         }
     }
 }
