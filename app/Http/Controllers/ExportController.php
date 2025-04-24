@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Http;
 
 class ExportController extends Controller
 {
+    const TYPE_PATIENT_RAW_DATA = 'patient_raw_data';
+
     public function export(Request $request)
     {
         //TODO: Should improve this to be more generic.
@@ -27,25 +29,36 @@ class ExportController extends Controller
             'type' => $type,
         ];
 
-        if ($user->type === User::ADMIN_GROUP_GLOBAL_ADMIN ||
-            $user->type === User::ADMIN_GROUP_ORG_ADMIN ||
-            $user->type === User::ADMIN_GROUP_SUPER_ADMIN) {
+        if ($type === self::TYPE_PATIENT_RAW_DATA) {
+            $payload['search_value'] = $request->get('search_value');
+            $payload['filters'] = $request->get('filters');
+            $payload['user_type'] = $user->type;
+            $payload['country'] = $user->country_id;
+            $payload['clinic'] = $user->clinic_id;
             GenerateExport::dispatch($payload);
             $canSave = true;
         } else {
-            if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
-                $payload['clinic_admin_id'] = $user->id;
-                $payload['clinic_id'] = $user->clinic_id;
-            } else if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
-                $payload['country_admin_id'] = $user->id;
-            }
+            if ($user->type === User::ADMIN_GROUP_GLOBAL_ADMIN ||
+                $user->type === User::ADMIN_GROUP_ORG_ADMIN ||
+                $user->type === User::ADMIN_GROUP_SUPER_ADMIN
+            ) {
+                GenerateExport::dispatch($payload);
+                $canSave = true;
+            } else {
+                if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+                    $payload['clinic_admin_id'] = $user->id;
+                    $payload['clinic_id'] = $user->clinic_id;
+                } else if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
+                    $payload['country_admin_id'] = $user->id;
+                }
 
-            $payload['source'] = Forwarder::GADMIN_SERVICE;
-            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
-            $response = Http::withToken($access_token)->withHeaders([
-                'country' => $country
-            ])->get(env('PATIENT_SERVICE_URL') . '/export', $payload);
-            $canSave = $response->ok();
+                $payload['source'] = Forwarder::GADMIN_SERVICE;
+                $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
+                $response = Http::withToken($access_token)->withHeaders([
+                    'country' => $country
+                ])->get(env('PATIENT_SERVICE_URL') . '/export', $payload);
+                $canSave = $response->ok();
+            }
         }
 
         if ($canSave) {

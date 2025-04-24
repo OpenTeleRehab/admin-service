@@ -189,7 +189,6 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Global Patients
     Route::apiResource('global-patients', GlobalPatientController::class);
-    Route::get('patient-raw-data/export', [GlobalPatientController::class, 'export']);
 
     // Color Scheme
     Route::post('color-scheme', [ColorSchemeController::class, 'store']);
@@ -236,11 +235,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('download-trackers', [DownloadTrackerController::class, 'destroy']);
 
     Route::get('export', [ExportController::class, 'export']);
-
-    // Patient Service
-    Route::name('patient.')->group(function () {
-        Route::get('download-file', [FileController::class, 'download']);
-    });
+    Route::get('download-file', [FileController::class, 'download']);
 });
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);

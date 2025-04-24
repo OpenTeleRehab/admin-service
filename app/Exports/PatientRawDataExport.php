@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use App\Models\Forwarder;
@@ -35,13 +34,13 @@ class PatientRawDataExport
     /**
      * Exports data to an XLSX file.
      *
-     * @param \Illuminate\Http\Request $request.
+     * @param $payload.
      * @return string The path to the exported file.
      */
-    public static function export(Request $request)
+    public static function export($payload)
     {
-        $translations = TranslationHelper::getTranslations($request->get('lang'));
-        $language = Language::find($request->get('lang'));
+        $translations = TranslationHelper::getTranslations($payload['lang']);
+        $language = Language::find($payload['lang']);
         $basePath = 'app/' . self::$exportDirectoryName;
         $absolutePath = storage_path($basePath);
         $hosts = config('settings.hosting_country');
@@ -53,20 +52,33 @@ class PatientRawDataExport
         $patients = [];
         $therapists = [];
 
-        // Get patient data from other host
-        foreach ($hosts as $host) {
-            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $host);
-            $response = json_decode(Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/patient/list/get-raw-data', $request->all()));
-            $patients = array_merge($patients, $response->data);
-        }
+        if ($payload['user_type'] === User::ADMIN_GROUP_ORG_ADMIN) {
+            // Get patient data from other host
+            foreach ($hosts as $host) {
+                $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $host);
+                $response = json_decode(Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/patient/list/get-raw-data', $payload));
+                $patients = array_merge($patients, $response->data);
+            }
 
-        // Get patient data from global host
-        $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
-        $response = Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/list/get-raw-data', $request->all());
-        if (!empty($response) && $response->successful()) {
-            $response = json_decode($response);
-            $patients = array_merge($patients, $response->data);
+            // Get patient data from global host
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+            $response = Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/list/get-raw-data', $payload);
+            if (!empty($response) && $response->successful()) {
+                $response = json_decode($response);
+                $patients = array_merge($patients, $response->data);
+            }
+        } else {
+            $country = Country::find($payload['country']);
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code);
+            $response = Http::withToken($access_token)->withHeaders([
+                'country' => $country->iso_code
+            ])->get(env('PATIENT_SERVICE_URL') . '/patient/list/get-raw-data', $payload);
+            if (!empty($response) && $response->successful()) {
+                $response = json_decode($response);
+                $patients = $response->data;
+            }
         }
+        
         // Get therapist data
         $uniqueTherapistIds = array_values(array_unique(array_merge(
             array_column($patients, 'therapist_id'), 
@@ -256,11 +268,11 @@ class PatientRawDataExport
         // Set the first sheet as the active sheet
         $spreadsheet->setActiveSheetIndex(0);
         $writer = new Xlsx($spreadsheet);
-        $fileName = 'Questionnaire_Answers_' . date('Y-m-d_His') . '.xlsx';
-        $filePath = $absolutePath . '/' . $fileName;
+        $fileName = 'Patient-Raw-Data-' . date('Y-m-d_His') . '.xlsx';
+        $filePath = $absolutePath . $fileName;
 
         $writer->save($filePath);
-        return $basePath . '/' . $fileName;
+        return $basePath . $fileName;
     }
 
     public static function getTreatmentPlanStatus($startDate, $endDate, $translations)
