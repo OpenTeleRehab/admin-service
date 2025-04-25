@@ -32,6 +32,7 @@ class AnswerSurveyTemplate
         $headerColIndex = 1;
         $rowHeight = 20;
         $row = 3;
+        $startRow = 3;
 
         // Render row header.
         foreach ($columns as $column) {
@@ -92,78 +93,75 @@ class AnswerSurveyTemplate
         $sheet->getStyle('A1:' . $endCol . '1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
         $sheet->getStyle('A2:' . $endCol . '2')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
+        $surveyResults = $survey->userSurveys->where('status', UserSurvey::STATUS_COMPLETED);
         // Render row data.
-        foreach ($survey->userSurveys as $userSurvey) {
-            if ($userSurvey->status === UserSurvey::STATUS_COMPLETED) {
-                foreach (self::getRowData($survey, $userSurvey, $translations) as $key => $value) {
-                    $startCol = Coordinate::stringFromColumnIndex($key + 1);
-                    $sheet->setCellValue($startCol . $row, $value);
-                }
-
-                $answerColIndex = count($columns) + 1;
-
-                foreach ($survey->questionnaire->questions as $question) {
-                    switch ($question->type) {
-                        case Question::QUESTION_TYPE_CHECKBOX:
-                            // Increase row height based on answers.
-                            $rowHeight = $rowHeight * count($question->answers);
-
-                            $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
-                            $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $sheet->setCellValue($startCol . $row, self::bulletList($answer['description']));
-                            $sheet->getRowDimension($row)->setRowHeight(100);
-
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
-                            $sheet->setCellValue($startCol . $row, self::bulletList($answer['value']));
-                            $sheet->getRowDimension($row)->setRowHeight(100);
-
-                            break;
-                        case Question::QUESTION_TYPE_MULTIPLE:
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
-                            $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
-                            $sheet->setCellValue($startCol . $row, $answer['description'][0] ?? '');
-
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
-                            $sheet->setCellValue($startCol . $row, $answer['value'][0] ?? '');
-
-                            break;
-                        case Question::QUESTION_TYPE_OPEN_NUMBER:
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
-                            $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
-                            $sheet->setCellValue($startCol . $row, $answer['description'][0] ?? '');
-
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
-                            $sheet->setCellValue($startCol . $row, $answer['value'][0] ?? '');
-
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 2);
-                            $sheet->setCellValue($startCol . $row, $answer['threshold'][0] ?? '');
-
-                            break;
-                        default:
-                            $answers = array_filter($userSurvey->answer, function($item) use ($question) {
-                                return $item['question_id'] === $question->id;
-                            });
-                            $answer = reset($answers);
-
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $sheet->setCellValue($startCol . $row, $answer['answer'] ?? '');
-                    }
-
-                    $answerColIndex = self::getDynamicColIndex($answerColIndex, $question->type);
-                }
-
-                $sheet->getRowDimension($row)->setRowHeight($rowHeight);
-
-                $row++;
+        foreach ($surveyResults as $userSurvey) {
+            foreach (self::getRowData($survey, $userSurvey, $translations) as $key => $value) {
+                $startCol = Coordinate::stringFromColumnIndex($key + 1);
+                $sheet->setCellValue($startCol . $row, $value);
             }
-        }
 
+            $answerColIndex = count($columns) + 1;
+            $answerStartRow = $row;
+            foreach ($survey->questionnaire->questions as $index => $question) {
+                switch ($question->type) {
+                    case Question::QUESTION_TYPE_CHECKBOX:
+                        // Increase row height based on answers.
+                        $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
+                        $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
+                        $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
+                        $answerRow = $answerStartRow;
+                        foreach ($answer['description'] as $index => $description) {
+                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
+                            $sheet->setCellValue($startCol . $answerRow , $description ?? '');
+                            $sheet->setCellValue(Coordinate::stringFromColumnIndex($answerColIndex + 1) . $answerRow , $answer['value'][$index] ?? '');
+                            $sheet->getRowDimension($answerRow)->setRowHeight(20);
+                            $answerRow++;
+                        }
+                        // Set $row to the max row reached
+                        $row = max($row, $answerRow);
+                        break;
+                    case Question::QUESTION_TYPE_MULTIPLE:
+                        $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
+                        $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
+                        $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
+                        $sheet->setCellValue($startCol . $answerStartRow, $answer['description'][0] ?? '');
+
+                        $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
+                        $sheet->setCellValue($startCol . $answerStartRow, $answer['value'][0] ?? '');
+
+                        break;
+                    case Question::QUESTION_TYPE_OPEN_NUMBER:
+                        $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
+                        $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
+                        $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
+                        $sheet->setCellValue($startCol . $answerStartRow, $answer['description'][0] ?? '');
+
+                        $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
+                        $sheet->setCellValue($startCol . $answerStartRow, $answer['value'][0] ?? '');
+
+                        $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 2);
+                        $sheet->setCellValue($startCol . $answerStartRow, $answer['threshold'][0] ?? '');
+
+                        break;
+                    default:
+                        $answers = array_filter($userSurvey->answer, function($item) use ($question) {
+                            return $item['question_id'] === $question->id;
+                        });
+                        $answer = reset($answers);
+
+                        $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
+                        $sheet->setCellValue($startCol . $answerStartRow, $answer['answer'] ?? '');
+                }
+
+                $answerColIndex = self::getDynamicColIndex($answerColIndex, $question->type);
+            }
+
+            $sheet->getRowDimension($row)->setRowHeight($rowHeight);
+        }
         // Apply borders and align center to all data rows.
-        $sheet->getStyle('A2:' . $endCol . ($row - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-        $sheet->getStyle('A2:' . $endCol . ($row - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A2:' . $endCol . ($row === $startRow ? $row : $row - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle('A2:' . $endCol . ($row === $startRow ? $row : $row - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
     }
 
     /**
@@ -328,17 +326,6 @@ class AnswerSurveyTemplate
         }
 
         return $index;
-    }
-
-    /**
-     * @param array $items
-     * @return string
-     */
-    private static function bulletList(array $items)
-    {
-        return implode("\n", array_map(function($item) {
-            return "• $item";
-        }, $items));
     }
 
     /**

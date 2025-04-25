@@ -19,12 +19,12 @@ class SurveyExport
     /**
      * Exports data to an XLSX file.
      *
-     * @param \Illuminate\Http\Request $request.
+     * @param $payload.
      * @return string The path to the exported file.
      */
-    public static function export(Request $request)
+    public static function export($payload)
     {
-        $translations = TranslationHelper::getTranslations($request->get('lang'));
+        $translations = TranslationHelper::getTranslations($payload['lang']);
         $basePath = 'app/' . self::$exportDirectoryName;
         $absolutePath = storage_path($basePath);
 
@@ -32,7 +32,7 @@ class SurveyExport
             mkdir($absolutePath, 0777, true);
         }
 
-        $survey = Survey::find($request->integer('id'));
+        $survey = Survey::find($payload['survey_id']);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -43,10 +43,10 @@ class SurveyExport
         // Set the first sheet as the active sheet.
         $spreadsheet->setActiveSheetIndex(0);
         $writer = new Xlsx($spreadsheet);
-        $fileName = 'Survey_Result_' . date('Y-m-d_His') . '.xlsx';
-        $filePath = $absolutePath . '/' . $fileName;
+        $fileName = 'Survey-Result-' . date('Y-m-d_His') . '.xlsx';
+        $filePath = $absolutePath . $fileName;
 
         $writer->save($filePath);
-        return $basePath . '/' . $fileName;
+        return $basePath . $fileName;
     }
 }

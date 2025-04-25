@@ -9,10 +9,12 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Models\Country;
 
 class FileController extends Controller
 {
     const TYPE_PATIENT_RAW_DATA = 'patient_raw_data';
+    const TYPE_SURVEY_RESULT = 'survey_result';
 
     /**
      * @param \Illuminate\Http\Request $request
@@ -58,7 +60,7 @@ class FileController extends Controller
         $type = $request->get('type');
         $filePath = storage_path($request->get('path'));
         $user = Auth::user();
-        if ($type === self::TYPE_PATIENT_RAW_DATA) {
+        if ($type === self::TYPE_PATIENT_RAW_DATA || $type === self::TYPE_SURVEY_RESULT) {
             if (file_exists($filePath) && is_file($filePath)) {
                 return response()->download($filePath);
             }
@@ -72,11 +74,11 @@ class FileController extends Controller
                 }
                 return null;
             } else {
-                $country = $request->header('country');
+                $country = Country::find($user->country_id);
                 $endpoint = str_replace('api/', '/', $request->path());
-                $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
+                $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code);
                 $response = Http::withToken($access_token)->withHeaders([
-                    'country' => $country
+                    'country' => $country->iso_code
                 ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
                 return response($response->body(), $response->status())
                     ->withHeaders([

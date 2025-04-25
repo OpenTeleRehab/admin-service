@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Http;
 class ExportController extends Controller
 {
     const TYPE_PATIENT_RAW_DATA = 'patient_raw_data';
+    const TYPE_SURVEY_RESULT = 'survey_result';
 
     public function export(Request $request)
     {
@@ -35,6 +36,10 @@ class ExportController extends Controller
             $payload['user_type'] = $user->type;
             $payload['country'] = $user->country_id;
             $payload['clinic'] = $user->clinic_id;
+            GenerateExport::dispatch($payload);
+            $canSave = true;
+        } else if ($type === self::TYPE_SURVEY_RESULT) {
+            $payload['survey_id'] = $request->integer('id');
             GenerateExport::dispatch($payload);
             $canSave = true;
         } else {
