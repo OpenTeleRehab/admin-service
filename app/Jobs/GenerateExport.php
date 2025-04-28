@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enums\ExportStatus;
 use App\Exports\PatientRawDataExport;
 use App\Exports\QuestionnaireResultExport;
+use App\Exports\SurveyExport;
 use App\Models\DownloadTracker;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,6 +18,7 @@ class GenerateExport implements ShouldQueue
 
     const TYPE_QUESTIONNAIRE_RESULT = 'questionnaire_result';
     const TYPE_PATIENT_RAW_DATA = 'patient_raw_data';
+    const TYPE_SURVEY_RESULT = 'survey_result';
 
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -49,6 +51,10 @@ class GenerateExport implements ShouldQueue
 
         if ($type === self::TYPE_PATIENT_RAW_DATA) {
             $filePath = PatientRawDataExport::export($this->payload);
+        }
+
+        if ($type === self::TYPE_SURVEY_RESULT) {
+            $filePath = SurveyExport::export($this->payload);
         }
 
         if ($filePath) {

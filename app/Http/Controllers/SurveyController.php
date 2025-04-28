@@ -477,15 +477,4 @@ class SurveyController extends Controller
 
         return ['success' => true, 'message' => 'success_message.survey_skipped'];
     }
-
-    /**
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
-     */
-    public function export(Request $request)
-    {
-        $filePath = SurveyExport::export($request);
-        $absolutePath = storage_path($filePath);
-        return response()->download($absolutePath)->deleteFileAfterSend(true);
-    }
 }
