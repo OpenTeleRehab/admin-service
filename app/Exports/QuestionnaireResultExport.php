@@ -180,28 +180,25 @@ class QuestionnaireResultExport
                 $gender = $translations['common.' . $patient['gender']];
                 $disease = InternationalClassificationDisease::find($treatmentPlan['disease_id']);
                 $diseasName = $disease?->getTranslation('name', $payload['lang'] ?? 'en');
-
-                $sheet->setCellValue('A' . $row, $patient['identity'] ?? '');
-                $sheet->setCellValue('B' . $row, $treatmentPlan['name'] ?? '');
-                $sheet->setCellValue('C' . $row, $startDate);
-                $sheet->setCellValue('D' . $row, $endDate);
-                $sheet->setCellValue('E' . $row, $submittedDate);
-                $sheet->setCellValue('A' . $row, $patient['identity'] ?? '');
-                $sheet->setCellValue('B' . $row, $country?->name ?? '');
-                $sheet->setCellValue('C' . $row, $gender);
-                $sheet->setCellValue('D' . $row, $dob);
-                $sheet->setCellValue('E' . $row, $age);
-                $sheet->setCellValue('F' . $row, $status);
-                $sheet->setCellValue('G' . $row, $location);
-                $sheet->setCellValue('H' . $row, $diseasName);
-                $sheet->setCellValue('I' . $row, $treatmentPlan['name'] ?? '');
-                $sheet->setCellValue('J' . $row, $startDate);
-                $sheet->setCellValue('K' . $row, $endDate);
-                $sheet->setCellValue('L' . $row, $submittedDate);
-                $sheet->setCellValue('M' . $row, $questionnaire['title']);
+                $data = [
+                    $patient['identity'] ?? '',
+                    $country?->name ?? '',
+                    $gender,
+                    $dob,
+                    $age,
+                    $status,
+                    $location,
+                    $diseasName,
+                    $treatmentPlan['name'] ?? '',
+                    $startDate,
+                    $endDate,
+                    $submittedDate,
+                    $questionnaire['title'],
+                ];
 
                 $colIndex = 14;
                 $answerStartRow = $row;
+                $maxAnswerRow = $row;
                 foreach ($questions as $question) {
                     $patientAnswer = null;
                     foreach ($questionnaireAnswers as $questionnaireAnswer) {
@@ -245,8 +242,8 @@ class QuestionnaireResultExport
                                 $sheet->getRowDimension($answerRow)->setRowHeight(20);
                                 $answerRow++;
                             }
-                            // Set $row to the max row reached
-                            $row = max($row, $answerRow);
+                            // Set the max answer row for multiple answers.
+                            $maxAnswerRow = max($maxAnswerRow, $answerRow - 1);
                         } else {
                             $startCol = Coordinate::stringFromColumnIndex($colIndex);
                             $sheet->setCellValue($startCol . $answerStartRow, $answerDescriptions[0] ?? '');
@@ -263,7 +260,18 @@ class QuestionnaireResultExport
                         $colIndex += 2;
                     }
                 }
+                // Write the patient info to the sheet and merge cells of multiple answer rows.
+                foreach ($data as $index => $value) {
+                    $col = Coordinate::stringFromColumnIndex($index + 1);
+
+                    if ($answerStartRow !== $maxAnswerRow) {
+                        $sheet->mergeCells($col . $answerStartRow . ':' . $col . $maxAnswerRow);
+                    }
+
+                    $sheet->setCellValue($col . $answerStartRow, $value);
+                }
                 $sheet->getRowDimension($row)->setRowHeight(20);
+                $row = $maxAnswerRow + 1;
             }
 
             if (isset($endCol)) {
