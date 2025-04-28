@@ -96,11 +96,8 @@ class AnswerSurveyTemplate
         $surveyResults = $survey->userSurveys->where('status', UserSurvey::STATUS_COMPLETED);
         // Render row data.
         foreach ($surveyResults as $userSurvey) {
-            foreach (self::getRowData($survey, $userSurvey, $translations) as $key => $value) {
-                $startCol = Coordinate::stringFromColumnIndex($key + 1);
-                $sheet->setCellValue($startCol . $row, $value);
-            }
-
+            $surveyInfo = self::getRowData($survey, $userSurvey, $translations);
+            $maxAnswerRow = $row;
             $answerColIndex = count($columns) + 1;
             $answerStartRow = $row;
             foreach ($survey->questionnaire->questions as $index => $question) {
@@ -118,8 +115,8 @@ class AnswerSurveyTemplate
                             $sheet->getRowDimension($answerRow)->setRowHeight(20);
                             $answerRow++;
                         }
-                        // Set $row to the max row reached
-                        $row = max($row, $answerRow);
+                        // Set the max answer row for multiple answers.
+                        $maxAnswerRow = max($maxAnswerRow, $answerRow - 1);
                         break;
                     case Question::QUESTION_TYPE_MULTIPLE:
                         $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
@@ -155,6 +152,19 @@ class AnswerSurveyTemplate
                 }
 
                 $answerColIndex = self::getDynamicColIndex($answerColIndex, $question->type);
+
+                // Write the survey info to the sheet and merge cells of multiple answer rows.
+                foreach ($surveyInfo as $key => $value) {
+                    $startCol = Coordinate::stringFromColumnIndex($key + 1);
+
+                    if ($answerStartRow !== $maxAnswerRow) {
+                        $sheet->mergeCells($startCol . $answerStartRow . ':' . $startCol . $maxAnswerRow);
+                    }
+
+                    $sheet->setCellValue($startCol . $answerStartRow, $value);
+                }
+
+                $row = $maxAnswerRow + 1;
             }
 
             $sheet->getRowDimension($row)->setRowHeight($rowHeight);
@@ -239,8 +249,8 @@ class AnswerSurveyTemplate
             $survey->start_date ? Carbon::parse($survey->start_date)->format('d/M/Y') : '',
             $survey->end_date ? Carbon::parse($survey->end_date)->format('d/M/Y') : '',
             $translations["survey.frequency.$survey->frequency"],
-            $surveyor->first_name ?? '',
-            $surveyor->last_name ?? '',
+            $surveyor->first_name ?? $translations['common.unknown'] ?? '',
+            $surveyor->last_name ?? $translations['common.unknown'] ?? '',
             Carbon::parse($userSurvey->completed_at)->format('d/M/Y'),
             $survey->questionnaire->title,
             $survey->questionnaire->description,

@@ -66,6 +66,7 @@
     "common.updated": "Updated",
     "common.deleted": "Deleted",
     "common.logout": "Logout",
+    "common.unknown": "Unknown",
     "toast_title.translation.approve": "Approve Translation",
     "toast_title.translation.reject": "Reject Translation",
     "success_message.translation.approve": "Translation approved successfully",
