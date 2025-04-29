@@ -26,6 +26,7 @@ class UserSurvey extends Model
         'completed_at',
         'skipped_at',
         'survey_phase',
+        'score',
     ];
 
     /**
@@ -43,5 +44,13 @@ class UserSurvey extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function survey(): BelongsTo
+    {
+        return $this->belongsTo(Survey::class, 'survey_id', 'id');
     }
 }

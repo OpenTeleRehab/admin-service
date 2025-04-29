@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\SurveyExport;
+use App\Helpers\SurveyHelper;
 use App\Http\Resources\SurveyResource;
 use App\Models\Survey;
 use Illuminate\Http\Request;
@@ -413,7 +414,6 @@ class SurveyController extends Controller
                 break;
             default:
                 return ['success' => false, 'data' => []];
-                break;
         }
         return ['success' => true, 'data' => SurveyResource::collection($survey)];
     }
@@ -428,7 +428,7 @@ class SurveyController extends Controller
     {
         $survey = Survey::find($request->integer('survey_id'));
         if ($survey->role === User::GROUP_PATIENT && ($survey->include_at_the_start || $survey->include_at_the_end)) {
-            UserSurvey::updateOrCreate(
+            $userSurvey = UserSurvey::updateOrCreate(
                 [
                     'user_id' => $request->integer('user_id'),
                     'survey_id' => $request->integer('survey_id'),
@@ -442,7 +442,7 @@ class SurveyController extends Controller
                     'survey_phase' => $request->string('survey_phase'),
                 ]);
         } else {
-            UserSurvey::updateOrCreate(
+            $userSurvey = UserSurvey::updateOrCreate(
                 [
                     'user_id' => $request->integer('user_id'),
                     'survey_id' => $request->integer('survey_id'),
@@ -453,6 +453,9 @@ class SurveyController extends Controller
                     'completed_at' => Carbon::now(),
                 ]);
         }
+
+        $totalScore = SurveyHelper::getTotalScore($userSurvey);
+        $userSurvey->update(['score' => $totalScore]);
 
         return ['success' => true, 'message' => 'success_message.survey_submitted'];
     }
