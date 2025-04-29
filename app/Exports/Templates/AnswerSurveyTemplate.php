@@ -2,6 +2,7 @@
 
 namespace App\Exports\Templates;
 
+use App\Helpers\SurveyHelper;
 use App\Models\Clinic;
 use App\Models\Country;
 use App\Models\Organization;
@@ -105,7 +106,7 @@ class AnswerSurveyTemplate
                     case Question::QUESTION_TYPE_CHECKBOX:
                         // Increase row height based on answers.
                         $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
-                        $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
+                        $answer = SurveyHelper::getAnswerData($question, $userAswer['answer'] ?? null);
                         $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
                         $answerRow = $answerStartRow;
                         foreach ($answer['description'] as $index => $description) {
@@ -121,7 +122,7 @@ class AnswerSurveyTemplate
                     case Question::QUESTION_TYPE_MULTIPLE:
                         $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
                         $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
-                        $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
+                        $answer = SurveyHelper::getAnswerData($question, $userAswer['answer'] ?? null);
                         $sheet->setCellValue($startCol . $answerStartRow, $answer['description'][0] ?? '');
 
                         $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
@@ -131,7 +132,7 @@ class AnswerSurveyTemplate
                     case Question::QUESTION_TYPE_OPEN_NUMBER:
                         $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
                         $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
-                        $answer = self::getAnswerData($question, $userAswer['answer'] ?? null);
+                        $answer = SurveyHelper::getAnswerData($question, $userAswer['answer'] ?? null);
                         $sheet->setCellValue($startCol . $answerStartRow, $answer['description'][0] ?? '');
 
                         $startCol = Coordinate::stringFromColumnIndex($answerColIndex + 1);
@@ -337,39 +338,4 @@ class AnswerSurveyTemplate
 
         return $index;
     }
-
-    /**
-     * @param Question $question
-     * @param array $userAnswers
-     * @return array
-     */
-    private function getAnswerData($question, $answer)
-    {
-        $answerDescription = [];
-        $value = [];
-        $threshold = [];
-        if ($answer) {
-            if ($question->type === Question::QUESTION_TYPE_CHECKBOX) {
-                $foundAnswers = $question->answers->filter(fn($questionAnswer) => in_array($questionAnswer->id, $answer))->all();
-                $answerDescription = array_column($foundAnswers, 'description');
-                $value = array_column($foundAnswers, 'value');
-            } else if ($question->type === Question::QUESTION_TYPE_MULTIPLE) {
-                $foundAnswer = $question->answers->first(fn($questionAnswer) => $questionAnswer->id === $answer);
-                $answerDescription[] = $foundAnswer->description;
-                $value[] = $foundAnswer->value ?? '';
-            } else if ($question->type === Question::QUESTION_TYPE_OPEN_NUMBER) {
-                $foundAnswer = $question->answers->first(fn($questionAnswer) => $questionAnswer->question_id === $question->id);
-                $answerDescription[] = $answer;
-                $value[] = $foundAnswer ? $foundAnswer->value : '';
-                $threshold[] = $foundAnswer ? $foundAnswer->threshold : '';
-            } else {
-                $answerDescription[] = $answer;
-            }
-        }
-        return [
-            'description' => $answerDescription,
-            'value' => $value,
-            'threshold' => $threshold,
-        ];
-    }   
 }
