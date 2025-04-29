@@ -16,6 +16,7 @@ define("KEYCLOAK_EXECUTE_EMAIL", '/execute-actions-email?client_id=' . env('KEYC
 define("GADMIN_KEYCLOAK_TOKEN_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('GADMIN_KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token');
 define("THERAPIST_KEYCLOAK_TOKEN_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('THERAPIST_KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token');
 define("PATIENT_LOGIN_URL", env('PATIENT_SERVICE_URL') . '/auth/login');
+define("WEBHOOK_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/webhooks');
 
 /**
  * Class KeycloakHelper
@@ -384,5 +385,43 @@ class KeycloakHelper
         ]);
 
         return $response;
+    }
+
+    /**
+     * @param string $url
+     * @param array $eventTypes
+     *
+     * @return bool
+     */
+    public static function createWebhook($url, $eventTypes)
+    {
+        $response = Http::asForm()->post(KEYCLOAK_TOKEN_URL, [
+            'grant_type' => 'password',
+            'client_id' => env('KEYCLOAK_BACKEND_CLIENT'),
+            'client_secret' => env('KEYCLOAK_BACKEND_SECRET'),
+            'username' => env('KEYCLOAK_BACKEND_USERNAME'),
+            'password' => env('KEYCLOAK_BACKEND_PASSWORD')
+        ]);
+        $token = null;
+        if ($response->successful()) {
+            $result = $response->json();
+            $token = $result['access_token'];
+        }
+
+        if ($token) {
+            $response = Http::withToken($token)->withHeaders([
+                'Content-Type' => 'application/json'
+            ])->post(WEBHOOK_URL, [
+                'enabled' => true,
+                'url' => $url,
+                'secret' => env('KEYCLOAK_BACKEND_SECRET'),
+                'eventTypes' => $eventTypes,
+            ]);
+            if ($response->successful()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Translation extends Model
 {
+    use LogsActivity;
+
     const ADMIN_PORTAL = 'admin_portal';
     const THERAPIST_PORTAL = 'therapist_portal';
     const PATIENT_APP = 'patient_app';
@@ -25,4 +29,18 @@ class Translation extends Model
     protected $fillable = [
         'key', 'value', 'platform'
     ];
+
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['id']);
+    }
 }

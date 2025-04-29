@@ -5,12 +5,10 @@ namespace App\Http\Controllers;
 use App\Helpers\OrganizationHelper;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
-use App\Models\OrganizationKeycloakRealm;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class OrganizationController extends Controller
 {
