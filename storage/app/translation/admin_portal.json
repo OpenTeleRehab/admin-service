@@ -657,6 +657,7 @@
     "common.female": "Female",
     "common.other": "Other",
     "common.year" : "years",
+    "common.max" : "Max",
     "dashboard.total_clinic_admin": "Total Clinic Admins",
     "dashboard.total_therapist": "Total Therapists",
     "dashboard.therapist_per_clinic": "Therapist per Clinic",
