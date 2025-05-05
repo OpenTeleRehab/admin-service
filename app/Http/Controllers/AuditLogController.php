@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\AuditLogResource;
 use App\Models\ExtendActivity;
 use Illuminate\Support\Facades\Schema;
+use App\Models\User;
 
 class AuditLogController extends Controller
 {
@@ -15,6 +15,8 @@ class AuditLogController extends Controller
     const CLINIC_ADMIN = 'clinic_admin';
     const SUPER_ADMIN = 'super_admin';
     const ORGANIZATION_ADMIN = 'organization_admin';
+    const KEYCLOAK_EVENT_TYPE_LOGIN = 'access.LOGIN';
+
     /**
      * @OA\Get(
      *     path="/api/audit-logs",
@@ -43,7 +45,6 @@ class AuditLogController extends Controller
     {
         $user = Auth::user();
         $data = $request->all();
-
         if (!in_array($user->type, [self::SUPER_ADMIN, self::COUNTRY_ADMIN, self::CLINIC_ADMIN, self::ORGANIZATION_ADMIN])) {
             return response()->json([
                 'success' => false,
@@ -166,69 +167,27 @@ class AuditLogController extends Controller
      * @OA\Post(
      *     path="/api/audit-logs",
      *     tags={"AuditLogs"},
-     *     summary="Store audit logs for admin_service, therapist_service, and patient_service",
+     *     summary="Store audit logs of user",
      *     operationId="createAuditLog",
      *     @OA\Parameter(
-      *         name="log_name",
-      *         in="query",
-      *         description="Source of log. It could be admin_service, therapist_service, or patient_service",
-      *         required=true,
-      *         @OA\Schema(
-      *             type="string"
-      *         )
-      *     ),
-      *     @OA\Parameter(
-      *         name="type",
-      *         in="query",
-      *         description="Action of log such as 'create', 'update', or 'login'",
-      *         required=true,
-      *         @OA\Schema(
-      *             type="string"
-      *         )
-      *     ),
-      *     @OA\Parameter(
-      *         name="user_id",
-      *         in="query",
-      *         description="User id is required if the log is not from admin_service",
-      *         required=false,
-      *         @OA\Schema(
-      *             type="integer"
-      *         )
-      *     ),
-      *     @OA\Parameter(
-      *         name="user_id",
-      *         in="query",
-      *         description="User id is required if the log is not from admin_service",
-      *         required=false,
-      *         @OA\Schema(
-      *             type="string"
-      *         )
-      *     ),
-      *     @OA\Parameter(
-      *         name="user_full_name",
-      *         in="query",
-      *         description="User full name is required if the log is not from admin_service",
-      *         required=false,
-      *         @OA\Schema(
-      *             type="string"
-      *         )
-      *     ),
-      *     @OA\Parameter(
-      *         name="user_groups",
-      *         in="query",
-      *         description="User groups is required if the log is not from admin_service",
-      *         required=false,
-      *         @OA\Schema(
-      *             type="integer"
-      *         )
-      *     ),
-     *     @OA\Parameter(
-     *         name="properties",
+     *         name="authDetails",
      *         in="query",
-     *         description="Detail changes for both before and after changes and is required if the log is not from admin_service",
-     *         required=false,
+     *         description="auth details from Keycloak",
+     *         required=true,
      *         @OA\Schema(
-     *             type="integer"
+     *             type="array",
+     *             @OA\Items(
+     *                 type="array",
+     *                 @OA\Property(property="username", type="string"),
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         description="Action of log such as 'create', 'update', or 'login'",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
      *         )
      *     ),
      *     @OA\Response(
@@ -251,52 +210,22 @@ class AuditLogController extends Controller
      */
     public function store(Request $request)
     {
-        $logName = $request->get('log_name') ?? '';
-        if (empty($logName)) {
-            return [ 'success' => false ];
-        }
-
+        $auth = $request->get('authDetails');
+        $details = $request->get('details');
+        $user = User::where('email', $auth['username'])->first();
         $type = $request->get('type');
-        $storeData = [];
-        if ($logName !== 'admin_service') {
-            $rules = [
-                'user_id' => 'required',
-                'user_full_name' => 'required',
-                'user_email' => 'required',
-                'user_groups' => 'required',
-                'properties' => 'required'
-            ];
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return [ 'success' => false ];
-            }
-
-            $storeData = array_merge(
-                [
-                    'meta' => [
-                        'user_id' => $request->get('user_id'),
-                        'user_email' => $request->get('user_email'),
-                        'user_full_name' => $request->get('user_full_name'),
-                        'user_groups' => $request->get('user_groups'),
-                    ]
-                ],
-                $request->get('properties')
-            );
+        $storeData = [
+            'attributes' => ['user_id' => $user->id]
+        ];
+        // Check if user just refresh the page
+        $isRefresh = isset($details['response_mode'], $details['response_type']) && !isset($details['custom_required_action']);
+        if (!$isRefresh && $user && $user->email !== env('KEYCLOAK_BACKEND_USERNAME')) {
             activity()
-               ->withProperties(['customProperty' => $storeData])
-               ->useLog($logName)
-               ->log($type);
-        } else {
-            $user = Auth::user();
-            $storeData = [
-                'attributes' => ['user_id' => $user->id]
-            ];
-            activity()
-               ->performedOn($user)
-               ->causedBy($user)
-               ->withProperties($storeData)
-               ->useLog($logName)
-               ->log($type);
+            ->performedOn($user)
+            ->causedBy($user)
+            ->withProperties($storeData)
+            ->useLog('admin_service')
+            ->log($type === self::KEYCLOAK_EVENT_TYPE_LOGIN ? 'login' : 'logout');
         }
 
         return [ 'success' => true ];

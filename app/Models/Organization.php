@@ -49,7 +49,7 @@ class Organization extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->logExcept(['id', 'created_at', 'updated_at']);
+            ->logExcept(['id', 'created_at', 'updated_at', 'deleted_at']);
     }
 
     /**

@@ -23,19 +23,19 @@ class AuditLogResource extends JsonResource
         $userClinic = '';
         $userCountry = '';
         $changes = $this->changes;
-        $user = User::find($this->causer_id);
-        if ($user) {
-            $fullName = $user->last_name . ' ' . $user->first_name;
-            $userGroup = $user->type;
-            $userClinic = $user->clinic?->name;
-            $userCountry = $user->country?->name;
-        } else {
+        if ($this->full_name || $this->group || $this->clinic_id || $this->country_id) {
             $fullName = $this->full_name;
             $userGroup = $this->group;
             $clinic = Clinic::find($this->clinic_id);
             $country = Country::find($this->country_id);
             $userClinic = $clinic?->name;
             $userCountry = $country?->name;
+        } else {
+            $user = User::find($this->causer_id);
+            $fullName = $user?->last_name . ' ' . $user?->first_name;
+            $userGroup = $user?->type;
+            $userClinic = $user?->clinic?->name;
+            $userCountry = $user?->country?->name;
         }
 
         $beforeChanged = isset($changes['old']) ? $changes['old'] : [];
