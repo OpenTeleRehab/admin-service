@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 class GlobalAssistiveTechnologyPatient extends Model
 {
@@ -40,6 +41,17 @@ class GlobalAssistiveTechnologyPatient extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->logExcept(['id', 'created_at', 'updated_at']);
+            ->logExcept(['id', 'created_at', 'updated_at', 'patient_id', 'therapist_id', 'gender', 'date_of_birth', 'country_id', 'clinic_id']);
+    }
+
+    /**
+     * Determine if the event should be logged.
+     *
+     * @param string $eventName
+     * @return bool
+     */
+    public function shouldLogEvent(string $eventName): bool
+    {
+        return $eventName === 'deleted';
     }
 }

@@ -32,7 +32,7 @@ class AuditLogResource extends JsonResource
             $userCountry = $country?->name;
         } else {
             $user = User::find($this->causer_id);
-            $fullName = $user?->last_name . ' ' . $user?->first_name;
+            $fullName = $user ? $user->last_name . ' ' . $user->first_name : null;
             $userGroup = $user?->type;
             $userClinic = $user?->clinic?->name;
             $userCountry = $user?->country?->name;

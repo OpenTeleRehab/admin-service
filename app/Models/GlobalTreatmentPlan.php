@@ -36,7 +36,18 @@ class GlobalTreatmentPlan extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->logExcept(['id', 'created_at', 'updated_at']);
+            ->logExcept(['id', 'created_at', 'updated_at', 'treatment_id']);
+    }
+
+    /**
+     * Determine if the event should be logged.
+     *
+     * @param string $eventName
+     * @return bool
+     */
+    public function shouldLogEvent(string $eventName): bool
+    {
+        return $eventName === 'deleted';
     }
 
     /**
