@@ -41,6 +41,21 @@ class Localization extends Model
     }
 
     /**
+     * Determine if the event should be logged.
+     *
+     * @param string $eventName
+     * @return bool
+     */
+    public function shouldLogEvent(string $eventName): bool
+    {
+        $this->refresh();
+        if (!$this->auto_translated) {
+            return in_array($eventName, ['updated', 'created']);
+        }
+        return false;
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function translation()

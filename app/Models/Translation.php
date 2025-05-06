@@ -43,4 +43,15 @@ class Translation extends Model
             ->dontSubmitEmptyLogs()
             ->logExcept(['id']);
     }
+
+    /**
+     * Determine if the event should be logged.
+     *
+     * @param string $eventName
+     * @return bool
+     */
+    public function shouldLogEvent(string $eventName): bool
+    {
+        return $eventName === 'updated';
+    }
 }
