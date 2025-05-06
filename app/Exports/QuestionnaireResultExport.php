@@ -117,13 +117,7 @@ class QuestionnaireResultExport
 
             $colIndex = 14;
             foreach ($questions as $question) {
-                $endColIndex = $colIndex;
-                // Each question spans 3 columns for open number and 2 for multiple and checkbox
-                if ($question->type === Question::QUESTION_TYPE_OPEN_NUMBER) {
-                    $endColIndex = $colIndex + 2;
-                } else if ($question->type !== Question::QUESTION_TYPE_OPEN_TEXT) {
-                    $endColIndex = $colIndex + 1;
-                }
+                $endColIndex = self::getDynamicEndColIndex($colIndex, $question->type);
                 
                 // Convert numeric column index to Excel column letters
                 $startCol = Coordinate::stringFromColumnIndex($colIndex);
@@ -146,11 +140,7 @@ class QuestionnaireResultExport
                 $sheet->getColumnDimension($startCol)->setWidth(20);
 
                 // Move to the next question
-                if ($question->type === Question::QUESTION_TYPE_OPEN_NUMBER) {
-                    $colIndex += 3;
-                } else if ($question->type !== Question::QUESTION_TYPE_OPEN_TEXT) {
-                    $colIndex += 2;
-                }
+                $colIndex = self::getDynamicColIndex($colIndex, $question->type);
             }
 
             if (isset($endCol)) {
@@ -254,11 +244,7 @@ class QuestionnaireResultExport
                     }
 
                     // Move to the next set of columns
-                    if ($question->type === Question::QUESTION_TYPE_OPEN_NUMBER) {
-                        $colIndex += 3;
-                    } else if ($question->type !== Question::QUESTION_TYPE_OPEN_TEXT) {
-                        $colIndex += 2;
-                    }
+                    $colIndex = self::getDynamicColIndex($colIndex, $question->type);
                 }
                 // Write the patient info to the sheet and merge cells of multiple answer rows.
                 foreach ($data as $index => $value) {
@@ -287,5 +273,49 @@ class QuestionnaireResultExport
 
         $writer->save($filePath);
         return $basePath . $fileName;
+    }
+
+    /**
+     * @param int $index
+     * @param string $type
+     *
+     * @return int
+     */
+    private static function getDynamicColIndex(int $index, string $type)
+    {
+        switch ($type) {
+            case Question::QUESTION_TYPE_MULTIPLE:
+            case Question::QUESTION_TYPE_CHECKBOX:
+                $index = $index + 2;
+                break;
+            case Question::QUESTION_TYPE_OPEN_NUMBER:
+                $index = $index + 3;
+                break;
+            default:
+                $index = $index + 1;
+        }
+
+        return $index;
+    }
+
+    /**
+     * @param int $index
+     * @param string $type
+     *
+     * @return int
+     */
+    private static function getDynamicEndColIndex(int $index, string $type)
+    {
+        switch ($type) {
+            case Question::QUESTION_TYPE_MULTIPLE:
+            case Question::QUESTION_TYPE_CHECKBOX:
+                $index = $index + 1;
+                break;
+            case Question::QUESTION_TYPE_OPEN_NUMBER:
+                $index = $index + 2;
+                break;
+        }
+
+        return $index;
     }
 }
