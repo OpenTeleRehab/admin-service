@@ -74,32 +74,38 @@ class GlobalPatientController extends Controller
                         } elseif ($filterObj->columnName === 'country' && $filterObj->value !== '') {
                             $query->where('country_id', $filterObj->value);
                         } elseif ($filterObj->columnName === 'treatment_status') {
-                            if ($filterObj->value == GlobalPatient::FINISHED_TREATMENT_PLAN) {
-                                $query->whereHas('treatmentPlans', function (Builder $query) {
-                                    $query->whereDate('end_date', '<', Carbon::now());
-                                })->whereDoesntHave('treatmentPlans', function (Builder $query) {
-                                    $query->whereDate('end_date', '>', Carbon::now());
-                                })->whereDoesntHave('treatmentPlans', function (Builder $query) {
-                                    $query->whereDate('start_date', '<=', Carbon::now())
-                                        ->whereDate('end_date', '>=', Carbon::now());
+                            $today = Carbon::today();
+                            if ($filterObj->value == GlobalPatient::ONGOING_TREATMENT_PLAN) {
+                                $query->whereHas('treatmentPlans', function (Builder $query) use ($today) {
+                                    $query->whereDate('start_date', '<=', $today)
+                                        ->whereDate('end_date', '>=', $today);
                                 });
                             } elseif ($filterObj->value == GlobalPatient::PLANNED_TREATMENT_PLAN) {
-                                $query->whereHas('treatmentPlans', function (Builder $query) {
-                                    $query->whereDate('end_date', '>', Carbon::now());
-                                })->whereDoesntHave('treatmentPlans', function (Builder $query) {
-                                    $query->whereDate('start_date', '<=', Carbon::now())
-                                        ->whereDate('end_date', '>=', Carbon::now());
+                                $query->whereHas('treatmentPlans', function (Builder $query) use ($today) {
+                                    $query->whereDate('start_date', '>', $today)
+                                        ->whereDate('end_date', '>', $today);
+                                })->whereDoesntHave('treatmentPlans', function (Builder $query) use ($today) {
+                                    $query->whereDate('start_date', '<=', $today)
+                                        ->whereDate('end_date', '>=', $today);
                                 });
-                            } else {
-                                $query->whereHas('treatmentPlans', function (Builder $query) {
-                                    $query->whereDate('start_date', '<=', Carbon::now())
-                                        ->whereDate('end_date', '>=', Carbon::now());
+                            } elseif ($filterObj->value == GlobalPatient::FINISHED_TREATMENT_PLAN) {
+                                $query->whereHas('treatmentPlans', function (Builder $query) use ($today) {
+                                    $query->whereDate('start_date', '<', $today)
+                                        ->whereDate('end_date', '<', $today);
+                                })->whereDoesntHave('treatmentPlans', function (Builder $query) use ($today) {
+                                    $query->whereDate('start_date', '<=', $today)
+                                        ->whereDate('end_date', '>=', $today);
                                 });
                             }
                         } elseif ($filterObj->columnName === 'gender') {
                             $query->where($filterObj->columnName, $filterObj->value);
                         } elseif ($filterObj->columnName === 'age') {
-                            $query->whereRaw('YEAR(NOW()) - YEAR(date_of_birth) = ? OR ABS(MONTH(date_of_birth) - MONTH(NOW())) = ?  OR ABS(DAY(date_of_birth) - DAY(NOW())) = ?', [$filterObj->value, $filterObj->value, $filterObj->value]);
+                            $value = $filterObj->value;
+                            $query->where(function ($query) use ($value) {
+                                $query->orWhereRaw("YEAR(CURDATE()) - YEAR(date_of_birth) = ?", [$value])
+                                    ->orWhereRaw("(YEAR(CURDATE()) = YEAR(date_of_birth) AND MONTH(CURDATE()) - MONTH(date_of_birth) = ?)", [$value])
+                                    ->orWhereRaw("(YEAR(CURDATE()) = YEAR(date_of_birth) AND MONTH(CURDATE()) = MONTH(date_of_birth) AND DAY(CURDATE()) - DAY(date_of_birth) = ?)", [$value]);
+                            });
                         } elseif ($filterObj->columnName === 'ongoing_treatment_plan') {
                             $query->whereHas('treatmentPlans', function (Builder $query) use ($filterObj) {
                                 $query->where('name', 'like', '%' .  $filterObj->value . '%');

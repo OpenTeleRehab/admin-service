@@ -16,6 +16,7 @@ class GlobalPatient extends Model
     const ADMIN_GROUP_CLINIC_ADMIN = 'clinic_admin';
     const FINISHED_TREATMENT_PLAN = 1;
     const PLANNED_TREATMENT_PLAN = 2;
+    const ONGOING_TREATMENT_PLAN = 3;
     const SECONDARY_TERAPIST = 2;
     /**
      * The attributes that are mass assignable.
@@ -64,6 +65,9 @@ class GlobalPatient extends Model
      */
     public function treatmentPlans()
     {
-        return $this->hasMany(GlobalTreatmentPlan::class, 'patient_id', 'patient_id')->orWhere('country_id', $this->country_id);
+        if ($this->country_id) {
+            return $this->hasMany(GlobalTreatmentPlan::class, 'patient_id', 'patient_id')->orWhere('country_id', $this->country_id);
+        }
+        return $this->hasMany(GlobalTreatmentPlan::class, 'patient_id', 'patient_id');
     }
 }
