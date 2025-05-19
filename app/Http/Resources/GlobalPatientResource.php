@@ -16,14 +16,17 @@ class GlobalPatientResource extends JsonResource
      */
     public function toArray($request)
     {
+        $today = Carbon::today();
         $upcomingTreatmentPlan = $this->treatmentPlans()
-            ->whereDate('end_date', '>', Carbon::now())
+            ->whereDate('start_date', '>', $today)
+            ->whereDate('end_date', '>', $today)
             ->orderBy('start_date')
             ->first();
 
         $ongoingTreatmentPlan = $this->treatmentPlans()
-            ->whereDate('start_date', '<=', Carbon::now())
-            ->whereDate('end_date', '>=', Carbon::now())
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->orderBy('start_date')
             ->get();
 
         $lastTreatmentPlan = $this->treatmentPlans()
