@@ -9,6 +9,7 @@ use App\Models\GlobalPatient;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 class GlobalPatientController extends Controller
@@ -152,7 +153,7 @@ class GlobalPatientController extends Controller
         $country = Country::find($patient->country_id);
         $user = auth()->user();
 
-        Http::withHeaders([
+        $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code),
             'country' => $country->iso_code,
         ])->post(env('PATIENT_SERVICE_URL') . '/patient/deleteAccount/' . $patientId, [
@@ -165,8 +166,21 @@ class GlobalPatientController extends Controller
             'country_id' => $user->country_id,
         ]);
 
-        $patient->delete();
-
-        return ['success' => true, 'message' => 'success_message.patient_delete'];
+        if ($response->successful()) {
+            $patient->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'success_message.patient_delete',
+                'status' => $response->status(),
+                'error' => $response->json() ?? $response->body(),
+            ], $response->status());
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'fail_message.patient_delete',
+                'status' => $response->status(),
+                'error' => $response->json() ?? $response->body(),
+            ], $response->status());
+        }
     }
 }
