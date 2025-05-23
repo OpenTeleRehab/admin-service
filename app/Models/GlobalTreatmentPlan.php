@@ -10,6 +10,10 @@ class GlobalTreatmentPlan extends Model
 {
     use LogsActivity;
 
+    const FINISHED_TREATMENT_PLAN = 'finished';
+    const PLANNED_TREATMENT_PLAN = 'planned';
+    const ONGOING_TREATMENT_PLAN = 'on_going';
+
     /**
      * The attributes that are mass assignable.
      *

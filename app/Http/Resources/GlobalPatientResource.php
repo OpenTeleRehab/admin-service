@@ -19,7 +19,6 @@ class GlobalPatientResource extends JsonResource
         $today = Carbon::today();
         $upcomingTreatmentPlan = $this->treatmentPlans()
             ->whereDate('start_date', '>', $today)
-            ->whereDate('end_date', '>', $today)
             ->orderBy('start_date')
             ->first();
 

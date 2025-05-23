@@ -6,6 +6,7 @@ use App\Http\Resources\GlobalPatientResource;
 use App\Models\Country;
 use App\Models\Forwarder;
 use App\Models\GlobalPatient;
+use App\Models\GlobalTreatmentPlan;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -77,25 +78,26 @@ class GlobalPatientController extends Controller
                         } elseif ($filterObj->columnName === 'treatment_status') {
                             $today = Carbon::today();
                             if ($filterObj->value == GlobalPatient::ONGOING_TREATMENT_PLAN) {
-                                $query->whereHas('treatmentPlans', function (Builder $query) use ($today) {
+                                $query->whereHas('treatmentPlans', function ($query) use ($today) {
                                     $query->whereDate('start_date', '<=', $today)
                                         ->whereDate('end_date', '>=', $today);
                                 });
                             } elseif ($filterObj->value == GlobalPatient::PLANNED_TREATMENT_PLAN) {
-                                $query->whereHas('treatmentPlans', function (Builder $query) use ($today) {
-                                    $query->whereDate('start_date', '>', $today)
-                                        ->whereDate('end_date', '>', $today);
-                                })->whereDoesntHave('treatmentPlans', function (Builder $query) use ($today) {
+                                $query->whereDoesntHave('treatmentPlans', function ($query) use ($today) {
                                     $query->whereDate('start_date', '<=', $today)
                                         ->whereDate('end_date', '>=', $today);
+                                })->whereHas('treatmentPlans', function ($query) use ($today) {
+                                    $query->whereDate('start_date', '>', $today);
                                 });
                             } elseif ($filterObj->value == GlobalPatient::FINISHED_TREATMENT_PLAN) {
-                                $query->whereHas('treatmentPlans', function (Builder $query) use ($today) {
-                                    $query->whereDate('start_date', '<', $today)
-                                        ->whereDate('end_date', '<', $today);
-                                })->whereDoesntHave('treatmentPlans', function (Builder $query) use ($today) {
-                                    $query->whereDate('start_date', '<=', $today)
-                                        ->whereDate('end_date', '>=', $today);
+                                $query->whereDoesntHave('treatmentPlans', function ($query) use ($today) {
+                                    $query->whereDate('start_date', '>', $today)
+                                        ->orWhere(function ($q) use ($today) {
+                                            $q->whereDate('start_date', '<=', $today)
+                                                ->whereDate('end_date', '>=', $today);
+                                        });
+                                })->whereHas('treatmentPlans', function ($query) use ($today) {
+                                    $query->whereDate('end_date', '<', $today);
                                 });
                             }
                         } elseif ($filterObj->columnName === 'gender') {
