@@ -65,9 +65,6 @@ class GlobalPatient extends Model
      */
     public function treatmentPlans()
     {
-        if ($this->country_id) {
-            return $this->hasMany(GlobalTreatmentPlan::class, 'patient_id', 'patient_id')->orWhere('country_id', $this->country_id);
-        }
         return $this->hasMany(GlobalTreatmentPlan::class, 'patient_id', 'patient_id');
     }
 }

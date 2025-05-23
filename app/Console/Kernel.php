@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('hi:sync-patient-twilio-call-data')->runInBackground();
         $schedule->command('hi:clean-up-exported-files')->daily()->runInBackground();
         $schedule->command('hi:expire-past-due-survey')->runInBackground();
+        $schedule->command('hi:update-treatment-plan-status')->daily()->runInBackground();
     }
 
     /**
