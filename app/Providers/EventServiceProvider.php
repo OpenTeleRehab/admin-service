@@ -6,6 +6,8 @@ use App\Events\ApplyAssistiveTechnologyAutoTranslationEvent;
 use App\Events\ApplyCategoryAutoTranslationEvent;
 use App\Events\ApplyExerciseAutoTranslationEvent;
 use App\Events\ApplyGuidanceAutoTranslationEvent;
+use App\Events\ApplyHealthConditionAutoTranslationEvent;
+use App\Events\ApplyHealthConditionGroupAutoTranslationEvent;
 use App\Events\ApplyMaterialAutoTranslationEvent;
 use App\Events\ApplyNewLanguageTranslationEvent;
 use App\Events\ApplyPrivacyPolicyAutoTranslationEvent;
@@ -17,6 +19,8 @@ use App\Listeners\ApplyAssistiveTechnologyAutoTranslationListener;
 use App\Listeners\ApplyCategoryAutoTranslationListener;
 use App\Listeners\ApplyExerciseAutoTranslationListener;
 use App\Listeners\ApplyGuidanceAutoTranslationListener;
+use App\Listeners\ApplyHealthConditionAutoTranslationListener;
+use App\Listeners\ApplyHealthConditionGroupAutoTranslationListener;
 use App\Listeners\ApplyMaterialAutoTranslationListener;
 use App\Listeners\ApplyNewLanguageTranslationListener;
 use App\Listeners\ApplyPrivacyPolicyAutoTranslationListener;
@@ -71,6 +75,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         ApplyAssistiveTechnologyAutoTranslationEvent::class => [
             ApplyAssistiveTechnologyAutoTranslationListener::class,
+        ],
+        ApplyHealthConditionGroupAutoTranslationEvent::class => [
+            ApplyHealthConditionGroupAutoTranslationListener::class,
+        ],
+        ApplyHealthConditionAutoTranslationEvent::class => [
+            ApplyHealthConditionAutoTranslationListener::class,
         ],
     ];
 

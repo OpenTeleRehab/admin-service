@@ -17,6 +17,8 @@ use App\Http\Controllers\ForwarderController;
 use App\Http\Controllers\GlobalAssistiveTechnologyPatientController;
 use App\Http\Controllers\GlobalPatientController;
 use App\Http\Controllers\GuidancePageController;
+use App\Http\Controllers\HealthConditionController;
+use App\Http\Controllers\HealthConditionGroupController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\LanguageController;
@@ -205,6 +207,12 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('survey/publish/{survey}', [SurveyController::class, 'publish'])->middleware('role:manage_survey');
     Route::post('survey/submit', [SurveyController::class, 'submit'])->middleware('role:submit_survey');
     Route::post('survey/skip', [SurveyController::class, 'skipSurvey'])->middleware('role:skip_survey');
+
+    // Health Condition Group
+    Route::apiResource('health-condition-group', HealthConditionGroupController::class);
+
+    // Health Condition
+    Route::apiResource('health-condition', HealthConditionController::class);
 
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData'])->middleware('role:view_category_tree');
