@@ -79,4 +79,12 @@ class HealthCondition extends Model
 
         return $isUsed;
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function parent()
+    {
+        return $this->belongsTo(HealthConditionGroup::class, 'parent_id', 'id');
+    }
 }
