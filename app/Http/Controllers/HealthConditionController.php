@@ -67,7 +67,7 @@ class HealthConditionController extends Controller
      */
     public function show(HealthCondition $healthCondition)
     {
-        return new HealthConditionResource($healthCondition);
+        return new HealthConditionResource($healthCondition->load('parent'));
     }
 
     /**
