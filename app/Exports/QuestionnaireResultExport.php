@@ -4,9 +4,10 @@ namespace App\Exports;
 
 use App\Helpers\TranslationHelper;
 use App\Models\Forwarder;
+use App\Models\HealthCondition;
+use App\Models\HealthConditionGroup;
 use App\Models\Questionnaire;
 use App\Models\Country;
-use App\Models\InternationalClassificationDisease;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
@@ -87,6 +88,7 @@ class QuestionnaireResultExport
             $sheet->mergeCells('K1:K2');
             $sheet->mergeCells('L1:L2');
             $sheet->mergeCells('M1:M2');
+            $sheet->mergeCells('N1:N2');
 
             $sheet->setCellValue('A1', $translations['report.questionnaire_result.patient_id']);
             $sheet->setCellValue('B1', $translations['common.country']);
@@ -95,12 +97,13 @@ class QuestionnaireResultExport
             $sheet->setCellValue('E1', $translations['common.age']);
             $sheet->setCellValue('F1', $translations['common.status']);
             $sheet->setCellValue('G1', $translations['common.location']);
-            $sheet->setCellValue('H1', $translations['report.questionnaire_result.icd_classification']);
-            $sheet->setCellValue('I1', $translations['report.questionnaire_result.diagnostic']);
-            $sheet->setCellValue('J1', $translations['common.start_date']);
-            $sheet->setCellValue('K1', $translations['common.end_date']);
-            $sheet->setCellValue('L1', $translations['common.submitted_date']);
-            $sheet->setCellValue('M1', $translations['report.questionnaire_result.questionnaire_name']);
+            $sheet->setCellValue('H1', $translations['report.questionnaire_result.health_condition_group']);
+            $sheet->setCellValue('I1', $translations['report.questionnaire_result.health_condition']);
+            $sheet->setCellValue('J1', $translations['report.questionnaire_result.diagnostic']);
+            $sheet->setCellValue('K1', $translations['common.start_date']);
+            $sheet->setCellValue('L1', $translations['common.end_date']);
+            $sheet->setCellValue('M1', $translations['common.submitted_date']);
+            $sheet->setCellValue('N1', $translations['report.questionnaire_result.questionnaire_name']);
             $sheet->getColumnDimension('A')->setWidth(20);
             $sheet->getColumnDimension('B')->setWidth(20);
             $sheet->getColumnDimension('C')->setWidth(20);
@@ -118,7 +121,7 @@ class QuestionnaireResultExport
             $colIndex = 14;
             foreach ($questions as $question) {
                 $endColIndex = self::getDynamicEndColIndex($colIndex, $question->type);
-                
+
                 // Convert numeric column index to Excel column letters
                 $startCol = Coordinate::stringFromColumnIndex($colIndex);
                 $endCol = Coordinate::stringFromColumnIndex($endColIndex);
@@ -132,7 +135,7 @@ class QuestionnaireResultExport
                     $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIndex + 1) . '2', $translations['report.questionnaire_result.value']);
                     $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($colIndex + 1))->setWidth(20);
                 }
-                
+
                 if ($question->type === Question::QUESTION_TYPE_OPEN_NUMBER) {
                     $sheet->setCellValue(Coordinate::stringFromColumnIndex($colIndex + 2) . '2', $translations['report.questionnaire_result.threshold']);
                     $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($colIndex + 2))->setWidth(20);
@@ -168,8 +171,15 @@ class QuestionnaireResultExport
                 $status = $patient['enabled'] === 1 ? $translations['common.active'] : $translations['common.inactive'];
                 $location = $translations['common.' . $patient['location']];
                 $gender = $translations['common.' . $patient['gender']];
-                $disease = InternationalClassificationDisease::find($treatmentPlan['disease_id']);
-                $diseasName = $disease?->getTranslation('name', $payload['lang'] ?? 'en');
+                $healthCondition = HealthCondition::find($treatmentPlan['health_condition_id']);
+                $healthConditionName = $healthCondition?->getTranslation('name', $payload['lang'] ?? 'en');
+
+                $healthConditionGroupName = null;
+                if ($healthCondition) {
+                    $healthConditionGroup = HealthConditionGroup::find($healthCondition->parent_id);
+                    $healthConditionGroupName = $healthConditionGroup?->getTranslation('name', $payload['lang'] ?? 'en');
+                }
+
                 $data = [
                     $patient['identity'] ?? '',
                     $country?->name ?? '',
@@ -178,7 +188,8 @@ class QuestionnaireResultExport
                     $age,
                     $status,
                     $location,
-                    $diseasName,
+                    $healthConditionName,
+                    $healthConditionGroupName,
                     $treatmentPlan['name'] ?? '',
                     $startDate,
                     $endDate,

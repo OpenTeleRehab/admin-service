@@ -631,6 +631,8 @@
     "report.questionnaire_result.threshold": "Threshold",
     "report.questionnaire_result.icd_classification": "Treatment classification ICD",
     "report.questionnaire_result.questionnaire_name": "Questionnaire Name",
+    "report.questionnaire_result.health_condition_group": "Health condition group",
+    "report.questionnaire_result.health_condition": "Health condition",
     "success_message.download_history_delete": "Download history cleared successfully",
     "success_message.export": "Exported successfully",
     "error_message.export": "Export failed",
