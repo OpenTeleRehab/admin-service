@@ -192,14 +192,17 @@ class KeycloakHelper
      *
      * @return bool
      */
-    public static function hasRealmRole($role)
+    public static function hasRealmRole($roles)
     {
         $decodedToken = json_decode(Auth::token(), true);
-        $authRoles = $decodedToken['realm_access']['roles'];
-        if (in_array($role, $authRoles)) {
-            return true;
+
+        if (!isset($decodedToken['realm_access']['roles'])) {
+            return false;
         }
-        return false;
+
+        $authRoles = $decodedToken['realm_access']['roles'];
+
+        return !empty(array_intersect($roles, $authRoles));
     }
 
     /**
@@ -282,7 +285,8 @@ class KeycloakHelper
             'client_id' => env('KEYCLOAK_BACKEND_CLIENT'),
             'client_secret' => $client_secret,
             'username' => env('KEYCLOAK_BACKEND_USERNAME'),
-            'password' => env('KEYCLOAK_BACKEND_PASSWORD')
+            'password' => env('KEYCLOAK_BACKEND_PASSWORD'),
+            'scope' => 'openid profile email'
         ]);
 
         if ($response->successful()) {
