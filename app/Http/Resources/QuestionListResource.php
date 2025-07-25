@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Helpers\ContentHelper;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class EducationMaterialResource extends JsonResource
+class QuestionListResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -20,8 +19,7 @@ class EducationMaterialResource extends JsonResource
             'title' => $this->title,
             'fallback' => [
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
-            ],
-            'file' => $this->file_id_no_fallback ? new FileResource($this->file) : null
+            ]
         ];
     }
 }
