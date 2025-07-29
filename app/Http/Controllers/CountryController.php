@@ -334,4 +334,21 @@ class CountryController extends Controller
 
         return ['success' => true, 'data' => $country];
     }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array
+     */
+    public function getCountryByIsoCode(Request $request)
+    {
+        $isoCode = $request->get('iso_code');
+        $country = Country::where('iso_code', $isoCode)->first();
+
+        if (!$country) {
+            return response()->json(['message' => 'Country not found'], 404);
+        }
+
+        return ['success' => true, 'data' => $country];
+    }
 }

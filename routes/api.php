@@ -50,7 +50,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('term-condition/{id}', [TermAndConditionController::class, 'show']);
 Route::get('privacy-policy/{id}', [PrivacyPolicyController::class, 'show']);
 
-Route::group(['middleware' => 'auth:api'], function () {
+Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Admin
     Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus']);
     Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser']);
@@ -88,6 +88,8 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Country
     Route::apiResource('country', CountryController::class);
+    // TODO: Add role "access_all" middleware for this route
+    Route::get('get-country-by-iso-code', [CountryController::class, 'getCountryByIsoCode']);
 
     // Clinic
     Route::get('clinic/therapist-limit/count/by-country', [ClinicController::class, 'countTherapistLimitByCountry']);
