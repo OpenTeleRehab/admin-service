@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 define("KEYCLOAK_USER_URL", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
 define("KEYCLOAK_TOKEN_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token');
 define("KEYCLOAK_GROUPS_URL", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/groups');
+define('KEYCLOAK_ROLES_URL', env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/roles');
 define("KEYCLOAK_EXECUTE_EMAIL", '/execute-actions-email?client_id=' . env('KEYCLOAK_BACKEND_CLIENT') . '&redirect_uri=' . env('REACT_APP_BASE_URL'));
 
 define("GADMIN_KEYCLOAK_TOKEN_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('GADMIN_KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token');
@@ -308,7 +309,7 @@ class KeycloakHelper
      *
      * @return bool
      */
-    private static function assignUserToGroup($token, $userUrl, $userGroup, $isUnassigned = false)
+    public static function assignUserToGroup($token, $userUrl, $userGroup, $isUnassigned = false)
     {
         $userGroups = KeycloakHelper::getUserGroups($token);
         $url = $userUrl . '/groups/' . $userGroups[$userGroup];
@@ -427,5 +428,80 @@ class KeycloakHelper
         }
 
         return false;
+    }
+
+    /**
+     * Create a realm role in Keycloak.
+     *
+     * @param string $roleName
+     * @param string $description
+     * @return bool
+     */
+    public static function createRealmRole($roleName, $description = '')
+    {
+        $token = self::getKeycloakAccessToken();
+
+        $response = Http::withToken($token)
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->post(KEYCLOAK_ROLES_URL, [
+                'name' => $roleName,
+                'description' => $description,
+            ]);
+
+        return $response->successful();
+    }
+
+    /**
+     * Create a new group in Keycloak.
+     *
+     * @param string $groupName
+     * @return bool
+     */
+    public static function createGroup($groupName)
+    {
+        $token = self::getKeycloakAccessToken();
+
+        $response = Http::withToken($token)
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->post(KEYCLOAK_GROUPS_URL, ['name' => $groupName]);
+
+        return $response->successful();
+    }
+
+    /**
+     * Assign a realm role to a Keycloak group.
+     *
+     * @param string $groupName
+     * @param string $roleName
+     * @return bool
+     */
+    public static function assignRealmRoleToGroup($groupName, $roleName)
+    {
+        $token = self::getKeycloakAccessToken();
+        $groupId = self::getUserGroups($token)[$groupName] ?? null;
+
+        if (!$groupId) {
+            throw new \Exception("Group '{$groupName}' not found.");
+        }
+
+        $roleResponse = Http::withToken($token)
+            ->get(KEYCLOAK_ROLES_URL . "/{$roleName}");
+
+        if (!$roleResponse->successful()) {
+            throw new \Exception("Role '{$roleName}' not found.");
+        }
+
+        $role = $roleResponse->json();
+
+        $assignResponse = Http::withToken($token)
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->post(KEYCLOAK_GROUPS_URL . "/{$groupId}/role-mappings/realm", [
+                [
+                    'id' => $role['id'],
+                    'name' => $role['name']
+                ]
+            ]);
+
+        return $assignResponse->successful();
     }
 }
