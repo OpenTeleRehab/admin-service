@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\SurveyExport;
 use App\Helpers\SurveyHelper;
 use App\Http\Resources\SurveyResource;
+use App\Http\Resources\SurveyListResource;
 use App\Models\Survey;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -47,7 +48,7 @@ class SurveyController extends Controller
             $surveys = $this->getSurveysForClinicAdmin()->get();
         }
 
-        return ['success' => true, 'data' => SurveyResource::collection($surveys)];
+        return ['success' => true, 'data' => SurveyListResource::collection($surveys)];
     }
 
     /**
@@ -415,7 +416,7 @@ class SurveyController extends Controller
             default:
                 return ['success' => false, 'data' => []];
         }
-        return ['success' => true, 'data' => SurveyResource::collection($survey)];
+        return ['success' => true, 'data' => SurveyListResource::collection($survey)];
     }
 
     /**

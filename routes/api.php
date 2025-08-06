@@ -91,7 +91,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('get-organization', [OrganizationController::class, 'getOrganization'])->middleware('role:access_all');
     Route::get('org/org-therapist-and-treatment-limit', [OrganizationController::class, 'getTherapistAndTreatmentLimit'])->middleware('role:manage_organization,view_organization');
     Route::get('organization', [OrganizationController::class, 'index'])->middleware('role:manage_organization,view_organization');
-    Route::post('organization/{organization}', [OrganizationController::class, 'show'])->middleware('role:manage_organization');
+    Route::get('organization/{organization}', [OrganizationController::class, 'show'])->middleware('role:manage_organization');
     Route::post('organization', [OrganizationController::class, 'store'])->middleware('role:manage_organization');
     Route::put('organization/{organization}', [OrganizationController::class, 'update'])->middleware('role:manage_organization');
     Route::delete('organization/{organization}', [OrganizationController::class, 'destroy'])->middleware('role:manage_organization');
@@ -120,7 +120,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Exercise
     Route::get('exercise', [ExerciseController::class, 'index'])->middleware('role:setup_exercise,view_exercise_list');
     Route::post('exercise', [ExerciseController::class, 'store'])->middleware('role:setup_exercise');
-    Route::get('exercise/{exercise}', [ExerciseController::class, 'show'])->middleware('role:setup_exercise');
+    Route::get('exercise/{exercise}', [ExerciseController::class, 'show'])->middleware('role:setup_exercise,view_exercise');
     Route::put('exercise/{exercise}', [ExerciseController::class, 'update'])->middleware('role:setup_exercise');
     Route::delete('exercise/{exercise}', [ExerciseController::class, 'destroy'])->middleware('role:setup_exercise');
     Route::post('exercise/suggest', [ExerciseController::class, 'suggest'])->middleware('role:access_all');

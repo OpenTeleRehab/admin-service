@@ -7,6 +7,7 @@ use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\QuestionnaireResource;
+use App\Http\Resources\QuestionnaireListResource;
 use App\Models\Answer;
 use App\Models\File;
 use App\Models\Forwarder;
@@ -110,7 +111,7 @@ class QuestionnaireController extends Controller
         ];
         return [
             'success' => true,
-            'data' => QuestionnaireResource::collection($questionnaires),
+            'data' => QuestionnaireListResource::collection($questionnaires),
             'info' => $info,
         ];
     }

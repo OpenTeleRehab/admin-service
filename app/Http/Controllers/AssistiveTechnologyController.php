@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\ApplyAssistiveTechnologyAutoTranslationEvent;
 use App\Helpers\FileHelper;
 use App\Http\Resources\AssistiveTechnologyResource;
+use App\Http\Resources\AssistiveTechnologyListResource;
 use App\Models\AssistiveTechnology;
 use App\Models\File;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class AssistiveTechnologyController extends Controller
      */
     public function index()
     {
-        return ['success' => true, 'data' => AssistiveTechnologyResource::collection(AssistiveTechnology::all())];
+        return ['success' => true, 'data' => AssistiveTechnologyListResource::collection(AssistiveTechnology::all())];
     }
 
     /**
@@ -135,6 +136,6 @@ class AssistiveTechnologyController extends Controller
     public function getAllAssistiveTechnology()
     {
         $assistiveTechnologies = AssistiveTechnology::withTrashed()->get();
-        return ['success' => true, 'data' => AssistiveTechnologyResource::collection($assistiveTechnologies)];
+        return ['success' => true, 'data' => AssistiveTechnologyListResource::collection($assistiveTechnologies)];
     }
 }

@@ -9,6 +9,7 @@ use App\Helpers\ExerciseHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\ExerciseResource;
+use App\Http\Resources\ExerciseListResource;
 use App\Models\AdditionalField;
 use App\Models\Exercise;
 use App\Models\ExerciseCategory;
@@ -70,7 +71,7 @@ class ExerciseController extends Controller
         ];
         return [
             'success' => true,
-            'data' => ExerciseResource::collection($exercises),
+            'data' => ExerciseListResource::collection($exercises),
             'info' => $info,
         ];
     }

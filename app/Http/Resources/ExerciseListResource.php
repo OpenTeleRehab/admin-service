@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use App\Helpers\ContentHelper;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class EducationMaterialResource extends JsonResource
+class ExerciseListResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,10 +18,13 @@ class EducationMaterialResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
+            'sets' => $this->sets,
+            'reps' => $this->reps,
+            'files' => FileResource::collection($this->files()->orderBy('order')->get()),
+            'children' => ExerciseListResource::collection($this->children),
             'fallback' => [
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
             ],
-            'file' => $this->file_id_no_fallback ? new FileResource($this->file) : null
         ];
     }
 }
