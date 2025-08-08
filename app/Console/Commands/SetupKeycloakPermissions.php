@@ -215,8 +215,8 @@ class SetupKeycloakPermissions extends Command
         $this->line("Role setup complete.");
 
         // Setup users 'hi_library'
-        $email = 'hi_library';
-        $password = 'H1@library';
+        $email = env('KEYCLOAK_LIBRARY_USERNAME');
+        $password = env('KEYCLOAK_LIBRARY_PASSWORD');
 
         $this->line("Setting up role user '$email'...");
 
