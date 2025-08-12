@@ -58,7 +58,7 @@ class VerifyDataAccess
 
         // Country header check (normalize case)
         if ($countryHeader) {
-            $country = Country::whereRaw('LOWER(iso_code) = ?', [strtolower($countryHeader)])->first();
+            $country = Country::where('iso_code', $countryHeader)->first();
 
             if (!$country) {
                 return response()->json([
