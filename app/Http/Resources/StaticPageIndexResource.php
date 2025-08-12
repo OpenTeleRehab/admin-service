@@ -18,6 +18,7 @@ class StaticPageIndexResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'platform' => $this->platform,
+            'url' => $this->url_path_segment,
         ];
     }
 }

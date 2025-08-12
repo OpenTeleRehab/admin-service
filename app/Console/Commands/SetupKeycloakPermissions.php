@@ -135,6 +135,7 @@ class SetupKeycloakPermissions extends Command
                 'view_language',
                 'view_country_therapist_limit',
                 'view_number_of_clinic_therapist',
+                'view_exercise',
             ],
             'clinic_admin' => [
                 'view_profession',
