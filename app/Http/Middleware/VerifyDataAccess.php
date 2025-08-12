@@ -22,42 +22,45 @@ class VerifyDataAccess
         $countryHeader = $request->header('Country');
         $countryId = $request->get('country_id') ?? $request->get('country');
         $clinicId = $request->get('clinic_id') ?? $request->get('clinic');
+
+        /** @var User|null $user */
         $user = auth()->user();
         $accessDenied = false;
 
-        // If following condition is met, skip validation and allow request
-        if ((!isset($countryHeader) && !isset($countryId) && !isset($clinicId)) || $user->type === User::ADMIN_GROUP_ORG_ADMIN || $user->email === env('KEYCLOAK_BACKEND_CLIENT')) {
+        // Null-safe early exit
+        if (
+            (!isset($countryHeader) && !isset($countryId) && !isset($clinicId)) ||
+            ($user && $user->type === User::ADMIN_GROUP_ORG_ADMIN) ||
+            ($user && $user->email === env('KEYCLOAK_BACKEND_CLIENT'))
+        ) {
             return $next($request);
         }
 
-        // Verify if the auth user belongs to their assigned country
+        // Country ID check
         if ($user && $countryId) {
             $decodedCountryId = json_decode($countryId, true);
-            if (is_array($decodedCountryId)) {
-                if (!empty($decodedCountryId) && !in_array($user->country_id, $decodedCountryId)) {
-                    $accessDenied = true;
-                }
-            } else if ((int)$user->country_id !== (int)$decodedCountryId) {
+            $countryIds = is_array($decodedCountryId) ? $decodedCountryId : [$decodedCountryId];
+
+            if (!empty($countryIds) && !in_array((int)$user->country_id, array_map('intval', $countryIds))) {
                 $accessDenied = true;
             }
         }
 
-        // Verify if the auth user belongs to their assigned clinic
+        // Clinic ID check
         if ($user && $clinicId && $user->type !== User::ADMIN_GROUP_COUNTRY_ADMIN) {
-            $decodeClinicId = json_decode($clinicId, true);
-            if (is_array($decodeClinicId)) {
-                if (!empty($decodeClinicId) && !in_array($user->clinic_id, $decodeClinicId)) {
-                    $accessDenied = true;
-                }
-            } else if ((int)$user->clinic_id !== (int)$decodeClinicId) {
+            $decodedClinicId = json_decode($clinicId, true);
+            $clinicIds = is_array($decodedClinicId) ? $decodedClinicId : [$decodedClinicId];
+
+            if (!empty($clinicIds) && !in_array((int)$user->clinic_id, array_map('intval', $clinicIds))) {
                 $accessDenied = true;
             }
         }
 
-        // Verify if the auth user belongs to the country base on the country header provided
-        if (isset($countryHeader)) {
-            $country = Country::where('iso_code', $countryHeader)->first();
-            if (!$country || !$country->id) {
+        // Country header check (normalize case)
+        if ($countryHeader) {
+            $country = Country::whereRaw('LOWER(iso_code) = ?', [strtolower($countryHeader)])->first();
+
+            if (!$country) {
                 return response()->json([
                     'message' => 'Invalid or unrecognized country.'
                 ], 404);
@@ -68,6 +71,7 @@ class VerifyDataAccess
             }
         }
 
+        // Final access decision
         if ($accessDenied) {
             return response()->json([
                 'message' => 'Access denied'
