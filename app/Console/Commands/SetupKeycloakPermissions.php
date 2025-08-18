@@ -172,6 +172,25 @@ class SetupKeycloakPermissions extends Command
                 'get_question_answer',
                 'get_questionnaire_category',
             ],
+            'translator' => [
+                'manage_organization',
+                'manage_guidance_page',
+                'manage_translation',
+                'manage_assistive_technology',
+                'manage_profession',
+                'manage_static_page',
+                'manage_own_profile',
+                'manage_clinic',
+                'manage_download_tracker',
+                'setup_educational_material',
+                'setup_questionnaire',
+                'setup_category',
+                'setup_exercise',
+                'view_country_therapist_limit',
+                'view_default_limited_patient',
+                'view_number_of_clinic_therapist',
+                'view_category_tree',
+            ],
         ];
 
         $this->line("Creating groups...");
