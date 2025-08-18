@@ -30,6 +30,7 @@ class VerifyDataAccess
         // Null-safe early exit
         if (
             (!isset($countryHeader) && !isset($countryId) && !isset($clinicId)) ||
+            ($user && $user->type === User::ADMIN_GROUP_SUPER_ADMIN) ||
             ($user && $user->type === User::ADMIN_GROUP_ORG_ADMIN) ||
             ($user && $user->email === env('KEYCLOAK_BACKEND_CLIENT'))
         ) {
