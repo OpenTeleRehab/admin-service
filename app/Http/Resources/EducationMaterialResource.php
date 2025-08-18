@@ -21,7 +21,8 @@ class EducationMaterialResource extends JsonResource
             'fallback' => [
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
             ],
-            'file' => $this->file_id_no_fallback ? new FileResource($this->file) : null
+            'file' => $this->file_id_no_fallback ? new FileResource($this->file) : null,
+            'share_to_hi_library' => $this->share_to_hi_library,
         ];
     }
 }
