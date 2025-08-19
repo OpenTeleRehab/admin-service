@@ -83,6 +83,7 @@ class SetupKeycloakPermissions extends Command
                 'view_audit_log',
                 'manage_download_tracker',
                 'generate_report',
+                'access_all',
             ],
             'organization_admin' => [
                 'view_profession',
@@ -117,6 +118,7 @@ class SetupKeycloakPermissions extends Command
                 'view_language',
                 'view_therapist_patient_list',
                 'view_patient_treatment_plan_detail',
+                'access_all',
             ],
             'country_admin' => [
                 'view_organization',
@@ -136,6 +138,7 @@ class SetupKeycloakPermissions extends Command
                 'view_country_therapist_limit',
                 'view_number_of_clinic_therapist',
                 'view_exercise',
+                'access_all',
             ],
             'clinic_admin' => [
                 'view_profession',
@@ -156,6 +159,7 @@ class SetupKeycloakPermissions extends Command
                 'view_number_of_clinic_therapist',
                 'view_language',
                 'view_exercise',
+                'access_all',
             ],
             'library_admin' => [
                 'get_library_category',
