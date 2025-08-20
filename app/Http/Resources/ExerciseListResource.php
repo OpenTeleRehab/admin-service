@@ -26,6 +26,7 @@ class ExerciseListResource extends JsonResource
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
             ],
             'therapist_id' => $this->therapist_id,
+            'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
         ];
     }
 }
