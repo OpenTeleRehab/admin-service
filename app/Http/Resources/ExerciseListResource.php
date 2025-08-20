@@ -25,6 +25,7 @@ class ExerciseListResource extends JsonResource
             'fallback' => [
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
             ],
+            'therapist_id' => $this->therapist_id,
         ];
     }
 }
