@@ -25,6 +25,7 @@ class ExerciseListResource extends JsonResource
             'fallback' => [
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
             ],
+            'share_to_hi_library' => $this->share_to_hi_library,
             'therapist_id' => $this->therapist_id,
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
         ];
