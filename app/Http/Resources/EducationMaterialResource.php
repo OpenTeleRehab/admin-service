@@ -23,6 +23,8 @@ class EducationMaterialResource extends JsonResource
             ],
             'file' => $this->file_id_no_fallback ? new FileResource($this->file) : null,
             'share_to_hi_library' => $this->share_to_hi_library,
+            'therapist_id' => $this->therapist_id,
+            'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
         ];
     }
 }
