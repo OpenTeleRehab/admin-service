@@ -296,8 +296,8 @@ Route::get('page/static-page-data', [StaticPageController::class, 'getStaticPage
 Route::get('page/term-condition', [TermAndConditionController::class, 'getTermAndConditionPage']);
 Route::get('page/privacy', [PrivacyPolicyController::class, 'getPrivacyPage']);
 Route::get('translation/i18n/{platform}', [TranslationController::class, 'getI18n']);
-Route::get('public/user-term-condition', [TermAndConditionController::class, 'getUserTermAndCondition']);
-Route::get('public/user-privacy-policy', [PrivacyPolicyController::class, 'getUserPrivacyPolicy']);
+Route::get('user-term-condition', [TermAndConditionController::class, 'getUserTermAndCondition']);
+Route::get('user-privacy-policy', [PrivacyPolicyController::class, 'getUserPrivacyPolicy']);
 Route::get('update-organization-status', [OrganizationController::class, 'updateOrganizationStatus']);
 Route::get('get-ongoing-organization', [OrganizationController::class, 'getOngoingOrganization']);
 Route::get('org/org-therapist-and-max_sms', [OrganizationController::class, 'getTherapistAndMaxSms']);
