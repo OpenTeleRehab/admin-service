@@ -56,14 +56,20 @@ class PatientRawDataExport
             // Get patient data from other host
             foreach ($hosts as $host) {
                 $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $host);
-                $response = json_decode(Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/patient/list/get-raw-data', $payload));
-                $patients = array_merge($patients, $response->data);
+                $response = Http::withHeaders(['Authorization' => 'Bearer ' . $access_token, 'country' => $host])->get(env('PATIENT_SERVICE_URL') . '/patient/list/get-raw-data', $payload);
+
+                if ($response && $response->successful()) {
+                    $response = json_decode($response);
+                    $patients = array_merge($patients, $response->data);
+                }
             }
 
             // Get patient data from global host
             $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
             $response = Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/list/get-raw-data', $payload);
-            if (!empty($response) && $response->successful()) {
+
+            if ($response && $response->successful()) {
                 $response = json_decode($response);
                 $patients = array_merge($patients, $response->data);
             }
@@ -78,10 +84,10 @@ class PatientRawDataExport
                 $patients = $response->data;
             }
         }
-        
+
         // Get therapist data
         $uniqueTherapistIds = array_values(array_unique(array_merge(
-            array_column($patients, 'therapist_id'), 
+            array_column($patients, 'therapist_id'),
             ...array_map(fn($patient) => $patient->secondary_therapists, $patients)
         )));
         $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
@@ -92,7 +98,7 @@ class PatientRawDataExport
         if (!empty($response) && $response->successful()) {
             $therapists = json_decode($response);
         }
-        
+
         $patientTreatmentPlanData = [];
         $patientTreatmentPlanSurveyData = [];
         $patientTreatmentQuestionnaireStartEndData = [];
@@ -185,7 +191,7 @@ class PatientRawDataExport
                                 $finalResult
                             ]);
                         }
-                        
+
                     } else {
                         $patientTreatmentPlanSurveyData[] = array_merge($patientData, [
                             $treatmentPlan->name,
@@ -230,7 +236,6 @@ class PatientRawDataExport
                             $endDate,
                         ]);
                     }
-                    
                 }
             } else {
                 $patientTreatmentPlanData[] = $patientData;
@@ -264,7 +269,7 @@ class PatientRawDataExport
         $spreadsheet->addSheet($patientSurveySheet);
         $patientSurveyTemplate = new PatientSurveyTemplate();
         $patientSurveyTemplate->template($patientSurveyData, $patientSurveySheet, $translations);
-        
+
         // Set the first sheet as the active sheet
         $spreadsheet->setActiveSheetIndex(0);
         $writer = new Xlsx($spreadsheet);

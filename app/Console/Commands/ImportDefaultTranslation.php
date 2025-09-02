@@ -81,10 +81,10 @@ class ImportDefaultTranslation extends Command
                         } catch (\Exception $e) {
                             $errorCode = $e->getCode();
                             $errorMessage = $e->getMessage();
-                    
+
                             // Ensure the same error (code + message) is not stored twice
                             $existError = collect($errors)->contains(fn($err) => $err['code'] === $errorCode && $err['message'] === $errorMessage);
-                    
+
                             if (!$existError) {
                                 $errors[] = ['code' => $errorCode, 'message' => $errorMessage];
                             }
