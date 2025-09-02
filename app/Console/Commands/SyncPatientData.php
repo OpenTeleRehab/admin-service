@@ -133,8 +133,9 @@ class SyncPatientData extends Command
         if ($treatmentPlanGlobal) {
             foreach ($treatmentPlanGlobal as $treatmentPlan) {
                 $patient = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $treatmentPlan->patient_id));
-    
+
                 $status = TreatmentPlanHelper::determineStatus($treatmentPlan->start_date, $treatmentPlan->end_date);
+
                 GlobalTreatmentPlan::updateOrCreate(
                     [
                         'treatment_id' => $treatmentPlan->id,

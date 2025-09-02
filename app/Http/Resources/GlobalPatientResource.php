@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,18 +16,22 @@ class GlobalPatientResource extends JsonResource
     public function toArray($request)
     {
         $today = Carbon::today();
+
         $upcomingTreatmentPlan = $this->treatmentPlans()
+            ->where('country_id', $this->country_id)
             ->whereDate('start_date', '>', $today)
             ->orderBy('start_date')
             ->first();
 
         $ongoingTreatmentPlan = $this->treatmentPlans()
+            ->where('country_id', $this->country_id)
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->orderBy('start_date')
             ->get();
 
         $lastTreatmentPlan = $this->treatmentPlans()
+            ->where('country_id', $this->country_id)
             ->orderBy('end_date', 'desc')
             ->first();
 
