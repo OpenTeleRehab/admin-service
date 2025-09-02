@@ -244,12 +244,12 @@ class AnswerSurveyTemplate
 
         $data = [
             $survey->createdBy->first_name . ' ' . $survey->createdBy->last_name,
-            $translations["survey.status.$survey->status"],
+            $translations["survey.status.$survey->status"] ?? 'N/A',
             Organization::findMany($survey->organization)->pluck('name')->implode(', '),
-            $translations["common.$survey->role"],
+            $translations["common.$survey->role"] ?? 'N/A',
             $survey->start_date ? Carbon::parse($survey->start_date)->format('d/M/Y') : '',
             $survey->end_date ? Carbon::parse($survey->end_date)->format('d/M/Y') : '',
-            $translations["survey.frequency.$survey->frequency"],
+            $translations["survey.frequency.$survey->frequency"] ?? 'N/A',
             $surveyor->first_name ?? $translations['common.unknown'] ?? '',
             $surveyor->last_name ?? $translations['common.unknown'] ?? '',
             Carbon::parse($userSurvey->completed_at)->format('d/M/Y'),
