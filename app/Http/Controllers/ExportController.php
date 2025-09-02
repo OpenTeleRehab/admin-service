@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class ExportController extends Controller
 {
@@ -19,16 +20,20 @@ class ExportController extends Controller
     {
         //TODO: Should improve this to be more generic.
         $user = Auth::user();
-        $userId = $user->id;
-        $jobId = $userId . now();
+        $jobId = Str::uuid();
+
         $lang = $request->get('lang', 'en');
         $type = $request->get('type');
+
         $country = $request->header('country');
+
         $payload = [
             'job_id' => $jobId,
             'lang' => $lang,
             'type' => $type,
         ];
+
+        $externalExport = false;
 
         if ($type === self::TYPE_PATIENT_RAW_DATA) {
             $payload['search_value'] = $request->get('search_value');
@@ -36,19 +41,17 @@ class ExportController extends Controller
             $payload['user_type'] = $user->type;
             $payload['country'] = $user->country_id;
             $payload['clinic'] = $user->clinic_id;
-            GenerateExport::dispatch($payload);
-            $canSave = true;
+
+            $generateExport = true;
         } else if ($type === self::TYPE_SURVEY_RESULT) {
             $payload['survey_id'] = $request->integer('id');
-            GenerateExport::dispatch($payload);
-            $canSave = true;
+            $generateExport = true;
         } else {
             if ($user->type === User::ADMIN_GROUP_GLOBAL_ADMIN ||
                 $user->type === User::ADMIN_GROUP_ORG_ADMIN ||
                 $user->type === User::ADMIN_GROUP_SUPER_ADMIN
             ) {
-                GenerateExport::dispatch($payload);
-                $canSave = true;
+                $generateExport = true;
             } else {
                 if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
                     $payload['clinic_admin_id'] = $user->id;
@@ -62,16 +65,22 @@ class ExportController extends Controller
                 $response = Http::withToken($access_token)->withHeaders([
                     'country' => $country
                 ])->get(env('PATIENT_SERVICE_URL') . '/export', $payload);
-                $canSave = $response->ok();
+
+                $externalExport = $response->ok();
             }
         }
 
-        if ($canSave) {
+        if ($externalExport || $generateExport) {
             DownloadTracker::create([
                 'type' => $type,
                 'job_id' => $jobId,
-                'author_id' => $userId,
+                'author_id' => $user->id,
             ]);
+
+            if ($generateExport) {
+                GenerateExport::dispatch($payload);
+            }
+
             return ['success' => true, 'message' => 'success_message.export', 'data' => $jobId];
         } else {
             return ['success' => false, 'message' => 'error_message.export'];
