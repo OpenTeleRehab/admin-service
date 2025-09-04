@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class GlobalPatient extends Model
 {
-    use LogsActivity;
+    use Compoships, LogsActivity;
 
     const ADMIN_GROUP_ORG_ADMIN = 'organization_admin';
     const ADMIN_GROUP_GLOBAL_ADMIN = 'global_admin';
@@ -65,6 +66,6 @@ class GlobalPatient extends Model
      */
     public function treatmentPlans()
     {
-        return $this->hasMany(GlobalTreatmentPlan::class, 'patient_id', 'patient_id');
+        return $this->hasMany(GlobalTreatmentPlan::class, ['patient_id', 'country_id'], ['patient_id', 'country_id']);
     }
 }

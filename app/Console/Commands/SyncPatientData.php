@@ -75,6 +75,7 @@ class SyncPatientData extends Command
             if ($treatmentPlanData) {
                 foreach ($treatmentPlanData as $treatmentPlan) {
                     $status = TreatmentPlanHelper::determineStatus($treatmentPlan->start_date, $treatmentPlan->end_date);
+
                     GlobalTreatmentPlan::updateOrCreate(
                         [
                             'treatment_id' => $treatmentPlan->id,
@@ -132,21 +133,20 @@ class SyncPatientData extends Command
 
         if ($treatmentPlanGlobal) {
             foreach ($treatmentPlanGlobal as $treatmentPlan) {
-                $patient = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $treatmentPlan->patient_id));
-
+                $patient = current(array_filter($patientGlobal, fn ($patient) => $patient->id == $treatmentPlan->patient_id));
                 $status = TreatmentPlanHelper::determineStatus($treatmentPlan->start_date, $treatmentPlan->end_date);
 
                 GlobalTreatmentPlan::updateOrCreate(
                     [
                         'treatment_id' => $treatmentPlan->id,
                         'patient_id' => $treatmentPlan->patient_id,
-                        'country_id' => $patient && is_object($patient) ? $patient->country_id : $patient,
+                        'country_id' => $patient->country_id,
                     ],
                     [
                         'treatment_id' => $treatmentPlan->id,
                         'name' => $treatmentPlan->name,
                         'patient_id' => $treatmentPlan->patient_id,
-                        'country_id' => $patient && is_object($patient) ? $patient->country_id : $patient,
+                        'country_id' => $patient->country_id,
                         'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
                         'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
                         'status' => $status,
@@ -154,6 +154,10 @@ class SyncPatientData extends Command
                 );
             }
         }
+
+        // Force delete out of date global patient and treatment plan.
+        GlobalPatient::whereDate('updated_at', '<', Carbon::today())->forceDelete();
+        GlobalTreatmentPlan::whereDate('updated_at', '<', Carbon::today())->forceDelete();
 
         $this->info('Data has been sync successfully');
     }

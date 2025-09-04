@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class GlobalTreatmentPlan extends Model
 {
-    use LogsActivity;
+    use Compoships, LogsActivity;
 
     const FINISHED_TREATMENT_PLAN = 'finished';
     const PLANNED_TREATMENT_PLAN = 'planned';
