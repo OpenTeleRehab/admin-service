@@ -133,7 +133,7 @@ class SyncPatientData extends Command
 
         if ($treatmentPlanGlobal) {
             foreach ($treatmentPlanGlobal as $treatmentPlan) {
-                $patient = current(array_filter($patientGlobal, fn ($patient) => $patient->id == $treatmentPlan->patient_id));
+                $patient = current(array_filter($patientGlobal, fn($patient) => $patient->id == $treatmentPlan->patient_id));
                 $status = TreatmentPlanHelper::determineStatus($treatmentPlan->start_date, $treatmentPlan->end_date);
 
                 GlobalTreatmentPlan::updateOrCreate(
@@ -155,9 +155,11 @@ class SyncPatientData extends Command
             }
         }
 
-        // Force delete out of date global patient and treatment plan.
-        GlobalPatient::whereDate('updated_at', '<', Carbon::today())->forceDelete();
-        GlobalTreatmentPlan::whereDate('updated_at', '<', Carbon::today())->forceDelete();
+        if ($this->option('all')) {
+            // Force delete out of date global patient and treatment plan.
+            GlobalPatient::whereDate('updated_at', '<', Carbon::today())->forceDelete();
+            GlobalTreatmentPlan::whereDate('updated_at', '<', Carbon::today())->forceDelete();
+        }
 
         $this->info('Data has been sync successfully');
     }

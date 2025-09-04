@@ -25,21 +25,4 @@ class TreatmentPlanHelper
 
         return null;
     }
-
-    public static function determineStatusDB(string $startDateStr, string $endDateStr): ?string
-    {
-        $today = Carbon::today();
-        $startDate = Carbon::parse($startDateStr);
-        $endDate = Carbon::parse($endDateStr);
-
-        if ($startDate->lte($today) && $endDate->gte($today)) {
-            return GlobalTreatmentPlan::ONGOING_TREATMENT_PLAN;
-        } elseif ($startDate->gt($today) && $endDate->gt($today)) {
-            return GlobalTreatmentPlan::PLANNED_TREATMENT_PLAN;
-        } elseif ($startDate->lt($today) && $endDate->lt($today)) {
-            return GlobalTreatmentPlan::FINISHED_TREATMENT_PLAN;
-        }
-
-        return null;
-    }
 }
