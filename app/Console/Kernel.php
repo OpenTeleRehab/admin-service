@@ -24,15 +24,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('hi:sync-exercise-data')->runInBackground();
-        $schedule->command('hi:sync-education-material-data')->runInBackground();
-        $schedule->command('hi:sync-questionnaire-data')->runInBackground();
-        $schedule->command('hi:sync-patient-data')->runInBackground();
-        $schedule->command('hi:sync-assistive-technology-patient-data')->runInBackground();
-        $schedule->command('hi:sync-patient-twilio-call-data')->runInBackground();
-        $schedule->command('hi:clean-up-exported-files')->daily()->runInBackground();
-        $schedule->command('hi:expire-past-due-survey')->runInBackground();
-        $schedule->command('hi:update-treatment-plan-status')->daily()->runInBackground();
+        $schedule->command('hi:sync-exercise-data')->dailyAt('0:00')->runInBackground();
+        $schedule->command('hi:sync-education-material-data')->dailyAt('0:15')->runInBackground();
+        $schedule->command('hi:sync-questionnaire-data')->dailyAt('0:30')->runInBackground();
+        $schedule->command('hi:sync-patient-data')->dailyAt('1:00')->runInBackground();
+        $schedule->command('hi:sync-assistive-technology-patient-data')->dailyAt('1:30')->runInBackground();
+        $schedule->command('hi:sync-patient-twilio-call-data')->dailyAt('2:00')->runInBackground();
+        $schedule->command('hi:clean-up-exported-files')->dailyAt('2:30')->runInBackground();
+        $schedule->command('hi:expire-past-due-survey')->dailyAt('3:00')->runInBackground();
     }
 
     /**
