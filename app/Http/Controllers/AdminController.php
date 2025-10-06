@@ -6,13 +6,13 @@ use App\Helpers\KeycloakHelper;
 use App\Http\Resources\UserResource;
 use App\Models\EducationMaterial;
 use App\Models\Exercise;
-use App\Models\Language;
 use App\Models\Questionnaire;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -108,7 +108,7 @@ class AdminController extends Controller
                         $query->whereDate('last_login', '>=', $startDate)
                             ->whereDate('last_login', '<=', $endDate);
                     } else {
-                        $query->where($filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
+                        $query->where($filterObj->columnName, 'like', '%' . $filterObj->value . '%');
                     }
                 }
             });
@@ -230,7 +230,7 @@ class AdminController extends Controller
         }
 
         try {
-            self::createKeycloakUser($user, $type);
+            KeycloakHelper::createUser($user, null, false, $type);
         } catch (\Exception $e) {
             DB::rollBack();
             return ['success' => false, 'message' => $e->getMessage()];
@@ -462,51 +462,6 @@ class AdminController extends Controller
     }
 
     /**
-     * @param \App\Models\User $user
-     * @param string $userGroup
-     *
-     * @return false|mixed|string
-     * @throws \Exception
-     */
-    private function createKeycloakUser($user, $userGroup)
-    {
-        $token = KeycloakHelper::getKeycloakAccessToken();
-        if ($token) {
-            try {
-                $language = Language::find(Auth::user()->language_id);
-                $languageCode = $language ? $language->code : '';
-                $response = Http::withToken($token)->withHeaders([
-                    'Content-Type' => 'application/json'
-                ])->post(KEYCLOAK_USER_URL, [
-                    'username' => $user->email,
-                    'email' => $user->email,
-                    'enabled' => true,
-                    'firstName' => $user->first_name,
-                    'lastName' => $user->last_name,
-                    'attributes' => [
-                        'locale' => [$languageCode]
-                    ]
-                ]);
-
-                if ($response->successful()) {
-                    $createdUserUrl = $response->header('Location');
-                    $lintArray = explode('/', $createdUserUrl);
-                    $userKeycloakUuid = end($lintArray);
-                    $isCanSetPassword = true;
-                    $isCanAssignUserToGroup = self::assignUserToGroup($token, $createdUserUrl, $userGroup);
-                    if ($isCanSetPassword && $isCanAssignUserToGroup) {
-                        self::sendEmailToNewUser($userKeycloakUuid);
-                        return $userKeycloakUuid;
-                    }
-                }
-            } catch (\Exception $e) {
-                throw new \Exception($e->getMessage());
-            }
-        }
-        throw new \Exception('no_token');
-    }
-
-    /**
      * @param string $token
      * @param string $userUrl
      * @param string $userGroup
@@ -537,7 +492,7 @@ class AdminController extends Controller
     public static function sendEmailToNewUser($userId)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
-        $url = KEYCLOAK_USER_URL . '/'. $userId . KEYCLOAK_EXECUTE_EMAIL;
+        $url = KEYCLOAK_USER_URL . '/' . $userId . KEYCLOAK_EXECUTE_EMAIL;
         $response = Http::withToken($token)->put($url, ['UPDATE_PASSWORD']);
 
         return $response;
@@ -545,11 +500,18 @@ class AdminController extends Controller
 
     /**
      * @param User $user
-     *
-     * @return \Illuminate\Http\Client\Response
+     * @return array
+     * @throws \Illuminate\Http\Client\ConnectionException
      */
     public function resendEmailToUser(User $user)
     {
+        $federatedDomains = array_map(fn($d) => strtolower(trim($d)), explode(',', env('FEDERATED_DOMAINS', '')));
+        $email = strtolower($user->email);
+
+        if (Str::endsWith($email, $federatedDomains)) {
+            return ['success' => false, 'message' => 'error_message.cannot_resend_email'];
+        }
+
         $token = KeycloakHelper::getKeycloakAccessToken();
 
         $response = Http::withToken($token)->withHeaders([
