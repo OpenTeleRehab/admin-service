@@ -2,11 +2,14 @@
 
 namespace App\Helpers;
 
-use Firebase\JWT\JWT;
 use Carbon\Carbon;
+use Firebase\JWT\JWT;
+use App\Models\Language;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 
 define("KEYCLOAK_USER_URL", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
 define("KEYCLOAK_TOKEN_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token');
@@ -221,6 +224,14 @@ class KeycloakHelper
 
         if ($token) {
             try {
+                $language = Language::find(Auth::user()->language_id);
+                $languageCode = $language ? $language->code : null;
+                $attributes = [];
+
+                if ($languageCode) {
+                    $attributes['locale'] = [$languageCode];
+                }
+
                 $response = Http::withToken($token)->withHeaders([
                     'Content-Type' => 'application/json'
                 ])->post(KEYCLOAK_USER_URL, [
@@ -229,6 +240,7 @@ class KeycloakHelper
                     'firstName' => $user->first_name,
                     'lastName' => $user->last_name,
                     'enabled' => true,
+                    'attributes' => $attributes,
                 ]);
 
                 if ($response->successful()) {
@@ -249,8 +261,25 @@ class KeycloakHelper
                     $isCanAssignUserToGroup = self::assignUserToGroup($token, $createdUserUrl, $userGroup);
 
                     if ($isCanSetPassword && $isCanAssignUserToGroup) {
-                         self::sendEmailToNewUser($userKeycloakUuid);
-                         return $userKeycloakUuid;
+                        $federatedDomains = array_map(fn($d) => strtolower(trim($d)), explode(',', env('FEDERATED_DOMAINS', '')));
+                        $email = strtolower($user->email);
+
+                        if (Str::endsWith($email, $federatedDomains)) {
+                            $emailSendingData = [
+                                'subject' => 'Welcome to OpenTeleRehab',
+                                'name' => $user->last_name . ' ' . $user->first_name,
+                                'link' => env('REACT_APP_BASE_URL')
+                            ];
+
+                            Mail::send('federatedUser.mail', $emailSendingData, function ($message) use ($user, $emailSendingData) {
+                                $message->to($user->email)
+                                    ->subject($emailSendingData['subject']);
+                            });
+                        } else {
+                            self::sendEmailToNewUser($userKeycloakUuid);
+                        }
+
+                        return $userKeycloakUuid;
                     }
                 }
             } catch (\Exception $e) {
@@ -268,7 +297,7 @@ class KeycloakHelper
     public static function sendEmailToNewUser($userId)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
-        $url = KEYCLOAK_USER_URL . '/'. $userId . KEYCLOAK_EXECUTE_EMAIL;
+        $url = KEYCLOAK_USER_URL . '/' . $userId . KEYCLOAK_EXECUTE_EMAIL;
         return Http::withToken($token)->put($url, ['UPDATE_PASSWORD']);
     }
 
