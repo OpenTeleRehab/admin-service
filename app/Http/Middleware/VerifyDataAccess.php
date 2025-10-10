@@ -37,7 +37,7 @@ class VerifyDataAccess
         }
 
         // Country ID check
-        if ($user && $countryId) {
+        if ($user && isset($countryId)) {
             $decodedCountryId = json_decode($countryId, true);
             $countryIds = is_array($decodedCountryId) ? $decodedCountryId : [$decodedCountryId];
 
@@ -47,7 +47,7 @@ class VerifyDataAccess
         }
 
         // Clinic ID check
-        if ($user && $clinicId && $user->type !== User::ADMIN_GROUP_COUNTRY_ADMIN) {
+        if ($user && isset($clinicId) && $user->type !== User::ADMIN_GROUP_COUNTRY_ADMIN) {
             $decodedClinicId = json_decode($clinicId, true);
             $clinicIds = is_array($decodedClinicId) ? $decodedClinicId : [$decodedClinicId];
 
