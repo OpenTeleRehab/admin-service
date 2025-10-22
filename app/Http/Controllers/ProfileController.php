@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
-define("KEYCLOAK_USERS", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
-
 class ProfileController extends Controller
 {
     /**
@@ -98,7 +96,7 @@ class ProfileController extends Controller
         if ($userResponse->successful()) {
             // TODO: use own user token.
             $token = KeycloakHelper::getKeycloakAccessToken();
-            $userUrl = KEYCLOAK_USERS . '/' .  KeycloakHelper::getUserUuid();
+            $userUrl = KeycloakHelper::getUserUrl() . '/' .  KeycloakHelper::getUserUuid();
             $newPassword = $request->get('new_password');
             $isCanSetPassword = KeycloakHelper::resetUserPassword(
                 $token,
@@ -262,11 +260,11 @@ class ProfileController extends Controller
 
         if ($token) {
             try {
-                $userUrl = KEYCLOAK_USERS . '?email=' . $email;
+                $userUrl = KeycloakHelper::getUserUrl() . '?email=' . $email;
 
                 $response = Http::withToken($token)->get($userUrl);
                 $keyCloakUsers = $response->json();
-                $url = KEYCLOAK_USERS . '/' . $keyCloakUsers[0]['id'];
+                $url = KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id'];
                 $user = $keyCloakUsers[0];
 
                 $data = [

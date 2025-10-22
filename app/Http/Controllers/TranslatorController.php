@@ -299,12 +299,12 @@ class TranslatorController extends Controller
         try {
             $enabled = $request->boolean('enabled');
             $token = KeycloakHelper::getKeycloakAccessToken();
-            $userUrl = KEYCLOAK_USER_URL . '?email=' . $user->email;
+            $userUrl = KeycloakHelper::getUserUrl() . '?email=' . $user->email;
             $user->update(['enabled' => $enabled]);
 
             $response = Http::withToken($token)->get($userUrl);
             $keyCloakUsers = $response->json();
-            $url = KEYCLOAK_USER_URL . '/' . $keyCloakUsers[0]['id'];
+            $url = KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id'];
 
             $userUpdated = Http::withToken($token)
                 ->put($url, ['enabled' => $enabled]);
@@ -358,13 +358,13 @@ class TranslatorController extends Controller
             $user = User::findOrFail($id);
             $token = KeycloakHelper::getKeycloakAccessToken();
 
-            $userUrl = KEYCLOAK_USER_URL . '?email=' . $user->email;
+            $userUrl = KeycloakHelper::getUserUrl() . '?email=' . $user->email;
             $response = Http::withToken($token)->get($userUrl);
 
             if ($response->successful()) {
                 $keyCloakUsers = $response->json();
 
-                $isDeleted = KeycloakHelper::deleteUser($token, KEYCLOAK_USER_URL . '/' . $keyCloakUsers[0]['id']);
+                $isDeleted = KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id']);
                 if ($isDeleted) {
                     $user->delete();
                     return ['success' => true, 'message' => 'success_message.translator_delete'];
@@ -393,7 +393,7 @@ class TranslatorController extends Controller
                 $languageCode = $language ? $language->code : '';
                 $response = Http::withToken($token)->withHeaders([
                     'Content-Type' => 'application/json'
-                ])->post(KEYCLOAK_USER_URL, [
+                ])->post(KeycloakHelper::getUserUrl(), [
                     'username' => $user->email,
                     'email' => $user->email,
                     'enabled' => true,
@@ -453,7 +453,7 @@ class TranslatorController extends Controller
     public static function sendEmailToNewUser($userId)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
-        $url = KEYCLOAK_USER_URL . '/'. $userId . KEYCLOAK_EXECUTE_EMAIL;
+        $url = KeycloakHelper::getUserUrl() . '/'. $userId . KeycloakHelper::getExecuteEmailUrl();
         $response = Http::withToken($token)->put($url, ['UPDATE_PASSWORD']);
 
         return $response;
@@ -470,7 +470,7 @@ class TranslatorController extends Controller
 
         $response = Http::withToken($token)->withHeaders([
             'Content-Type' => 'application/json'
-        ])->get(KEYCLOAK_USER_URL, [
+        ])->get(KeycloakHelper::getUserUrl(), [
             'username' => $user->email,
         ]);
 

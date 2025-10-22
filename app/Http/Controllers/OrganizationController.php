@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LimitationHelper;
 use App\Helpers\OrganizationHelper;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class OrganizationController extends Controller
 {
@@ -39,49 +37,28 @@ class OrganizationController extends Controller
      */
     public function store(Request $request)
     {
-        DB::beginTransaction();
-        $name = $request->get('organization_name');
-        $adminEmail = $request->get('admin_email');
-        $subDomainName = $request->get('sub_domain_name');
-        $maxNumberOfTherapist = $request->get('max_number_of_therapist');
-        $maxOngoingTreatmentPlan = $request->get('max_ongoing_treatment_plan');
-        $maxSmsPerWeek = $request->get('max_sms_per_week');
-
-        $availableEmail = User::where('email', $adminEmail)->count();
-
-        if ($availableEmail) {
-            return abort(409, 'error_message.email_exists');
-        }
-
-        $existOrganization = Organization::where('name', $name)->count();
-
-        if ($existOrganization) {
-            return abort(409, 'error_message.organization_exists');
-        }
-
-        $existSubDomain = Organization::where('sub_domain_name', $subDomainName)->count();
-
-        if ($existSubDomain) {
-            return abort(409, 'error_message.organization_sub_domain_exists');
-        }
-
-        $org = Organization::create([
-            'name' => $name,
-            'type' => Organization::NON_HI_TYPE,
-            'admin_email' => $adminEmail,
-            'sub_domain_name' => $subDomainName,
-            'max_number_of_therapist' => $maxNumberOfTherapist,
-            'max_ongoing_treatment_plan' => $maxOngoingTreatmentPlan,
-            'max_sms_per_week' => $maxSmsPerWeek,
-            'status' => Organization::ONGOING_ORG_STATUS,
-            'created_by' => Auth::id()
+        $validatedData = $request->validate([
+            'name' => 'required|string|unique:organizations,name',
+            'admin_email' => 'required|email|unique:users,email',
+            'sub_domain_name' => 'required|string',
+            'max_number_of_therapist' => 'required|integer|min:0',
+            'max_number_of_phc_worker' => 'required|integer|min:0',
+            'max_ongoing_treatment_plan' => 'required|integer|min:0',
+            'max_sms_per_week' => 'required|integer|min:0',
+        ], [
+            'name.unique' => 'error_message.organization_exists',
+            'admin_email.unique' => 'error_message.email_exists',
+            'sub_domain_name.unique' => 'error_message.organization_sub_domain_exists',
         ]);
+
+        $validatedData['type'] = Organization::NON_HI_TYPE;
+        $validatedData['status'] = Organization::ONGOING_ORG_STATUS;
+
+        $org = Organization::create($validatedData);
 
         if (!$org) {
             return ['success' => false, 'message' => 'error_message.organization_add'];
         }
-
-        DB::commit();
 
         return ['success' => true, 'message' => 'success_message.organization_add'];
     }
@@ -94,12 +71,27 @@ class OrganizationController extends Controller
      */
     public function update(Request $request, Organization $organization)
     {
-        $organization->update([
-            'name' => $request->get('organization_name'),
-            'max_number_of_therapist' => $request->get('max_number_of_therapist'),
-            'max_ongoing_treatment_plan' => $request->get('max_ongoing_treatment_plan'),
-            'max_sms_per_week' => $request->get('max_sms_per_week')
+        $validatedData = $request->validate([
+            'name' => 'required|string|unique:organizations,name,' . $organization->id,
+            'max_number_of_therapist' => 'required|integer|min:0',
+            'max_number_of_phc_worker' => 'required|integer|min:0',
+            'max_ongoing_treatment_plan' => 'required|integer|min:0',
+            'max_sms_per_week' => 'required|integer|min:0',
+        ], [
+            'name.unique' => 'error_message.organization_exists'
         ]);
+
+        $orgLimitation = LimitationHelper::orgLimitation();
+
+        if ($orgLimitation['therapist_limit_used'] > $validatedData['max_number_of_therapist']) {
+            abort(422, 'error.organization.max_number_of_therapist.less_than.country.total.therapist_limit');
+        }
+
+        if ($orgLimitation['phc_worker_limit_used'] > $validatedData['max_number_of_phc_worker']) {
+            abort(422, 'error.organization.max_number_of_phc_worker.less_than.country.total.phc_worker_limit');
+        }
+
+        $organization->update($validatedData);
 
         return ['success' => true, 'message' => 'success_message.organization.update'];
     }
@@ -191,5 +183,15 @@ class OrganizationController extends Controller
         }
 
         return ['success' => false, 'message' => 'error_message.organization.update'];
+    }
+
+    /**
+     * Get the remaining limit for a the country.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function limitation()
+    {
+        return response()->json(['data' => LimitationHelper::orgLimitation(), 200]);
     }
 }

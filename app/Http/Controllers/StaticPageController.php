@@ -348,7 +348,7 @@ class StaticPageController extends Controller
      *     path="/api/page/static",
      *     tags={"Static page"},
      *     summary="get static page data",
-     *     operationId="getStaticPageData",
+     *     operationId="getStaticPage",
      *     @OA\Parameter(
      *         name="url-segment",
      *         in="query",

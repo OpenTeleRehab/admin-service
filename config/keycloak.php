@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 return [
   'realm_public_key' => env('KEYCLOAK_REALM_PUBLIC_KEY', null),
@@ -11,5 +11,23 @@ return [
 
   'append_decoded_token' => env('KEYCLOAK_APPEND_DECODED_TOKEN', false),
 
-  'allowed_resources' => env('KEYCLOAK_ALLOWED_RESOURCES', null)
+  'allowed_resources' => env('KEYCLOAK_ALLOWED_RESOURCES', null),
+
+  'user_url' => env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REALMS_NAME') . '/users',
+
+  'token_url' => env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token',
+
+  'groups_url' => env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/groups',
+
+  'role_url' => env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/roles',
+
+  'execute_email' => '/execute-actions-email?client_id=' . env('KEYCLOAK_BACKEND_CLIENT') . '&redirect_uri=' . env('REACT_APP_BASE_URL'),
+
+  'gadmin_token_url' => env('KEYCLOAK_URL') . '/auth/realms/' . env('GADMIN_KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token',
+
+  'therapist_token_url' => env('KEYCLOAK_URL') . '/auth/realms/' . env('THERAPIST_KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token',
+
+  'patient_login_url' => env('PATIENT_SERVICE_URL') . '/auth/login',
+
+  'webhook_url' => env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/webhooks',
 ];

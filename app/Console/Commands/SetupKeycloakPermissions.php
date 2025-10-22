@@ -274,7 +274,7 @@ class SetupKeycloakPermissions extends Command
 
             $response = Http::withToken($token)
                 ->withHeaders(['Content-Type' => 'application/json'])
-                ->post(KEYCLOAK_USER_URL, [
+                ->post(KeycloakHelper::getUserUrl(), [
                     'username'  => $user->email,
                     'firstName' => $user->first_name,
                     'lastName'  => $user->last_name,
@@ -286,7 +286,7 @@ class SetupKeycloakPermissions extends Command
 
                 $requiredActionsRemoved = Http::withToken($token)
                     ->withHeaders(['Content-Type' => 'application/json'])
-                    ->put(KEYCLOAK_USER_URL . '/' . basename($createdUserUrl), [
+                    ->put(KeycloakHelper::getUserUrl() . '/' . basename($createdUserUrl), [
                         'requiredActions' => [],
                     ]);
 

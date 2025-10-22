@@ -86,7 +86,7 @@ class CreateOrganizationAdminUser extends Command
             try {
                 $response = Http::withToken($token)->withHeaders([
                     'Content-Type' => 'application/json'
-                ])->post(KEYCLOAK_USER_URL, [
+                ])->post(KeycloakHelper::getUserUrl(), [
                     'username' => $email,
                     'email' => $email,
                     'enabled' => true,

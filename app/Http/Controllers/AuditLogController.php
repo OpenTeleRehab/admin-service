@@ -82,7 +82,7 @@ class AuditLogController extends Controller
             $auditLogs->where(function ($query) use ($filters) {
                 foreach ($filters as $filter) {
                     $filterObj = json_decode($filter);
-        
+
                     if ($filterObj->columnName === 'type_of_changes') {
                         $query->where('description', 'LIKE', "%{$filterObj->value}%");
                     } elseif ($filterObj->columnName === 'who') {
@@ -90,28 +90,28 @@ class AuditLogController extends Controller
                             $subQuery->whereHas('user', function ($subQuery) use ($filterObj) {
                                 $subQuery->whereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$filterObj->value}%"]);
                             })
-                            ->orWhere('full_name', 'LIKE', "%{$filterObj->value}%");
+                                ->orWhere('full_name', 'LIKE', "%{$filterObj->value}%");
                         });
                     } elseif ($filterObj->columnName === 'user_group') {
                         $query->where(function ($subQuery) use ($filterObj) {
                             $subQuery->whereHas('user', function ($subQuery) use ($filterObj) {
                                 $subQuery->where('type', $filterObj->value);
                             })
-                            ->orWhere('group', $filterObj->value);
+                                ->orWhere('group', $filterObj->value);
                         });
                     } elseif ($filterObj->columnName === 'clinic') {
                         $query->where(function ($subQuery) use ($filterObj) {
                             $subQuery->orWhereHas('user.clinic', function ($subQuery) use ($filterObj) {
                                 $subQuery->where('id', $filterObj->value);
                             })
-                            ->orWhere('clinic_id', $filterObj->value);
+                                ->orWhere('clinic_id', $filterObj->value);
                         });
                     } elseif ($filterObj->columnName === 'country') {
                         $query->where(function ($subQuery) use ($filterObj) {
                             $subQuery->orWhereHas('user.country', function ($subQuery) use ($filterObj) {
                                 $subQuery->where('id', $filterObj->value);
                             })
-                            ->orWhere('country_id', $filterObj->value);
+                                ->orWhere('country_id', $filterObj->value);
                         });
                     } elseif ($filterObj->columnName === 'date_time') {
                         $dates = explode(' - ', $filterObj->value);
@@ -137,21 +137,21 @@ class AuditLogController extends Controller
                 $subQuery->orWhereHas('user', function ($subQuery) use ($user) {
                     $subQuery->where('type', '<>', self::SUPER_ADMIN);
                 })
-                ->orWhere('group', '<>', self::SUPER_ADMIN);
+                    ->orWhere('group', '<>', self::SUPER_ADMIN);
             });
         } else if ($user->type === self::COUNTRY_ADMIN) {
             $auditLogs->where(function ($subQuery) use ($user) {
                 $subQuery->orWhereHas('user.country', function ($subQuery) use ($user) {
                     $subQuery->where('id', $user->country_id);
                 })
-                ->orWhere('country_id', $user->country_id);
+                    ->orWhere('country_id', $user->country_id);
             });
         } elseif ($user->type === self::CLINIC_ADMIN) {
             $auditLogs->where(function ($subQuery) use ($user) {
                 $subQuery->orWhereHas('user.clinic', function ($subQuery) use ($user) {
                     $subQuery->where('id', $user->clinic_id);
                 })
-                ->orWhere('clinic_id', $user->clinic_id);
+                    ->orWhere('clinic_id', $user->clinic_id);
             });
         }
 
@@ -221,13 +221,13 @@ class AuditLogController extends Controller
         $isRefresh = isset($details['response_mode'], $details['response_type']) && !isset($details['custom_required_action']);
         if (!$isRefresh && $user && $user->email !== env('KEYCLOAK_BACKEND_USERNAME')) {
             activity()
-            ->performedOn($user)
-            ->causedBy($user)
-            ->withProperties($storeData)
-            ->useLog('admin_service')
-            ->log($type === self::KEYCLOAK_EVENT_TYPE_LOGIN ? 'login' : 'logout');
+                ->performedOn($user)
+                ->causedBy($user)
+                ->withProperties($storeData)
+                ->useLog('admin_service')
+                ->log($type === self::KEYCLOAK_EVENT_TYPE_LOGIN ? 'login' : 'logout');
         }
 
-        return [ 'success' => true ];
+        return ['success' => true];
     }
 }

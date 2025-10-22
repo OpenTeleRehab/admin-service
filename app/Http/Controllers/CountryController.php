@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\KeycloakHelper;
-use App\Http\Resources\CountryResource;
+use App\Models\User;
 use App\Models\Clinic;
 use App\Models\Country;
-use App\Models\User;
+use App\Models\Organization;
 use Illuminate\Http\Request;
+use App\Helpers\KeycloakHelper;
+use App\Helpers\LimitationHelper;
 use Illuminate\Support\Facades\Http;
+use App\Http\Resources\CountryResource;
 use Illuminate\Support\Facades\Storage;
 use Stevebauman\Location\Facades\Location;
-
-define("KEYCLOAK_USERS", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
 
 class CountryController extends Controller
 {
@@ -56,6 +56,50 @@ class CountryController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/country/{country}",
+     *     summary="Get a single country",
+     *     description="Returns a single country by ID",
+     *     operationId="getCountryById",
+     *     tags={"Countries"},
+     *     @OA\Parameter(
+     *         name="country",
+     *         in="path",
+     *         description="ID of the country to retrieve",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *             format="int64"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 ref="#/components/schemas/CountryResource"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Country not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="No query results for model [App\\Models\\Country] 1")
+     *         )
+     *     )
+     * )
+     */
+    public function show(Country $country)
+    {
+        return response()->json(['data' => new CountryResource($country)], 200);
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/country",
      *     tags={"Country"},
@@ -89,7 +133,7 @@ class CountryController extends Controller
      *         )
      *     ),
      *     @OA\Parameter(
-     *         name="language",
+     *         name="language_id",
      *         in="query",
      *         description="Language id",
      *         required=false,
@@ -101,6 +145,15 @@ class CountryController extends Controller
      *         name="therapist_limit",
      *         in="query",
      *         description="Therapist limit",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="phc_worker_limit",
+     *         in="query",
+     *         description="Phc worker limit",
      *         required=true,
      *         @OA\Schema(
      *             type="integer"
@@ -126,21 +179,30 @@ class CountryController extends Controller
      */
     public function store(Request $request)
     {
-        $isoCode = $request->get('iso_code');
-        $availableCountry = Country::where('iso_code', $isoCode)->count();
-        if ($availableCountry) {
-            return abort(409, 'error_message.country_exists');
-        }
-
-        Country::create([
-            'iso_code' => $isoCode,
-            'name' => $request->get('name'),
-            'phone_code' => $request->get('phone_code'),
-            'language_id' => $request->get('language'),
-            'therapist_limit' => $request->get('therapist_limit')
+        $validatedData = $request->validate([
+            'iso_code' => 'required|string|max:10|unique:countries,iso_code',
+            'name' => 'required|string|max:60',
+            'phone_code' => 'required|string|max:10',
+            'language_id' => 'nullable|exists:languages,id',
+            'therapist_limit' => 'required|integer|min:0',
+            'phc_worker_limit' => 'required|integer|min:0',
+        ], [
+            'iso_code.unique' => 'error_message.country_exists',
         ]);
 
-        return ['success' => true, 'message' => 'success_message.country_add'];
+        $orgLimitation = LimitationHelper::orgLimitation();
+
+        if ($validatedData['therapist_limit'] > $orgLimitation['remaining_therapist_limit']) {
+            abort(422, 'error.country.therapist_limit.greater_than.org_therapist_limit');
+        }
+
+        if ($validatedData['phc_worker_limit'] > $orgLimitation['remaining_phc_worker_limit']) {
+            abort(422, 'error.country.phc_worker_limit.more_than.org_phc_worker_limit');
+        }
+
+        Country::create($validatedData);
+
+        return response()->json(['success' => true, 'message' => 'success_message.country_add'], 200);
     }
 
     /**
@@ -186,7 +248,7 @@ class CountryController extends Controller
      *         )
      *     ),
      *     @OA\Parameter(
-     *         name="language",
+     *         name="language_id",
      *         in="query",
      *         description="Language id",
      *         required=false,
@@ -196,6 +258,15 @@ class CountryController extends Controller
      *     ),
      *     @OA\Parameter(
      *         name="therapist_limit",
+     *         in="query",
+     *         description="Therapist limit",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="phc_worker_limit",
      *         in="query",
      *         description="Therapist limit",
      *         required=true,
@@ -224,21 +295,37 @@ class CountryController extends Controller
      */
     public function update(Request $request, Country $country)
     {
-        $isoCode = $request->get('iso_code');
-        $availableCountry = Country::where('id', '<>', $country->id)
-            ->where('iso_code', $isoCode)
-            ->count();
-        if ($availableCountry) {
-            return abort(409, 'error_message.country_exists');
+        $validatedData = $request->validate([
+            'iso_code' => 'required|string|max:10|unique:countries,iso_code,' . $country->id,
+            'name' => 'required|string|max:60',
+            'phone_code' => 'required|string|max:10',
+            'language_id' => 'nullable|exists:languages,id',
+            'therapist_limit' => 'required|integer|min:0',
+            'phc_worker_limit' => 'required|integer|min:0',
+        ], [
+            'iso_code.unique' => 'error_message.country_exists',
+        ]);
+
+        $orgLimitation = LimitationHelper::orgLimitation();
+        $countryLimitation = LimitationHelper::countryLimitation($country->id);
+
+        if ($validatedData['therapist_limit'] > $orgLimitation['remaining_therapist_limit'] + $country->therapist_limit) {
+            abort(422, 'error.country.therapist_limit.greater_than.organization.therapist_limit');
         }
 
-        $country->update([
-            'iso_code' => $isoCode,
-            'name' => $request->get('name'),
-            'phone_code' => $request->get('phone_code'),
-            'language_id' => $request->get('language'),
-            'therapist_limit' => $request->get('therapist_limit')
-        ]);
+        if ($validatedData['therapist_limit'] < $countryLimitation['therapist_limit_used']) {
+            abort(422, 'error.country.therapist_limit.less_than.region.theraist_limit');
+        }
+
+        if ($validatedData['phc_worker_limit'] > $orgLimitation['remaining_phc_worker_limit'] + $country->phc_worker_limit) {
+            abort(422, 'error.country.phc_worker_limit.greater_than.organization.phc_worker_limit');
+        }
+
+        if ($validatedData['phc_worker_limit'] < $countryLimitation['phc_worker_limit_used']) {
+            abort(422, 'error.country.phc_worker_limit.less_than.region.phc_worker_limit');
+        }
+
+        $country->update($validatedData);
 
         return ['success' => true, 'message' => 'success_message.country_update'];
     }
@@ -286,13 +373,13 @@ class CountryController extends Controller
         foreach ($users as $user) {
             $token = KeycloakHelper::getKeycloakAccessToken();
 
-            $userUrl = KEYCLOAK_USERS . '?email=' . $user->email;
+            $userUrl = KeycloakHelper::getUserUrl() . '?email=' . $user->email;
             $response = Http::withToken($token)->get($userUrl);
 
             if ($response->successful()) {
                 $keyCloakUsers = $response->json();
 
-                $isDeleted = KeycloakHelper::deleteUser($token, KEYCLOAK_USERS . '/' . $keyCloakUsers[0]['id']);
+                $isDeleted = KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id']);
                 if ($isDeleted) {
                     $user->delete();
                 }
@@ -350,5 +437,17 @@ class CountryController extends Controller
         }
 
         return ['success' => true, 'data' => $country];
+    }
+
+    /**
+     * Get the remaining limit for a the country.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function limitation(Request $request)
+    {
+        $countryId = $request->query('country_id');
+
+        return response()->json(['data' => LimitationHelper::countryLimitation($countryId)], 200);
     }
 }

@@ -29,6 +29,7 @@ use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestionnaireController;
+use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\SupersetController;
@@ -104,6 +105,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('organization', [OrganizationController::class, 'store'])->middleware('role:manage_organization');
     Route::put('organization/{organization}', [OrganizationController::class, 'update'])->middleware('role:manage_organization');
     Route::delete('organization/{organization}', [OrganizationController::class, 'destroy'])->middleware('role:manage_organization');
+    Route::get('organization-limitation', [OrganizationController::class, 'limitation'])->middleware('role:manage_organization');
 
     // Diseases
     Route::get('disease/get-name/by-id', [InternationalClassificationDiseaseController::class, 'getDiseaseNameById'])->middleware('role:access_all');
@@ -114,6 +116,8 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('country', [CountryController::class, 'store'])->middleware('role:manage_country');
     Route::put('country/{country}', [CountryController::class, 'update'])->middleware('role:manage_country');
     Route::delete('country/{country}', [CountryController::class, 'destroy'])->middleware('role:manage_country');
+    Route::get('country-limitation', [CountryController::class, 'limitation'])->middleware('role:manage_country');
+    Route::get('country/{country}', [CountryController::class, 'show'])->middleware('role:manage_country');
 
     // Clinic
     Route::get('clinic/therapist-limit/count/by-country', [ClinicController::class, 'countTherapistLimitByCountry'])->middleware('role:view_country_therapist_limit');
@@ -287,7 +291,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::apiResource('global-at-patients', GlobalAssistiveTechnologyPatientController::class)->middleware('role:manage_global_at_patient');
 
     // Audit logs
-    Route::group(['prefix' => 'audit-logs'], function() {
+    Route::group(['prefix' => 'audit-logs'], function () {
         Route::get('/', [AuditLogController::class, 'index'])->middleware('role:view_audit_log');
         Route::post('/', [AuditLogController::class, 'store']); // Not used
     });
@@ -302,6 +306,10 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     Route::get('export', [ExportController::class, 'export'])->middleware('role:generate_report');
     Route::get('download-file', [FileController::class, 'download'])->middleware('role:access_all');
+
+    // Region
+    Route::apiResource('regions', RegionController::class)->middleware('role:manage_region,view_region_list');
+    Route::get('regions/{region}/limitation', [RegionController::class, 'limitation'])->middleware('role:manage_region');
 });
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);

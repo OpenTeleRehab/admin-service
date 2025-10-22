@@ -25,8 +25,18 @@ class Country extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'iso_code', 'phone_code', 'language_id', 'therapist_limit',
+        'name', 'iso_code', 'phone_code', 'language_id', 'therapist_limit', 'phc_worker_limit'
     ];
+
+    /**
+     * Get the regions associated with this model.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function regions()
+    {
+        return $this->hasMany(Region::class);
+    }
 
     /**
      * Get the options for activity logging.

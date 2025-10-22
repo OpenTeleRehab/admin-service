@@ -6,6 +6,7 @@ use App\Helpers\OrganizationHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
@@ -36,6 +37,7 @@ class Organization extends Model
         'max_sms_per_week',
         'status',
         'created_by',
+        'max_number_of_phc_worker',
     ];
 
     /**
@@ -63,6 +65,10 @@ class Organization extends Model
 
         static::addGlobalScope('order', function (Builder $builder) {
             $builder->orderBy('name');
+        });
+
+        self::creating(function ($organization) {
+            $organization->created_by = Auth::id();
         });
 
         self::created(function ($organization) {

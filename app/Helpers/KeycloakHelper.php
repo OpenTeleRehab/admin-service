@@ -11,17 +11,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
 
-define("KEYCLOAK_USER_URL", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
-define("KEYCLOAK_TOKEN_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token');
-define("KEYCLOAK_GROUPS_URL", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/groups');
-define('KEYCLOAK_ROLES_URL', env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/roles');
-define("KEYCLOAK_EXECUTE_EMAIL", '/execute-actions-email?client_id=' . env('KEYCLOAK_BACKEND_CLIENT') . '&redirect_uri=' . env('REACT_APP_BASE_URL'));
-
-define("GADMIN_KEYCLOAK_TOKEN_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('GADMIN_KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token');
-define("THERAPIST_KEYCLOAK_TOKEN_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('THERAPIST_KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token');
-define("PATIENT_LOGIN_URL", env('PATIENT_SERVICE_URL') . '/auth/login');
-define("WEBHOOK_URL", env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/webhooks');
-
 /**
  * Class KeycloakHelper
  * @package App\Helpers
@@ -33,6 +22,78 @@ class KeycloakHelper
     const THERAPIST_ACCESS_TOKEN = 'therapist_access_token';
     const PATIENT_ACCESS_TOKEN = 'patient_access_token';
     const VN_PATIENT_ACCESS_TOKEN = 'vn_patient_access_token';
+
+    /**
+     * @return string
+     */
+    public static function getUserUrl(): string
+    {
+        return config('keycloak.user_url');
+    }
+
+    /**
+     * @return string
+     */
+    public static function getTokenUrl(): string
+    {
+        return config('keycloak.token_url');
+    }
+
+    /**
+     * @return string
+     */
+    public static function getGroupsUrl(): string
+    {
+        return config('keycloak.groups_url');
+    }
+
+    /**
+     * @return string
+     */
+    public static function getRolesUrl(): string
+    {
+        return config('keycloak.role_url');
+    }
+
+    /**
+     * @return string
+     */
+    public static function getExecuteEmailUrl(): string
+    {
+        return config('keycloak.execute_email');
+    }
+
+    /**
+     * @return string
+     */
+    public static function getGAdminTokenUrl(): string
+    {
+        return config('keycloak.gadmin_token_url');
+    }
+
+    /**
+     * @return string
+     */
+    public static function getTherapistTokenUrl(): string
+    {
+        return config('keycloak.therapist_token_url');
+    }
+
+    /**
+     * @return string
+     */
+    public static function getPatientLoginUrl(): string
+    {
+        return config('keycloak.patient_login_url');
+    }
+
+    /**
+     * @return string
+     */
+    public static function getWebhookUrl(): string
+    {
+        return config('keycloak.webhook_url');
+    }
 
     /**
      * @return mixed|null
@@ -52,7 +113,7 @@ class KeycloakHelper
             }
         }
 
-        return self::generateKeycloakToken(KEYCLOAK_TOKEN_URL, env('KEYCLOAK_BACKEND_SECRET'), self::ADMIN_ACCESS_TOKEN);
+        return self::generateKeycloakToken(self::getTokenUrl(), env('KEYCLOAK_BACKEND_SECRET'), self::ADMIN_ACCESS_TOKEN);
     }
 
     /**
@@ -73,7 +134,7 @@ class KeycloakHelper
             }
         }
 
-        return self::generateKeycloakToken(GADMIN_KEYCLOAK_TOKEN_URL, env('GADMIN_KEYCLOAK_BACKEND_SECRET'), self::GADMIN_ACCESS_TOKEN);
+        return self::generateKeycloakToken(self::getGAdminTokenUrl(), env('GADMIN_KEYCLOAK_BACKEND_SECRET'), self::GADMIN_ACCESS_TOKEN);
     }
 
     /**
@@ -90,13 +151,13 @@ class KeycloakHelper
             $current_timestamp = Carbon::now()->timestamp;
 
             if ($current_timestamp > $token_exp_at) {
-                return self::generateKeycloakToken(THERAPIST_KEYCLOAK_TOKEN_URL, env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN);
+                return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN);
             }
 
             return $access_token;
         }
 
-        return self::generateKeycloakToken(THERAPIST_KEYCLOAK_TOKEN_URL, env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN);
+        return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN);
     }
 
     /**
@@ -120,7 +181,7 @@ class KeycloakHelper
             }
         }
 
-        $response = Http::withHeaders(['country' => $host])->post(PATIENT_LOGIN_URL, [
+        $response = Http::withHeaders(['country' => $host])->post(self::getPatientLoginUrl(), [
             'email' => env('KEYCLOAK_BACKEND_CLIENT'),
             'pin' => env('PATIENT_BACKEND_PIN'),
         ]);
@@ -144,7 +205,7 @@ class KeycloakHelper
      */
     public static function getLoginUser($username, $password)
     {
-        return Http::asForm()->post(KEYCLOAK_TOKEN_URL, [
+        return Http::asForm()->post(self::getTokenUrl(), [
             'grant_type' => 'password',
             'client_id' => env('KEYCLOAK_BACKEND_CLIENT'),
             'client_secret' => env('KEYCLOAK_BACKEND_SECRET'),
@@ -234,7 +295,7 @@ class KeycloakHelper
 
                 $response = Http::withToken($token)->withHeaders([
                     'Content-Type' => 'application/json'
-                ])->post(KEYCLOAK_USER_URL, [
+                ])->post(self::getUserUrl(), [
                     'username' => $user->email,
                     'email' => $user->email,
                     'firstName' => $user->first_name,
@@ -297,7 +358,8 @@ class KeycloakHelper
     public static function sendEmailToNewUser($userId)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
-        $url = KEYCLOAK_USER_URL . '/' . $userId . KEYCLOAK_EXECUTE_EMAIL;
+        $url = self::getUserUrl() . '/' . $userId . self::getExecuteEmailUrl();
+
         return Http::withToken($token)->put($url, ['UPDATE_PASSWORD']);
     }
 
@@ -371,7 +433,7 @@ class KeycloakHelper
     public static function getUserGroup()
     {
         $authUser = Auth::user();
-        $userGroupUrl = KEYCLOAK_USER_URL . '/' . $authUser->keycloak_user_uuid . '/groups';
+        $userGroupUrl = self::getUserUrl() . '/' . $authUser->keycloak_user_uuid . '/groups';
         $token = self::getKeycloakAccessToken();
         $response = Http::withToken($token)->get($userGroupUrl);
         $userGroups = [];
@@ -392,7 +454,7 @@ class KeycloakHelper
      */
     public static function getUserGroups($token)
     {
-        $response = Http::withToken($token)->get(KEYCLOAK_GROUPS_URL);
+        $response = Http::withToken($token)->get(self::getGroupsUrl());
         $userGroups = [];
         if ($response->successful()) {
             $groups = $response->json();
@@ -414,7 +476,7 @@ class KeycloakHelper
         $token = KeycloakHelper::getKeycloakAccessToken();
         $response = Http::withToken($token)->withHeaders([
             'Content-Type' => 'application/json'
-        ])->get(KEYCLOAK_USER_URL, [
+        ])->get(self::getUserUrl(), [
             'email' => $email,
         ]);
 
@@ -429,7 +491,7 @@ class KeycloakHelper
      */
     public static function createWebhook($url, $eventTypes)
     {
-        $response = Http::asForm()->post(KEYCLOAK_TOKEN_URL, [
+        $response = Http::asForm()->post(self::getTokenUrl(), [
             'grant_type' => 'password',
             'client_id' => env('KEYCLOAK_BACKEND_CLIENT'),
             'client_secret' => env('KEYCLOAK_BACKEND_SECRET'),
@@ -445,7 +507,7 @@ class KeycloakHelper
         if ($token) {
             $response = Http::withToken($token)->withHeaders([
                 'Content-Type' => 'application/json'
-            ])->post(WEBHOOK_URL, [
+            ])->post(self::getWebhookUrl(), [
                 'enabled' => true,
                 'url' => $url,
                 'secret' => env('KEYCLOAK_BACKEND_SECRET'),
@@ -472,7 +534,7 @@ class KeycloakHelper
 
         $response = Http::withToken($token)
             ->withHeaders(['Content-Type' => 'application/json'])
-            ->post(KEYCLOAK_ROLES_URL, [
+            ->post(self::getRolesUrl(), [
                 'name' => $roleName,
                 'description' => $description,
             ]);
@@ -492,7 +554,7 @@ class KeycloakHelper
 
         $response = Http::withToken($token)
             ->withHeaders(['Content-Type' => 'application/json'])
-            ->post(KEYCLOAK_GROUPS_URL, ['name' => $groupName]);
+            ->post(self::getGroupsUrl(), ['name' => $groupName]);
 
         return $response->successful();
     }
@@ -514,7 +576,7 @@ class KeycloakHelper
         }
 
         $roleResponse = Http::withToken($token)
-            ->get(KEYCLOAK_ROLES_URL . "/{$roleName}");
+            ->get(self::getRolesUrl() . "/{$roleName}");
 
         if (!$roleResponse->successful()) {
             throw new \Exception("Role '{$roleName}' not found.");
@@ -524,7 +586,7 @@ class KeycloakHelper
 
         $assignResponse = Http::withToken($token)
             ->withHeaders(['Content-Type' => 'application/json'])
-            ->post(KEYCLOAK_GROUPS_URL . "/{$groupId}/role-mappings/realm", [
+            ->post(self::getGroupsUrl() . "/{$groupId}/role-mappings/realm", [
                 [
                     'id' => $role['id'],
                     'name' => $role['name']
