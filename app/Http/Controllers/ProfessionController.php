@@ -56,6 +56,73 @@ class ProfessionController extends Controller
         return ['success' => true, 'data' => ProfessionResource::collection($professions)];
     }
 
+
+    /**
+     * @OA\Get(
+     *     path="/api/profession",
+     *     tags={"Profession"},
+     *     summary="Lists all profession",
+     *     operationId="professionList",
+     *     @OA\Parameter(
+     *         name="country_id",
+     *         in="query",
+     *         description="Country id",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="integer"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     */
+    public function getList(Request $request)
+    {
+        $countryId = $request->get('country_id');
+        $pageSize = $request->get('page_size', 60);
+        $search = $request->get('search', '');
+
+        $query = Profession::query();
+
+         if ($search) {
+            $query->where('name' ,'like', '%' . $search . '%');
+        }
+
+        if ($request->has('filters')) {
+            $filters = $request->get('filters');
+            $query->where(function ($query) use ($filters) {
+                foreach ($filters as $filter) {
+                    $filterObj = json_decode($filter);
+                    if ($filterObj->columnName === 'profession_type') {
+                        $query->where('type', $filterObj->value);
+                    } else {
+                        $query->where($filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
+                    }
+                }
+            });
+        }
+
+        if (!$countryId && Auth::user()) {
+            $countryId = Auth::user()->country_id;
+        }
+
+        $professions = $query->where('professions.country_id', $countryId)->paginate($pageSize);
+
+        return response()->json(['data' => ProfessionResource::collection($professions), 'total' => $professions->total(), 'current_page' => $professions->currentPage()]);
+    }
+
     /**
      * @OA\Post(
      *     path="/api/profession",
@@ -93,6 +160,7 @@ class ProfessionController extends Controller
     {
         $countryId = Auth::user()->country_id;
         $name = $request->get('name');
+        $type = $request->get('type');
         $existedProfession = Profession::where('country_id', $countryId)
             ->where('name', $name)
             ->count();
@@ -104,6 +172,7 @@ class ProfessionController extends Controller
         Profession::create([
             'name' => $name,
             'country_id' => $countryId,
+            'type' => $type,
         ]);
 
         return ['success' => true, 'message' => 'success_message.profession_create'];
@@ -156,6 +225,7 @@ class ProfessionController extends Controller
     {
         $countryId = Auth::user()->country_id;
         $name = $request->get('name');
+        $type = $request->get('type');
         $existedProfession = Profession::where('id', '<>', $profession->id)
             ->where('country_id', $countryId)
             ->where('name', $name)
@@ -168,6 +238,7 @@ class ProfessionController extends Controller
         $profession->update([
             'name' => $name,
             'country_id' => $countryId,
+            'type' => $type,
         ]);
 
         return ['success' => true, 'message' => 'success_message.profession_update'];

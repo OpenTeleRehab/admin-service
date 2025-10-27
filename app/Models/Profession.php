@@ -12,6 +12,8 @@ class Profession extends Model
 {
     use LogsActivity;
 
+    const TYPE_THERAPIST = 'therapist';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -19,7 +21,8 @@ class Profession extends Model
      */
     protected $fillable = [
         'name',
-        'country_id'
+        'country_id',
+        'type',
     ];
 
     /**
@@ -30,7 +33,7 @@ class Profession extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'country_id'])
+            ->logOnly(['name', 'country_id', 'type'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

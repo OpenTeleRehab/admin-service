@@ -84,6 +84,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Profession
     Route::get('profession', [ProfessionController::class, 'index'])->middleware('role:manage_profession,view_profession');
+    Route::get('profession/list', [ProfessionController::class, 'getList'])->middleware('role:manage_profession');
     Route::post('profession', [ProfessionController::class, 'store'])->middleware('role:manage_profession');
     Route::put('profession/{profession}', [ProfessionController::class, 'update'])->middleware('role:manage_profession');
     Route::delete('profession/{profession}', [ProfessionController::class, 'destroy'])->middleware('role:manage_profession');
