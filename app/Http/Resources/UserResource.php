@@ -27,7 +27,8 @@ class UserResource extends JsonResource
             'gender' => $this->gender,
             'language_id' => $this->language_id,
             'therapist_limit' => $this->therapist_limit,
-            'region_name' => $this->region?->name
+            'region_name' => $this->region?->name,
+            'region_id' => $this->region_id,
         ];
     }
 }

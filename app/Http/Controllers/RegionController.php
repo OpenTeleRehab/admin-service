@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
 use App\Models\Region;
 use Illuminate\Http\Request;
 use App\Helpers\LimitationHelper;
@@ -17,6 +16,16 @@ class RegionController extends Controller
      *     tags={"Region"},
      *     summary="List of regions",
      *     operationId="getRegions",
+     *     @OA\Parameter(
+     *         name="filters",
+     *         in="query",
+     *         description="Filter regions, can be JSON string or query array",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string",
+     *             example="{\"country_id\":16}"
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
@@ -34,6 +43,14 @@ class RegionController extends Controller
      *                     @OA\Property(property="phc_worker_limit", type="integer", example=15)
      *                 )
      *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Something went wrong")
      *         )
      *     )
      * )
@@ -62,27 +79,49 @@ class RegionController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"name","therapist_limit","phc_worker_limit"},
+     *             @OA\Property(property="country_id", type="integer", description="Country ID (optional)"),
      *             @OA\Property(property="name", type="string", description="Region name"),
      *             @OA\Property(property="therapist_limit", type="integer", description="Therapist limit", minimum=0),
      *             @OA\Property(property="phc_worker_limit", type="integer", description="PHC worker limit", minimum=0)
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
+     *         response=201,
+     *         description="Region created successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean"),
-     *             @OA\Property(property="message", type="string")
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="success_message.create.region")
      *         )
      *     ),
-     *     @OA\Response(response=400, description="Bad request"),
-     *     @OA\Response(response=401, description="Authentication is required"),
-     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Authentication is required"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Resource not found"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Something went wrong")
+     *         )
+     *     ),
      *     security={{"oauth2_security": {}}}
      * )
      *
      * @param \Illuminate\Http\Request $request
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -116,15 +155,21 @@ class RegionController extends Controller
     }
 
     /**
-     * @OA\Post(
+     * @OA\Put(
      *     path="/api/regions/{id}",
      *     tags={"Region"},
      *     summary="Update the region",
      *     operationId="updateRegion",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Region ID",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name","therapist_limit","phc_worker_limit"},
      *             @OA\Property(property="name", type="string", description="Region name"),
      *             @OA\Property(property="therapist_limit", type="integer", description="Therapist limit", minimum=0),
      *             @OA\Property(property="phc_worker_limit", type="integer", description="PHC worker limit", minimum=0)
@@ -132,15 +177,36 @@ class RegionController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successful operation",
+     *         description="Region updated successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean"),
-     *             @OA\Property(property="message", type="string")
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="success_message.update.region")
      *         )
      *     ),
-     *     @OA\Response(response=400, description="Bad request"),
-     *     @OA\Response(response=401, description="Authentication is required"),
-     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Authentication is required"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Region not found"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Something went wrong")
+     *         )
+     *     ),
      *     security={{"oauth2_security": {}}}
      * )
      *
@@ -183,33 +249,54 @@ class RegionController extends Controller
      *     tags={"Region"},
      *     summary="Delete region",
      *     operationId="deleteRegion",
-     *      @OA\Parameter(
+     *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Region id",
+     *         description="Region ID",
      *         required=true,
-     *         @OA\Schema(
-     *             type="integer"
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Region deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="success_message.delete.region")
      *         )
      *     ),
      *     @OA\Response(
-     *         response="200",
-     *         description="successful operation"
+     *         response=400,
+     *         description="Bad request",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed")
+     *         )
      *     ),
-     *     @OA\Response(response=400, description="Bad request"),
-     *     @OA\Response(response=404, description="Resource Not Found"),
-     *     @OA\Response(response=401, description="Authentication is required"),
-     *     security={
-     *         {
-     *             "oauth2_security": {}
-     *         }
-     *     },
+     *     @OA\Response(
+     *         response=401,
+     *         description="Authentication is required"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Region not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Region not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Something went wrong")
+     *         )
+     *     ),
+     *     security={{"oauth2_security": {}}}
      * )
      *
-     * @param \App\Models\Language $language
-     *
-     * @return array
-     * @throws \Exception
+     * @param \App\Models\Region $region
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Region $region)
     {

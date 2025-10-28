@@ -124,6 +124,7 @@ class ExerciseController extends Controller
                 'share_to_hi_library' => false,
                 'therapist_id' => $therapistId,
                 'global' => env('APP_NAME') == 'hi',
+                'share_with_phc_worker' => false,
             ]);
 
             // CLone files.
@@ -143,6 +144,7 @@ class ExerciseController extends Controller
                 'share_to_hi_library' => $request->boolean('share_to_hi_library'),
                 'therapist_id' => $therapistId,
                 'global' => env('APP_NAME') == 'hi',
+                'share_with_phc_worker' => $request->boolean('share_with_phc_worker'),
             ]);
         }
 
@@ -254,6 +256,7 @@ class ExerciseController extends Controller
             'include_feedback' => $request->boolean('include_feedback'),
             'get_pain_level' => $request->boolean('get_pain_level'),
             'share_to_hi_library' => $request->boolean('share_to_hi_library'),
+            'share_with_phc_worker' => $request->boolean('share_with_phc_worker'),
         ]);
 
         $additionalFields = json_decode($request->get('additional_fields'));

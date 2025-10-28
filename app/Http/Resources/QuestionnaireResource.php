@@ -36,6 +36,7 @@ class QuestionnaireResource extends JsonResource
             ],
             'include_at_the_start' => $this->include_at_the_start,
             'include_at_the_end' => $this->include_at_the_end,
+            'share_with_phc_worker' => $this->share_with_phc_worker,
         ];
     }
 }

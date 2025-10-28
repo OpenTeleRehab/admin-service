@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserType;
 use App\Helpers\KeycloakHelper;
 use App\Http\Resources\UserResource;
 use App\Models\EducationMaterial;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
@@ -202,42 +204,57 @@ class AdminController extends Controller
      */
     public function store(Request $request)
     {
-        DB::beginTransaction();
-        $firstName = $request->get('first_name');
-        $lastName = $request->get('last_name');
-        $type = $request->get('type');
-        $countryId = $request->get('country_id');
-        $clinicId = $request->get('clinic_id');
-        $email = $request->get('email');
-
-        $availableEmail = User::where('email', $email)->count();
-        if ($availableEmail) {
-            // Todo: message will be replaced.
-            return abort(409, 'error_message.email_exists');
-        }
-
-        $user = User::create([
-            'email' => $email,
-            'first_name' => $firstName,
-            'last_name' => $lastName,
-            'type' => $type,
-            'country_id' => $countryId,
-            'clinic_id' => $clinicId
+        $validatedData = $request->validate([
+            'email' => 'required|email|unique:users,email',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'type' => ['required', Rule::in(array_column(UserType::cases(), 'value'))],
+            'country_id' => [
+                Rule::requiredIf(fn() => $request->type === UserType::COUNTRY_ADMIN->value),
+                'exists:countries,id',
+            ],
+            'clinic_id' => [
+                Rule::requiredIf(fn() => $request->type === UserType::CLINIC_ADMIN->value),
+                'exists:clinics,id',
+            ],
+            'region_id' => [
+                Rule::requiredIf(fn() => $request->type === UserType::REGIONAL_ADMIN->value),
+                'exists:regions,id',
+            ],
+        ], [
+            'email.unique' => 'error_message.email_exists',
         ]);
 
-        if (!$user) {
-            return ['success' => false, 'message' => 'error_message.user_add'];
-        }
+        DB::beginTransaction();
 
         try {
-            KeycloakHelper::createUser($user, null, false, $type);
+            $user = User::create($validatedData);
+
+            if (!$user) {
+                return ['success' => false, 'message' => 'error_message.user_add'];
+            }
+
+            KeycloakHelper::createUser($user, null, false, $validatedData['type']);
+
+            DB::commit();
+
+            return ['success' => true, 'message' => 'success_message.user_add'];
         } catch (\Exception $e) {
+            $token = KeycloakHelper::getKeycloakAccessToken();
+
+            $userUrl = KeycloakHelper::getUserUrl() . '?email=' . $validatedData['email'];
+            $response = Http::withToken($token)->get($userUrl);
+
+            if ($response->successful()) {
+                $keyCloakUsers = $response->json();
+
+                KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id']);
+            }
+
             DB::rollBack();
+
             return ['success' => false, 'message' => $e->getMessage()];
         }
-
-        DB::commit();
-        return ['success' => true, 'message' => 'success_message.user_add'];
     }
 
     /**
@@ -321,20 +338,31 @@ class AdminController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $validatedData = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'country_id' => [
+                Rule::requiredIf(fn() => $request->type === UserType::COUNTRY_ADMIN->value),
+                'exists:countries,id',
+            ],
+            'clinic_id' => [
+                Rule::requiredIf(fn() => $request->type === UserType::CLINIC_ADMIN->value),
+                'exists:clinics,id',
+            ],
+            'region_id' => [
+                Rule::requiredIf(fn() => $request->type === UserType::REGIONAL_ADMIN->value),
+                'exists:regions,id',
+            ],
+        ]);
+
         try {
             $user = User::findOrFail($id);
-            $data = $request->all();
-            $user->update([
-                'first_name' => $data['first_name'],
-                'last_name' => $data['last_name'],
-                'clinic_id' => $data['clinic_id'],
-                'country_id' => $data['country_id'],
-            ]);
+            $user->update($validatedData);
         } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
 
-        return ['success' => true, 'message' => 'success_message.user_update'];
+        return response()->json(['success' => true, 'message' => 'success_message.user_update'], 200);
     }
 
     /**
@@ -472,6 +500,7 @@ class AdminController extends Controller
     private static function assignUserToGroup($token, $userUrl, $userGroup, $isUnassigned = false)
     {
         $userGroups = KeycloakHelper::getUserGroups($token);
+
         $url = $userUrl . '/groups/' . $userGroups[$userGroup];
         if ($isUnassigned) {
             $response = Http::withToken($token)->delete($url);
@@ -492,7 +521,7 @@ class AdminController extends Controller
     public static function sendEmailToNewUser($userId)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
-        $url = KeycloakHelper::getUserUrl() . '/'. $userId . KeycloakHelper::getExecuteEmailUrl();
+        $url = KeycloakHelper::getUserUrl() . '/' . $userId . KeycloakHelper::getExecuteEmailUrl();
         $response = Http::withToken($token)->put($url, ['UPDATE_PASSWORD']);
 
         return $response;

@@ -36,6 +36,7 @@ class ExerciseResource extends JsonResource
             'fallback' => [
                 'title' => $this->getTranslation('title', config('app.fallback_locale')),
             ],
+            'share_with_phc_worker' => $this->share_with_phc_worker,
         ];
     }
 }

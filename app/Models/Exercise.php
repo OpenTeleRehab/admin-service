@@ -35,6 +35,7 @@ class Exercise extends Model
         'parent_id',
         'suggested_lang',
         'share_to_hi_library',
+        'share_with_phc_worker',
     ];
 
     /**

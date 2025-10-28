@@ -13,7 +13,7 @@ return [
 
   'allowed_resources' => env('KEYCLOAK_ALLOWED_RESOURCES', null),
 
-  'user_url' => env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REALMS_NAME') . '/users',
+  'user_url' => env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users',
 
   'token_url' => env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/protocol/openid-connect/token',
 

@@ -22,7 +22,7 @@ class Questionnaire extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'description', 'is_used', 'therapist_id', 'global', 'questionnaire_id', 'auto_translated', 'parent_id', 'suggested_lang', 'share_to_hi_library', 'include_at_the_start', 'include_at_the_end', 'is_survey'];
+    protected $fillable = ['title', 'description', 'is_used', 'therapist_id', 'global', 'questionnaire_id', 'auto_translated', 'parent_id', 'suggested_lang', 'share_to_hi_library', 'include_at_the_start', 'include_at_the_end', 'is_survey', 'share_with_phc_worker'];
 
     /**
      * The attributes that are translatable

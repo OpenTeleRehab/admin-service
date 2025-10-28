@@ -143,7 +143,8 @@ class SetupKeycloakPermissions extends Command
                 'view_number_of_clinic_therapist',
                 'view_exercise',
                 'access_all',
-                'mange_region'
+                'mange_region',
+                'manage_regional_admin'
             ],
             'clinic_admin' => [
                 'view_profession',
@@ -200,7 +201,7 @@ class SetupKeycloakPermissions extends Command
                 'view_number_of_clinic_therapist',
                 'view_category_tree',
             ],
-            'region_admin' => [
+            'regional_admin' => [
                 'view_organization',
                 'submit_survey',
                 'skip_survey',

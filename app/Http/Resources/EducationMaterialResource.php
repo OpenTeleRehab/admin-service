@@ -25,6 +25,7 @@ class EducationMaterialResource extends JsonResource
             'share_to_hi_library' => $this->share_to_hi_library,
             'therapist_id' => $this->therapist_id,
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
+            'share_with_phc_worker' => $this->share_with_phc_worker,
         ];
     }
 }

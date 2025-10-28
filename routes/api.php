@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AssistiveTechnologyController;
-use App\Http\Controllers\AssistiveTechnologyController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChartController;
@@ -10,7 +9,6 @@ use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\ColorSchemeController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DownloadTrackerController;
-use App\Http\Controllers\EducationMaterialController;
 use App\Http\Controllers\EducationMaterialController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\ExportController;
@@ -22,7 +20,6 @@ use App\Http\Controllers\GuidancePageController;
 use App\Http\Controllers\HealthConditionController;
 use App\Http\Controllers\HealthConditionGroupController;
 use App\Http\Controllers\ImportController;
-use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\JobTrackerController;
 use App\Http\Controllers\LanguageController;
@@ -64,7 +61,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin');
     Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin');
     Route::post('library/delete/by-therapist', [AdminController::class, 'deleteLibraryByTherapist'])->middleware('role:access_all');
-    Route::apiResource('admin', AdminController::class)->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin');
+    Route::apiResource('admin', AdminController::class)->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin,manage_regional_admin');
 
     // Mfa Config
     Route::get('mfa-settings', [MfaSettingController::class, 'index'])->middleware('role:manage_mfa_policy');

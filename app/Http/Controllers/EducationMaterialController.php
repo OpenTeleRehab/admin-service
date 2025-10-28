@@ -211,6 +211,7 @@ class EducationMaterialController extends Controller
                 'file_id' => $file->id,
                 'therapist_id' => $therapistId,
                 'global' => env('APP_NAME') == 'hi',
+                'share_with_phc_worker' => false,
             ]);
         } elseif (!empty($file)) {
             $educationMaterial = EducationMaterial::create([
@@ -219,6 +220,7 @@ class EducationMaterialController extends Controller
                 'file_id' => $file->id,
                 'therapist_id' => $therapistId,
                 'global' => env('APP_NAME') == 'hi',
+                'share_with_phc_worker' => $request->boolean('share_with_phc_worker'),
             ]);
         }
 
@@ -406,11 +408,13 @@ class EducationMaterialController extends Controller
                 'title' => $request->get('title'),
                 'share_to_hi_library' => $request->boolean('share_to_hi_library'),
                 'file_id' => $newFile->id,
+                'share_with_phc_worker' => $request->boolean('share_with_phc_worker'),
             ]);
         } else {
             $educationMaterial->update([
                 'title' => $request->get('title'),
                 'share_to_hi_library' => $request->boolean('share_to_hi_library'),
+                'share_with_phc_worker' => $request->boolean('share_with_phc_worker'),
             ]);
         }
 
