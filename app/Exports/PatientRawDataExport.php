@@ -91,7 +91,7 @@ class PatientRawDataExport
             ...array_map(fn($patient) => $patient->secondary_therapists, $patients)
         )));
         $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-        $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/therapist/by-ids', [
+        $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/patient/therapist-by-ids', [
             'ids' => json_encode($uniqueTherapistIds),
         ]);
 
