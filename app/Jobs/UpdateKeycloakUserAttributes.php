@@ -82,7 +82,7 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                         foreach ($externalDomains as $domain) {
                             $domain = trim($domain);
                             if ($domain) {
-                                $query->orWhere('email', 'LIKE', "%$domain");
+                                $query->orWhere('email', 'NOT LIKE', "%$domain");
                             }
                         }
                     });
