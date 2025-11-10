@@ -18,6 +18,7 @@ class AssistiveTechnologyListResource extends JsonResource
             'id' => $this->id,
             'code' => $this->code,
             'name' => $this->name,
+            'description' => $this->description,
             'isUsed' => $this->isUsed(),
             'deleted_at' => $this->deleted_at,
         ];
