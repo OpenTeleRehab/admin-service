@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Helpers\KeycloakHelper;
+use App\Models\Forwarder;
 use App\Models\JobTracker;
 use App\Models\MfaSetting;
 use App\Models\User;
@@ -11,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Http;
 
 class UpdateKeycloakUserAttributes implements ShouldQueue
 {
@@ -23,7 +25,7 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
      * Max attempts and timeout
      */
     public $tries = 3;
-    public $timeout = 300;
+    public $timeout = 600;
 
     public function __construct(array $data, string $jobId)
     {
@@ -58,75 +60,121 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                 case MfaSetting::MFA_RECOMMEND:
                 case MfaSetting::MFA_ENFORCE:
                     foreach(MfaSetting::ROLE_LEVEL as $roleLevel => $level) {
-                        if ($level > MfaSetting::ROLE_LEVEL[$role]) {
+                        if ($level >= MfaSetting::ROLE_LEVEL[$role]) {
                             $rolesToUpdate[] = $roleLevel;
                         }
                     }
             }
 
             if (!empty($rolesToUpdate)) {
-                $usersQuery = User::whereIn('type', $rolesToUpdate);
+                if (($key = array_search('therapist', $rolesToUpdate, true)) !== false) {
+                    unset($rolesToUpdate[$key]);
 
-                if (!empty($countryIds)) {
-                    $usersQuery->whereIn('country_id', $countryIds);
+                    $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+                    $response = Http::withToken($access_token)
+                        ->post(env('THERAPIST_SERVICE_URL') . '/mfa-settings', [
+                            'country_ids' => $countryIds,
+                            'clinic_ids' => $clinicIds,
+                            'attributes' => $attributes,
+                        ]);
+
+                    if (!$response->successful()) {
+                        throw new \Exception('Therapist request failed: ' . $response->body());
+                    }
+
+                    $jobId = $response->json('job_id');
+
+                    $maxWait = 600;
+                    $interval = 3;
+                    $elapsed = 0;
+
+                    while ($elapsed < $maxWait) {
+                        $statusResponse = Http::withToken($access_token)
+                            ->get(env('THERAPIST_SERVICE_URL') . "/mfa-settings/{$jobId}");
+
+                        $statusData = $statusResponse->json();
+                        if ($statusData['status'] === 'COMPLETED') break;
+                        if ($statusData['status'] === 'FAILED') {
+                            throw new \Exception('Therapist job failed: ' . $statusData['message']);
+                        }
+
+                        sleep($interval);
+                        $elapsed += $interval;
+                    }
                 }
 
-                if (!empty($clinicIds)) {
-                    $usersQuery->whereIn('clinic_id', $clinicIds);
-                }
+                if (!empty($rolesToUpdate)) {
+                    $usersQuery = User::whereIn('type', $rolesToUpdate);
 
-                $externalDomains = explode(',', env('FEDERATED_DOMAINS', ''));
+                    if (!empty($countryIds)) {
+                        $usersQuery->whereIn('country_id', $countryIds);
+                    }
 
-                if (!empty($externalDomains)) {
-                    $usersQuery->where(function($query) use ($externalDomains) {
-                        foreach ($externalDomains as $domain) {
-                            $domain = trim($domain);
-                            if ($domain) {
-                                $query->orWhere('email', 'NOT LIKE', "%$domain");
+                    if (!empty($clinicIds)) {
+                        $usersQuery->whereIn('clinic_id', $clinicIds);
+                    }
+
+                    $externalDomains = explode(',', env('FEDERATED_DOMAINS', ''));
+
+                    if (!empty($externalDomains)) {
+                        $usersQuery->where(function($query) use ($externalDomains) {
+                            foreach ($externalDomains as $domain) {
+                                $domain = trim($domain);
+                                if ($domain) {
+                                    $query->orWhere('email', 'NOT LIKE', "%$domain");
+                                }
                             }
+                        });
+                    }
+
+                    $users = $usersQuery->get();
+
+                    foreach ($users as $user) {
+                        $userData = KeycloakHelper::getKeycloakUserByUsername($user->email);
+                        if (!$userData) {
+                            continue;
                         }
-                    });
-                }
 
-                $users = $usersQuery->get();
+                        $existingAttributes = $userData['attributes'] ?? [];
 
-                foreach ($users as $user) {
-                    $userData = KeycloakHelper::getKeycloakUserByUsername($user->email);
-                    if (!$userData) {
-                        continue;
-                    }
+                        $newEnforcement = $attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
+                        $oldEnforcement = isset($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                            ? (is_array($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                                ? $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT][0]
+                                : $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                            : null;
 
-                    $existingAttributes = $userData['attributes'] ?? [];
-
-                    $newEnforcement = $attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
-                    $oldEnforcement = is_array($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT]) 
-                        ? $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT][0]
-                        : $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
-
-                    if (
-                        in_array($newEnforcement, [
-                            MfaSetting::MFA_DISABLE,
-                            MfaSetting::MFA_RECOMMEND,
-                            MfaSetting::MFA_ENFORCE
-                        ], true) &&
-                        (MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement] ?? 0) >
-                        (MfaSetting::ENFORCEMENT_LEVEL[$oldEnforcement] ?? 0)
-                    ) {
-                        continue;
-                    }
-
-                    foreach ($attributes as $key => $value) {
                         if (
-                            $key === MfaSetting::MFA_KEY_ENFORCEMENT &&
-                            $attributes[$key] === MfaSetting::MFA_DISABLE
+                            $oldEnforcement !== null &&
+                            in_array($newEnforcement, [
+                                MfaSetting::MFA_DISABLE,
+                                MfaSetting::MFA_RECOMMEND,
+                                MfaSetting::MFA_ENFORCE
+                            ], true) &&
+                            in_array($oldEnforcement, [
+                                MfaSetting::MFA_DISABLE,
+                                MfaSetting::MFA_RECOMMEND,
+                                MfaSetting::MFA_ENFORCE
+                            ], true) &&
+                            (MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement] ?? 0) >
+                            (MfaSetting::ENFORCEMENT_LEVEL[$oldEnforcement] ?? 0)
                         ) {
-                            KeycloakHelper::deleteUserCredentialByType($user->email, 'otp');
+                            continue;
                         }
 
-                        $existingAttributes[$key] = is_array($value) ? $value : [$value];
-                    }
+                        foreach ($attributes as $key => $value) {
+                            if (
+                                $key === MfaSetting::MFA_KEY_ENFORCEMENT &&
+                                $attributes[$key] === MfaSetting::MFA_DISABLE
+                            ) {
+                                KeycloakHelper::deleteUserCredentialByType($user->email, 'otp');
+                            }
 
-                    KeycloakHelper::updateUserAttributesById($userData['id'], $existingAttributes);
+                            $existingAttributes[$key] = is_array($value) ? $value : [$value];
+                        }
+
+                        KeycloakHelper::updateUserAttributesById($userData['id'], $existingAttributes);
+                    }
                 }
             }
 

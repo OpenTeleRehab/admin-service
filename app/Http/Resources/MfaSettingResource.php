@@ -14,8 +14,8 @@ class MfaSettingResource extends JsonResource
         return [
             'id' => $this->id,
             'role' => $this->role,
-            'countries' => $this->country_ids,
-            'clinics' => $this->clinic_ids,
+            'country_ids' => $this->country_ids,
+            'clinic_ids' => $this->clinic_ids,
             'organizations' => $this->organizations,
             'attributes' => $this->attributes,
             'job_status' => $this->jobTrackers

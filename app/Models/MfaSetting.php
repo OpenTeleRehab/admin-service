@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class MfaSetting extends Model
 {
@@ -17,10 +18,10 @@ class MfaSetting extends Model
     const MFA_KEY_ENFORCEMENT = 'mfa_enforcement';
 
     const ROLE_LEVEL = [
-        'super_admin' => 1,
-        'organization_admin' => 2,
-        'country_admin' => 3,
-        'clinic_admin' => 4,
+        'organization_admin' => 1,
+        'country_admin' => 2,
+        'clinic_admin' => 3,
+        'therapist' => 4,
     ];
 
     const ENFORCEMENT_LEVEL = [
@@ -38,6 +39,8 @@ class MfaSetting extends Model
         'country_ids',
         'clinic_ids',
         'attributes',
+        'created_by',
+        'updated_by',
     ];
 
     /**
@@ -50,9 +53,34 @@ class MfaSetting extends Model
         'attributes' => 'array',
     ];
 
+    /**
+     * Perform any actions required after the model boots.
+     *
+     * @return void
+     */
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (Auth::check()) {
+                $model->created_by = Auth::id();
+                $model->updated_by = Auth::id();
+            }
+        });
+
+        static::updating(function ($model) {
+            if (Auth::check()) {
+                $model->updated_by = Auth::id();
+            }
+        });
+    }
+
     public function jobTrackers()
     {
         return $this->morphMany(JobTracker::class, 'trackable');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }
