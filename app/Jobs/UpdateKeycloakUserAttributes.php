@@ -20,6 +20,7 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
 
     public array $data;
     public string $jobId;
+    public User $authUser;
 
     /**
      * Max attempts and timeout
@@ -27,10 +28,11 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
     public $tries = 3;
     public $timeout = 600;
 
-    public function __construct(array $data, string $jobId)
+    public function __construct(array $data, string $jobId, User $authUser)
     {
         $this->data = $data;
         $this->jobId = $jobId;
+        $this->authUser = $authUser;
     }
 
     public function handle(): void
@@ -66,6 +68,14 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                     }
             }
 
+            $authUserData = KeycloakHelper::getKeycloakUserByUsername($this->authUser->email);
+            $authUserAttributes = $authUserData['attributes'] ?? [];
+            $authUserEnforcement = isset($authUserAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                ? (is_array($authUserAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                    ? $authUserAttributes[MfaSetting::MFA_KEY_ENFORCEMENT][0]
+                    : $authUserAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                : null;
+
             if (!empty($rolesToUpdate)) {
                 if (($key = array_search('therapist', $rolesToUpdate, true)) !== false) {
                     unset($rolesToUpdate[$key]);
@@ -76,6 +86,7 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                             'country_ids' => $countryIds,
                             'clinic_ids' => $clinicIds,
                             'attributes' => $attributes,
+                            'admin_enforcement' => $authUserEnforcement,
                         ]);
 
                     if (!$response->successful()) {
@@ -136,44 +147,31 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                         }
 
                         $existingAttributes = $userData['attributes'] ?? [];
-
                         $newEnforcement = $attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
-                        $oldEnforcement = isset($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
-                            ? (is_array($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
-                                ? $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT][0]
-                                : $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
-                            : null;
 
                         if (
-                            $oldEnforcement !== null &&
-                            in_array($newEnforcement, [
-                                MfaSetting::MFA_DISABLE,
-                                MfaSetting::MFA_RECOMMEND,
-                                MfaSetting::MFA_ENFORCE
-                            ], true) &&
-                            in_array($oldEnforcement, [
-                                MfaSetting::MFA_DISABLE,
-                                MfaSetting::MFA_RECOMMEND,
-                                MfaSetting::MFA_ENFORCE
-                            ], true) &&
-                            (MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement] ?? 0) >
-                            (MfaSetting::ENFORCEMENT_LEVEL[$oldEnforcement] ?? 0)
+                            $newEnforcement !== null &&
+                            (
+                                $authUserEnforcement == null ||
+                                (MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement] ?? 0) <=
+                                (MfaSetting::ENFORCEMENT_LEVEL[$authUserEnforcement] ?? 0)
+                            )
                         ) {
-                            continue;
-                        }
+                            foreach ($attributes as $key => $value) {
+                                if (
+                                    $key === MfaSetting::MFA_KEY_ENFORCEMENT &&
+                                    $attributes[$key] === MfaSetting::MFA_DISABLE
+                                ) {
+                                    KeycloakHelper::deleteUserCredentialByType($user->email, 'otp');
+                                }
 
-                        foreach ($attributes as $key => $value) {
-                            if (
-                                $key === MfaSetting::MFA_KEY_ENFORCEMENT &&
-                                $attributes[$key] === MfaSetting::MFA_DISABLE
-                            ) {
-                                KeycloakHelper::deleteUserCredentialByType($user->email, 'otp');
+                                $existingAttributes[$key] = is_array($value) ? $value : [$value];
                             }
 
-                            $existingAttributes[$key] = is_array($value) ? $value : [$value];
+                            KeycloakHelper::updateUserAttributesById($userData['id'], $existingAttributes);
+                        } else {
+                            continue;
                         }
-
-                        KeycloakHelper::updateUserAttributesById($userData['id'], $existingAttributes);
                     }
                 }
             }
