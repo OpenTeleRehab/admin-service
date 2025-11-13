@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\SurveyExport;
 use App\Helpers\SurveyHelper;
-use App\Http\Resources\SurveyResource;
 use App\Http\Resources\SurveyListResource;
-use App\Models\Survey;
-use Illuminate\Http\Request;
-use App\Models\User;
-use Carbon\Carbon;
+use App\Http\Resources\SurveyResource;
 use App\Models\Clinic;
 use App\Models\Country;
 use App\Models\Organization;
+use App\Models\Survey;
+use App\Models\User;
 use App\Models\UserSurvey;
+use App\Services\QuestionnaireService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SurveyController extends Controller
@@ -23,6 +23,12 @@ class SurveyController extends Controller
     const COUNTRY_ADMIN = 'country_admin';
     const CLINIC_ADMIN = 'clinic_admin';
 
+    protected $questionnaireService;
+
+    public function __construct(QuestionnaireService $questionnaireService)
+    {
+        $this->questionnaireService = $questionnaireService;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -58,7 +64,7 @@ class SurveyController extends Controller
      *
      * @return array
      */
-    public function store(Request $request, QuestionnaireController $questionnaireController)
+    public function store(Request $request)
     {
         $startDate = null;
         $endDate = null;
@@ -72,8 +78,11 @@ class SurveyController extends Controller
             $endDate = date_format($endDate, config('settings.defaultTimestampFormat'));
         }
 
-        $newRequest = new Request(['data' => $request->get('questionnaire')]);
-        $response = $questionnaireController->store($newRequest);
+        $files = $request->allFiles();
+        $data = json_decode($request->get('questionnaire'));
+
+        $response = $this->questionnaireService->create($data, $files);
+
         if ($response['success'] === true) {
             $user = Auth::user();
             $organization = Organization::where('sub_domain_name', env('APP_NAME'))->firstOrFail();
@@ -137,7 +146,7 @@ class SurveyController extends Controller
      *
      * @return array
      */
-    public function update(Request $request, Survey $survey, QuestionnaireController $questionnaireController)
+    public function update(Request $request, Survey $survey)
     {
         $startDate = null;
         $endDate = null;
@@ -151,8 +160,12 @@ class SurveyController extends Controller
             $endDate = date_format($endDate, config('settings.defaultTimestampFormat'));
         }
 
-        $newRequest = new Request(['data' => $request->get('questionnaire')]);
-        $response = $questionnaireController->update($newRequest, $survey->questionnaire);
+        $files = $request->allFiles();
+        $data = json_decode($request->get('questionnaire'));
+        $noFileQuestions = $request->get('no_file_questions', []);
+
+        $response = $this->questionnaireService->update($survey->questionnaire, $data, $files, $noFileQuestions);
+
         if ($response['success'] === true) {
             $user = Auth::user();
             $organization = Organization::where('sub_domain_name', env('APP_NAME'))->firstOrFail();
