@@ -25,6 +25,7 @@ use App\Http\Controllers\JobTrackerController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MfaSettingController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\PhcServiceController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
@@ -314,10 +315,18 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Province
     Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province, view_province_list');
+    Route::get('provinces-by-region', [ProvinceController::class, 'getByRegion'])->middleware('role:manage_province');
+    Route::get('province-limitation/{province}', [ProvinceController::class, 'getLimitation'])->middleware('role:manage_province, view_province_list');
     Route::post('provinces', [ProvinceController::class, 'store'])->middleware('role:manage_province');
     Route::put('provinces/{province}', [ProvinceController::class, 'update'])->middleware('role:manage_province');
     Route::delete('provinces/{province}', [ProvinceController::class, 'destroy'])->middleware('role:manage_province');
     Route::get('provinces-limitation', [ProvinceController::class, 'limitation'])->middleware('role:manage_province, view_province_list');
+
+    // PHC Service
+    Route::get('phc-services', [PhcServiceController::class, 'index'])->middleware('role:manage_phc_service, view_phc_service_list');
+    Route::post('phc-services', [PhcServiceController::class, 'store'])->middleware('role:manage_phc_service');
+    Route::put('phc-services/{phc_service}', [PhcServiceController::class, 'update'])->middleware('role:manage_phc_service');
+    Route::delete('phc-services/{phc_service}', [PhcServiceController::class, 'destroy'])->middleware('role:manage_phc_service');
 });
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);

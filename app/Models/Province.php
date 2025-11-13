@@ -34,6 +34,16 @@ class Province extends Model
         return $this->belongsTo(Region::class);
     }
 
+     /**
+     * Get the phc services associated with this model.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function phcServices()
+    {
+        return $this->hasMany(PhcService::class);
+    }
+
     /**
      * Get all clinics for the province.
      */

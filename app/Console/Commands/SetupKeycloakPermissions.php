@@ -59,6 +59,8 @@ class SetupKeycloakPermissions extends Command
             'view_region_list',
             'manage_province',
             'view_province_list',
+            'manage_phc_service',
+            'view_phc_service_list',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -216,7 +218,8 @@ class SetupKeycloakPermissions extends Command
                 'view_country_therapist_limit',
                 'view_region_list',
                 'manage_province',
-                'manage_clinic'
+                'manage_clinic',
+                'manage_phc_service',
             ],
         ];
 

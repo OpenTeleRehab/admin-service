@@ -55,6 +55,23 @@ class Region extends Model
     }
 
     /**
+     * Get the phc services associated with this model.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function phcServices()
+    {
+        return $this->hasManyThrough(
+            PhcService::class,
+            Province::class,
+            'region_id',
+            'province_id',
+            'id',
+            'id'
+        );
+    }
+
+    /**
      * Get the options for activity logging.
      *
      * @return \Spatie\Activitylog\LogOptions

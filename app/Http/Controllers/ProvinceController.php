@@ -55,6 +55,39 @@ class ProvinceController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/provinces-by-region",
+     *     tags={"Province"},
+     *     summary="List of all provinces by user region",
+     *     operationId="getAllProvincesByRegion",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="region_id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="Province Name"),
+     *                     @OA\Property(property="therapist_limit", type="integer", example=10),
+     *                     @OA\Property(property="phc_worker_limit", type="integer", example=15)
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function getByRegion()
+    {
+        $provinces = Auth::user()->region->provinces;
+        return response()->json(['data' => ProvinceResource::collection($provinces)]);
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/provinces",
      *     tags={"Province"},
@@ -245,5 +278,15 @@ class ProvinceController extends Controller
         }
 
         return response()->json(['data' => $data], 200);
+    }
+
+    /**
+     * Get the province limitation.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getLimitation(Province $province)
+    {
+        return response()->json(['data' => LimitationHelper::provinceLimitation($province)], 200);
     }
 }
