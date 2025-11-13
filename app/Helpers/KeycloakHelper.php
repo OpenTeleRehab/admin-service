@@ -554,7 +554,7 @@ class KeycloakHelper
         ]);
 
         if ($response->successful()) {
-            return $response->json()[0];
+            return $response->json()[0] ?? null;
         }
 
         return null;

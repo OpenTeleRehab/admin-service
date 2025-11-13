@@ -62,6 +62,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::apiResource('admin', AdminController::class)->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin');
 
     // Mfa Config
+    Route::get('mfa-settings/user-resources', [MfaSettingController::class, 'getMfaSettingsUserResources'])->middleware('role:manage_mfa_policy');
     Route::get('mfa-settings', [MfaSettingController::class, 'index'])->middleware('role:manage_mfa_policy');
     Route::apiResource('mfa-settings', MfaSettingController::class)->middleware('role:manage_mfa_policy');
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KeycloakHelper;
 use App\Http\Resources\MfaSettingResource;
 use App\Jobs\UpdateKeycloakUserAttributes;
 use App\Models\JobTracker;
@@ -20,11 +21,63 @@ class MfaSettingController extends Controller
      */
     public function index(): array
     {
-        $configurations = MfaSetting::orderBy('created_at', 'desc')->get();
+        $user = Auth::user();
+
+        $mfaSettings = MfaSetting::query();
+
+        switch ($user->type) {
+            case User::ADMIN_GROUP_SUPER_ADMIN:
+                $roles = [
+                    User::ADMIN_GROUP_ORG_ADMIN,
+                    User::ADMIN_GROUP_COUNTRY_ADMIN,
+                    User::ADMIN_GROUP_CLINIC_ADMIN,
+                    User::GROUP_THERAPIST
+                ];
+                $mfaSettings->whereHas('user', fn($query) => $query->where('type', $user->type));
+                break;
+
+            case User::ADMIN_GROUP_ORG_ADMIN:
+                $roles = [
+                    User::ADMIN_GROUP_COUNTRY_ADMIN,
+                    User::ADMIN_GROUP_CLINIC_ADMIN,
+                    User::GROUP_THERAPIST
+                ];
+                $mfaSettings->whereHas('user', fn($query) => $query->where('type', $user->type));
+                break;
+
+            case User::ADMIN_GROUP_COUNTRY_ADMIN:
+                $roles = [
+                    User::ADMIN_GROUP_CLINIC_ADMIN,
+                    User::GROUP_THERAPIST
+                ];
+                $mfaSettings->whereHas('user', fn($query) => 
+                    $query->where('type', $user->type)
+                        ->where('country_id', $user->country_id)
+                );
+                break;
+
+            case User::ADMIN_GROUP_CLINIC_ADMIN:
+                $roles = [
+                    User::GROUP_THERAPIST
+                ];
+                $mfaSettings->whereHas('user', fn($query) => 
+                    $query->where('type', $user->type)
+                        ->where('country_id', $user->country_id)
+                        ->where('clinic_id', $user->clinic_id)
+                );
+                break;
+            default:
+                $roles = [];
+                break;
+        }
+
+        $mfaSettingsCollection = $mfaSettings->whereIn('role', $roles)
+                                            ->orderBy('created_at', 'desc')
+                                            ->get();
 
         return [
             'success' => true,
-            'data' => MfaSettingResource::collection($configurations),
+            'data' => MfaSettingResource::collection($mfaSettingsCollection),
         ];
     }
 
@@ -62,7 +115,7 @@ class MfaSettingController extends Controller
         return ['success' => true, 'message' => 'MFA setting has been created successfully.'];
     }
 
-        /**
+    /**
      * Queue a job to update admin attributes in Keycloak.
      *
      * @param Request $request
@@ -94,6 +147,112 @@ class MfaSettingController extends Controller
         $this->dispatchUpdateJob($data, $mfaSetting->id);
 
         return ['success' => true, 'message' => 'MFA setting has been updated successfully.'];
+    }
+
+    /**
+     * Retrieve the mfa settings resources.
+     *
+     * @return array
+     */
+    public function getMfaSettingsUserResources(): array
+    {
+        $user = Auth::user();
+
+        $userData = KeycloakHelper::getKeycloakUserByUsername($user->email);
+
+        $mfaSettings = MfaSetting::query();
+
+        switch ($user->type) {
+            case User::ADMIN_GROUP_SUPER_ADMIN:
+                $roles = [
+                    User::ADMIN_GROUP_ORG_ADMIN,
+                    User::ADMIN_GROUP_COUNTRY_ADMIN,
+                    User::ADMIN_GROUP_CLINIC_ADMIN,
+                    User::GROUP_THERAPIST
+                ];
+                $mfaSettings->whereHas('user', fn($query) => $query->where('type', $user->type));
+                break;
+
+            case User::ADMIN_GROUP_ORG_ADMIN:
+                $roles = [
+                    User::ADMIN_GROUP_COUNTRY_ADMIN,
+                    User::ADMIN_GROUP_CLINIC_ADMIN,
+                    User::GROUP_THERAPIST
+                ];
+                $mfaSettings->whereHas('user', fn($query) => $query->where('type', $user->type));
+                break;
+
+            case User::ADMIN_GROUP_COUNTRY_ADMIN:
+                $roles = [
+                    User::ADMIN_GROUP_CLINIC_ADMIN,
+                    User::GROUP_THERAPIST
+                ];
+                $mfaSettings->whereHas('user', fn($query) => 
+                    $query->where('type', $user->type)
+                        ->where('country_id', $user->country_id)
+                );
+                break;
+
+            case User::ADMIN_GROUP_CLINIC_ADMIN:
+                $roles = [
+                    User::GROUP_THERAPIST
+                ];
+                $mfaSettings->whereHas('user', fn($query) => 
+                    $query->where('type', $user->type)
+                        ->where('country_id', $user->country_id)
+                        ->where('clinic_id', $user->clinic_id)
+                );
+                break;
+            default:
+                $roles = [];
+                break;
+        }
+
+        $mfaSettings->whereIn('role', $roles);
+
+        $settings = $mfaSettings->with('user')->get();
+
+        $usedIds = [
+            'organization_admin' => ['used_clinic_ids' => [], 'used_country_ids' => []],
+            'country_admin' => ['used_clinic_ids' => [], 'used_country_ids' => []],
+            'clinic_admin' => ['used_clinic_ids' => [], 'used_country_ids' => []],
+            'therapist' => ['used_clinic_ids' => [], 'used_country_ids' => []],
+        ];
+
+        foreach ($settings as $setting) {
+            $roleKey = match ($setting->role) {
+                User::ADMIN_GROUP_ORG_ADMIN => 'organization_admin',
+                User::ADMIN_GROUP_COUNTRY_ADMIN => 'country_admin',
+                User::ADMIN_GROUP_CLINIC_ADMIN => 'clinic_admin',
+                User::GROUP_THERAPIST => 'therapist',
+                default => null,
+            };
+
+            if ($roleKey) {
+                $usedIds[$roleKey]['used_clinic_ids'] = array_merge(
+                    $usedIds[$roleKey]['used_clinic_ids'],
+                    $setting->clinic_ids ?? []
+                );
+
+                $usedIds[$roleKey]['used_country_ids'] = array_merge(
+                    $usedIds[$roleKey]['used_country_ids'],
+                    $setting->country_ids ?? []
+                );
+            }
+        }
+
+        foreach ($usedIds as &$role) {
+            $role['used_clinic_ids'] = array_unique($role['used_clinic_ids']);
+            $role['used_country_ids'] = array_unique($role['used_country_ids']);
+        }
+
+        return [
+            'success' => true,
+            'data' => [
+                'user_attributes' => $userData['attributes'] ?? [],
+                'used_ids' => $usedIds,
+            ],
+        ];
     }
 
     /**
