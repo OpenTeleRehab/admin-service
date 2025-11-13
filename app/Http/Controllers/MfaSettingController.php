@@ -264,7 +264,7 @@ class MfaSettingController extends Controller
      */
     private function dispatchUpdateJob(array $data, int $mfaSettingId)
     {
-        $authUser = Auth::user();
+        $authId = Auth::id();
         $jobId = (string) Str::uuid();
 
         JobTracker::updateOrCreate(
@@ -277,6 +277,6 @@ class MfaSettingController extends Controller
             ]
         );
 
-        UpdateKeycloakUserAttributes::dispatch($data, $jobId, $authUser);
+        UpdateKeycloakUserAttributes::dispatch($data, $jobId, $authId);
     }
 }

@@ -20,7 +20,7 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
 
     public array $data;
     public string $jobId;
-    public User $authUser;
+    public int $authId;
 
     /**
      * Max attempts and timeout
@@ -28,11 +28,11 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
     public $tries = 3;
     public $timeout = 600;
 
-    public function __construct(array $data, string $jobId, User $authUser)
+    public function __construct(array $data, string $jobId, int $authId)
     {
         $this->data = $data;
         $this->jobId = $jobId;
-        $this->authUser = $authUser;
+        $this->authId = $authId;
     }
 
     public function handle(): void
@@ -41,6 +41,7 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
         $countryIds = $this->data['country_ids'] ?? [];
         $clinicIds = $this->data['clinic_ids'] ?? [];
         $attributes = $this->data['attributes'] ?? [];
+        $newEnforcement = $attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
 
         try {
             if (
@@ -68,7 +69,8 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                     }
             }
 
-            $authUserData = KeycloakHelper::getKeycloakUserByUsername($this->authUser->email);
+            $authUser = User::find($this->authId);
+            $authUserData = KeycloakHelper::getKeycloakUserByUsername($authUser->email);
             $authUserAttributes = $authUserData['attributes'] ?? [];
             $authUserEnforcement = isset($authUserAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
                 ? (is_array($authUserAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
@@ -147,10 +149,19 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                         }
 
                         $existingAttributes = $userData['attributes'] ?? [];
-                        $newEnforcement = $attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
+
+                        $existingAttributes['available_enforcement'] = $newEnforcement;
+
+                        $oldEnforcement = isset($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                            ? (is_array($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                                ? $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT][0]
+                                : $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
+                            : null;
 
                         if (
                             $newEnforcement !== null &&
+                            (MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement] ?? 0) <
+                            (MfaSetting::ENFORCEMENT_LEVEL[$oldEnforcement] ?? 4) &&
                             (
                                 $authUserEnforcement == null ||
                                 (MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement] ?? 0) <=
@@ -167,12 +178,50 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
 
                                 $existingAttributes[$key] = is_array($value) ? $value : [$value];
                             }
+                        }
 
-                            KeycloakHelper::updateUserAttributesById($userData['id'], $existingAttributes);
-                        } else {
-                            continue;
+                        KeycloakHelper::updateUserAttributesById($userData['id'], $existingAttributes);
+                    }
+                }
+            }
+
+            $roleMfaSettings = [];
+
+            foreach(MfaSetting::ROLE_LEVEL as $roleLevel => $level) {
+                if ($level >= MfaSetting::ROLE_LEVEL[$role]) {
+                    $roleMfaSettings[] = $roleLevel;
+                }
+            }
+
+            $mfaSettingQuery = MfaSetting::query()
+                ->whereIn('role', $roleMfaSettings)
+                ->where(function ($query) use ($countryIds, $clinicIds) {
+                    if (!empty($countryIds)) {
+                        foreach ($countryIds as $id) {
+                            $query->orWhereRaw('JSON_CONTAINS(country_ids, ?)', [json_encode($id)])
+                                ->orWhereRaw('JSON_CONTAINS(country_ids, ?)', [json_encode((string) $id)]);
                         }
                     }
+
+                    if (!empty($clinicIds)) {
+                        foreach ($clinicIds as $id) {
+                            $query->orWhereRaw('JSON_CONTAINS(clinic_ids, ?)', [json_encode($id)])
+                                ->orWhereRaw('JSON_CONTAINS(clinic_ids, ?)', [json_encode((string) $id)]);
+                        }
+                    }
+                });
+
+            $mfaSettings = $mfaSettingQuery->get();
+            
+            foreach($mfaSettings as $mfaSetting) {
+                $currentEnforcement = $mfaSetting->attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
+                if (
+                    $currentEnforcement && 
+                    MfaSetting::ENFORCEMENT_LEVEL[$currentEnforcement] >
+                    MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement]
+                ) {
+                    MfaSetting::where('id', $mfaSetting->id)
+                        ->update(['attributes->mfa_enforcement' => $newEnforcement]);
                 }
             }
 
