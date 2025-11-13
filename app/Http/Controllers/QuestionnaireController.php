@@ -187,24 +187,19 @@ class QuestionnaireController extends Controller
             $questions = $data->questions;
 
             foreach ($questions as $index => $question) {
-                $file_index_key = array_keys($files);
                 $file = null;
-
-                if ($files) {
-                    if (array_key_exists($file_index_key[$index], $files)) {
-                        $file = FileHelper::createFile($files[$file_index_key[$index]], File::QUESTIONNAIRE_PATH);
-                    } elseif (isset($question->file) && $question->file->id) {
-                        // CLone files.
-                        $originalFile = File::findOrFail($question->file->id);
-                        $file = FileHelper::replicateFile($originalFile);
-                    }
+                if (array_key_exists($index, $files)) {
+                    $file = FileHelper::createFile($files[$index], File::QUESTIONNAIRE_PATH);
+                } else if (!empty($question->file?->id)) {
+                    // CLone file
+                    $originalFile = File::findOrFail($question->file->id);
+                    $file = FileHelper::replicateFile($originalFile);
                 }
-
                 $newQuestion = Question::create([
                     'title' => $question->title,
                     'type' => $question->type,
                     'questionnaire_id' => $questionnaire->id,
-                    'file_id' => $file ? $file->id : null,
+                    'file_id' => $file?->id,
                     'order' => $index,
                     'mark_as_countable' => $question->mark_as_countable ?? false,
                     'mandatory' => isset($question->mandatory) && is_bool($question->mandatory) ? $question->mandatory : false,
@@ -444,7 +439,7 @@ class QuestionnaireController extends Controller
         try {
             $files = $request->allFiles();
             $data = json_decode($request->get('data'));
-            $noChangedFiles = $request->get('no_changed_files', []);
+            $noFileQuestions = $request->get('no_file_questions', []);
 
             $questionnaire->update([
                 'title' => $data->title,
@@ -481,19 +476,19 @@ class QuestionnaireController extends Controller
                     ]
                 );
 
-                if (!in_array($questionObj->id, (array) $noChangedFiles)) {
-                    $oldFile = File::find($questionObj->file_id);
+                if (in_array($questionObj->id, (array) $noFileQuestions)) {
+                    if ($questionObj->file_id) {
+                        File::find($questionObj->file_id)?->delete();
+                    }
+                }
 
-                    if ($oldFile) {
-                        $oldFile->delete();
+                if (array_key_exists($index, $files)) {
+                    if ($questionObj->file_id) {
+                        File::find($questionObj->file_id)?->delete();
                     }
 
-                    $file_index_key = array_keys($files);
-
-                    if ($files && array_key_exists($file_index_key[$index], $files)) {
-                        $file = FileHelper::createFile($files[$file_index_key[$index]], File::QUESTIONNAIRE_PATH);
-                        $questionObj->update(['file_id' => $file ? $file->id : null]);
-                    }
+                    $file = FileHelper::createFile($files[$index], File::QUESTIONNAIRE_PATH);
+                    $questionObj->update(['file_id' => $file?->id]);
                 }
 
                 if ($questionObj->wasRecentlyCreated) {
@@ -523,7 +518,7 @@ class QuestionnaireController extends Controller
                             [
                                 'description' => $answer->description ?? [],
                                 'question_id' => $questionObj->id,
-                                'value' => $answer->value ?? null,
+                                'value' => isset($answer->value) && is_numeric($answer->value) ? $answer->value : null,
                                 'threshold' => isset($answer->threshold) && is_numeric($answer->threshold) ? $answer->threshold : null,
                             ]
                         );
