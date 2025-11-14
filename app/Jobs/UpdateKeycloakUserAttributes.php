@@ -41,13 +41,13 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
         $countryIds = $this->data['country_ids'] ?? [];
         $clinicIds = $this->data['clinic_ids'] ?? [];
         $attributes = $this->data['attributes'] ?? [];
-        $newEnforcement = $attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
+        $newEnforcement = $attributes['mfa_enforcement'] ?? null;
 
         try {
             if (
                 !$role ||
                 empty($attributes) ||
-                empty($attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null)
+                empty($attributes['mfa_enforcement'] ?? null)
             ) {
                 JobTracker::where('job_id', $this->jobId)->update([
                     'status' => JobTracker::FAILED,
@@ -58,7 +58,7 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
 
             $rolesToUpdate = [];
 
-            switch($attributes[MfaSetting::MFA_KEY_ENFORCEMENT]) {
+            switch($attributes['mfa_enforcement']) {
                 case MfaSetting::MFA_DISABLE:
                 case MfaSetting::MFA_RECOMMEND:
                 case MfaSetting::MFA_ENFORCE:
@@ -151,8 +151,14 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                         $existingAttributes = $userData['attributes'] ?? [];
 
                         $existingAttributes['available_enforcement'] = $newEnforcement;
-                        $existingAttributes['mfa_expiration_duration'] = $attributes['mfa_expiration_duration'];
-                        $existingAttributes['skip_mfa_setup_duration'] = $attributes['skip_mfa_setup_duration'];
+
+                        if (isset($attributes['mfa_expiration_duration'])) {
+                            $existingAttributes[MfaSetting::MFA_MAX_AGE] = $attributes['mfa_expiration_duration'];
+                        }
+
+                        if (isset($attributes['skip_mfa_setup_duration'])) {
+                            $existingAttributes[MfaSetting::MFA_SKIP_MAX_AGE] = $attributes['skip_mfa_setup_duration'];
+                        }
 
                         $oldEnforcement = isset($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
                             ? (is_array($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
@@ -170,16 +176,10 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                                 (MfaSetting::ENFORCEMENT_LEVEL[$authUserEnforcement] ?? 0)
                             )
                         ) {
-                            foreach ($attributes as $key => $value) {
-                                if (
-                                    $key === MfaSetting::MFA_KEY_ENFORCEMENT &&
-                                    $attributes[$key] === MfaSetting::MFA_DISABLE
-                                ) {
-                                    KeycloakHelper::deleteUserCredentialByType($user->email, 'otp');
-                                }
-
-                                $existingAttributes[$key] = is_array($value) ? $value : [$value];
+                            if ($newEnforcement === MfaSetting::MFA_DISABLE) {
+                                KeycloakHelper::deleteUserCredentialByType($user->email, 'otp');
                             }
+                            $existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT] = $newEnforcement;
                         }
 
                         KeycloakHelper::updateUserAttributesById($userData['id'], $existingAttributes);
@@ -196,6 +196,7 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
             }
 
             $mfaSettingQuery = MfaSetting::query()
+                ->whereHas('user', fn($query) => $query->whereIn('type', $roleMfaSettings))
                 ->whereIn('role', $roleMfaSettings)
                 ->where(function ($query) use ($countryIds, $clinicIds) {
                     if (!empty($countryIds)) {
