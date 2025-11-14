@@ -151,6 +151,8 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                         $existingAttributes = $userData['attributes'] ?? [];
 
                         $existingAttributes['available_enforcement'] = $newEnforcement;
+                        $existingAttributes['mfa_expiration_duration'] = $attributes['mfa_expiration_duration'];
+                        $existingAttributes['skip_mfa_setup_duration'] = $attributes['skip_mfa_setup_duration'];
 
                         $oldEnforcement = isset($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
                             ? (is_array($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
@@ -159,8 +161,8 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                             : null;
 
                         if (
-                            $newEnforcement !== null &&
-                            (MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement] ?? 0) <
+                            $oldEnforcement == null ||
+                            (MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement] ?? 0) <=
                             (MfaSetting::ENFORCEMENT_LEVEL[$oldEnforcement] ?? 4) &&
                             (
                                 $authUserEnforcement == null ||
