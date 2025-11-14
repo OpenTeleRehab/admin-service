@@ -14,8 +14,10 @@ class MfaSetting extends Model
     const MFA_RECOMMEND = 'recommend';
     const MFA_DISABLE = 'skip';
 
-    // Specific attribute keys
-    const MFA_KEY_ENFORCEMENT = 'mfa_enforcement';
+    // Specific Keycloak keys
+    const MFA_KEY_ENFORCEMENT = 'mfaPolicy';
+    const MFA_MAX_AGE = 'trustedDeviceMaxAge';
+    const MFA_SKIP_MAX_AGE = 'skipMfaMaxAge';
 
     const ROLE_LEVEL = [
         'organization_admin' => 1,
