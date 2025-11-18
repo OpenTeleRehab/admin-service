@@ -15,7 +15,7 @@ class MfaSetting extends Model
     const MFA_DISABLE = 'skip';
 
     // Specific Keycloak keys
-    const MFA_KEY_ENFORCEMENT = 'mfaPolicy';
+    const MFA_KEY_ENFORCEMENT = 'mfaEnforcement';
     const MFA_MAX_AGE = 'trustedDeviceMaxAge';
     const MFA_SKIP_MAX_AGE = 'skipMfaMaxAge';
 
