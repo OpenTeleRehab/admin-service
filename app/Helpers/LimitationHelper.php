@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Models\Country;
 use App\Models\Organization;
+use App\Models\Region;
 use Illuminate\Support\Facades\Auth;
 
 class LimitationHelper
@@ -52,6 +53,26 @@ class LimitationHelper
         $remainingTherapistLimit = max(0, $country->therapist_limit - $therapistLimitUsed);
         $remainingPhcWorkerLimit = max(0, $country->phc_worker_limit - $phcWorkerLimitUsed);
 
+        return [
+            'therapist_limit_used' => $therapistLimitUsed,
+            'remaining_therapist_limit' => $remainingTherapistLimit,
+            'phc_worker_limit_used' => $phcWorkerLimitUsed,
+            'remaining_phc_worker_limit' => $remainingPhcWorkerLimit,
+        ];
+    }
+
+    /**
+     * Get the limitation for a the region.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public static function regionLimitation($region)
+    {
+        $therapistLimitUsed = $region->provinces->sum('therapist_limit');
+        $phcWorkerLimitUsed = $region->provinces->sum('phc_worker_limit');
+
+        $remainingTherapistLimit = max(0, $region->therapist_limit - $therapistLimitUsed);
+        $remainingPhcWorkerLimit = max(0, $region->phc_worker_limit - $phcWorkerLimitUsed);
         return [
             'therapist_limit_used' => $therapistLimitUsed,
             'remaining_therapist_limit' => $remainingTherapistLimit,

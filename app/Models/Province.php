@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Region extends Model
+class Province extends Model
 {
     use SoftDeletes, LogsActivity;
 
@@ -18,7 +18,7 @@ class Region extends Model
      * @var array
      */
     protected $fillable = [
-        'country_id',
+        'region_id',
         'name',
         'therapist_limit',
         'phc_worker_limit',
@@ -29,29 +29,9 @@ class Region extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function country()
+    public function region()
     {
-        return $this->belongsTo(Country::class);
-    }
-
-    /**
-     * Get all clinices that belongs to this region
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function clinics()
-    {
-        return $this->hasMany(Clinic::class);
-    }
-
-    /**
-     * Get the provinces associated with this model.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function provinces()
-    {
-        return $this->hasMany(Province::class);
+        return $this->belongsTo(Region::class);
     }
 
     /**
@@ -77,11 +57,11 @@ class Region extends Model
     {
         parent::boot();
 
-        self::creating(function ($region) {
+        self::creating(function ($province) {
             $user = Auth::user();
 
-            if ($user->country_id) {
-                $region->country_id = $user->country_id;
+            if ($user->region_id) {
+                $province->region_id = $user->region_id;
             }
         });
     }

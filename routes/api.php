@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AssistiveTechnologyController;
+use App\Http\Controllers\AssistiveTechnologyController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChartController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\ColorSchemeController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DownloadTrackerController;
+use App\Http\Controllers\EducationMaterialController;
 use App\Http\Controllers\EducationMaterialController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\ExportController;
@@ -21,6 +23,7 @@ use App\Http\Controllers\HealthConditionController;
 use App\Http\Controllers\HealthConditionGroupController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
+use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\JobTrackerController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MfaSettingController;
@@ -28,6 +31,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\QuestionnaireController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SettingController;
@@ -309,7 +313,13 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Region
     Route::apiResource('regions', RegionController::class)->middleware('role:manage_region,view_region_list');
-    Route::get('regions/{region}/limitation', [RegionController::class, 'limitation'])->middleware('role:manage_region');
+    Route::get('region-limitation', [RegionController::class, 'getLimitation'])->middleware('role:view_region_list');
+
+    // Province
+    Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province, view_province_list');
+    Route::post('provinces', [ProvinceController::class, 'store'])->middleware('role:manage_province');
+    Route::put('provinces/{province}', [ProvinceController::class, 'update'])->middleware('role:manage_province');
+    Route::delete('provinces/{province}', [ProvinceController::class, 'destroy'])->middleware('role:manage_province');
 });
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);

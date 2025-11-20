@@ -15,7 +15,7 @@ class SetupKeycloakPermissions extends Command
 
     public function handle()
     {
-        $groups = ['library_admin'];
+        $groups = ['library_admin', 'region_admin'];
         $roles = [
             'view_profession',
             'view_clinic_list',
@@ -55,6 +55,10 @@ class SetupKeycloakPermissions extends Command
             'manage_patient',
             'view_country_therapist_limit',
             'view_patient_list_by_therapist_ids',
+            'manage_region',
+            'view_region_list',
+            'manage_province',
+            'view_province_list',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -139,6 +143,7 @@ class SetupKeycloakPermissions extends Command
                 'view_number_of_clinic_therapist',
                 'view_exercise',
                 'access_all',
+                'mange_region'
             ],
             'clinic_admin' => [
                 'view_profession',
@@ -194,6 +199,23 @@ class SetupKeycloakPermissions extends Command
                 'view_default_limited_patient',
                 'view_number_of_clinic_therapist',
                 'view_category_tree',
+            ],
+            'region_admin' => [
+                'view_organization',
+                'submit_survey',
+                'skip_survey',
+                'manage_own_profile',
+                'manage_global_patient',
+                'view_patient_treatment_plan',
+                'view_patient_treatment_plan_detail',
+                'manage_global_at_patient',
+                'view_audit_log',
+                'view_dashboard',
+                'view_language',
+                'view_country_therapist_limit',
+                'view_region_list',
+                'manage_province',
+                'manage_clinic'
             ],
         ];
 
