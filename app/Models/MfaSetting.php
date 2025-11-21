@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class MfaSetting extends Model
 {
@@ -40,9 +40,9 @@ class MfaSetting extends Model
         'organizations',
         'country_ids',
         'clinic_ids',
-        'attributes',
-        'created_by',
-        'updated_by',
+        'mfa_enforcement',
+        'mfa_expiration_duration',
+        'skip_mfa_setup_duration',
     ];
 
     /**
@@ -64,14 +64,27 @@ class MfaSetting extends Model
     {
         static::creating(function ($model) {
             if (Auth::check()) {
+                $model->created_by_role = Auth::user()->type;
                 $model->created_by = Auth::id();
                 $model->updated_by = Auth::id();
+            }
+
+            $hiOrganization = Organization::where('sub_domain_name', env('APP_NAME'))->first();
+
+            if (Auth::user()->type !== User::ADMIN_GROUP_SUPER_ADMIN) {
+                $model->organizations = [$hiOrganization->id];
             }
         });
 
         static::updating(function ($model) {
             if (Auth::check()) {
                 $model->updated_by = Auth::id();
+            }
+
+            $hiOrganization = Organization::where('sub_domain_name', env('APP_NAME'))->first();
+
+            if (Auth::user()?->type !== User::ADMIN_GROUP_SUPER_ADMIN && $hiOrganization) {
+                $model->organizations = [$hiOrganization->id];
             }
         });
     }
