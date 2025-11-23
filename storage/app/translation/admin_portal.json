@@ -961,12 +961,12 @@
     "mfa.mfa_enforcement": "Enforcement",
     "mfa.mfa_expiration_duration": "Expiration",
     "mfa.skip_mfa_setup_duration": "Skip setup duration",
-    "mfa.mfa_enforcement.label": "Multi factor authentication enforcement",
-    "mfa.mfa_expiration_duration.label": "Multi factor authentication expiration duration (after setup)",
-    "mfa.skip_mfa_setup_duration.label": "Skip multi factor authentication setup duration",
-    "mfa.new": "Create Multi factor authentication setting",
-    "mfa.edit": "Edit Multi factor authentication setting",
-    "success_message.mfa.update": "Multi factor authentication setting updated successfully",
+    "mfa.mfa_enforcement.label": "MFA Option",
+    "mfa.mfa_expiration_duration.label": "Expiration duration (after setup)",
+    "mfa.skip_mfa_setup_duration.label": "Skip setup duration",
+    "mfa.new": "Create MFA Setting",
+    "mfa.edit": "Edit MFA Setting",
+    "success_message.mfa.update": "MFA setting updated successfully",
     "error_message.mfa.update": "Multi factor authentication setting cannot be updated",
     "toast_title.edit_mfa_setting": "Edit Multi factor authentication setting",
     "mfa.configs": "Configurations",
@@ -978,5 +978,7 @@
     "mfa.progress.status.completed": "Completed",
     "mfa.progress.status.failed": "Failed",
     "mfa.status": "Progress status",
-    "mfa.second": "Second"
+    "mfa.second": "Second",
+    "mfa.setting.success_message.update": "MFA setting updated successfully",
+    "mfa.setting.success_message.create": "MFA setting created successfully"
 }

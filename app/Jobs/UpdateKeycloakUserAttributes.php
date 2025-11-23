@@ -215,11 +215,11 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                 });
 
             $mfaSettings = $mfaSettingQuery->get();
-            
+
             foreach($mfaSettings as $mfaSetting) {
                 $currentEnforcement = $mfaSetting->attributes[MfaSetting::MFA_KEY_ENFORCEMENT] ?? null;
                 if (
-                    $currentEnforcement && 
+                    $currentEnforcement &&
                     MfaSetting::ENFORCEMENT_LEVEL[$currentEnforcement] >
                     MfaSetting::ENFORCEMENT_LEVEL[$newEnforcement]
                 ) {
