@@ -17,7 +17,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
 
 class UpdateFederatedUsersMfaJob implements ShouldQueue
 {
@@ -89,7 +88,11 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
             }
 
             foreach ($mfaSettings as $mfaSetting) {
-                if (MfaSettingHelper::validateMfaEnforcement($mfaSetting, $this->mfaSetting->mfa_enforcement)) {
+                if ($this->checkRoleLevel($mfaSetting->created_by_role) >= $this->checkRoleLevel($this->authUser->type)) {
+                    continue;
+                }
+
+                if (MfaSettingHelper::validateMfaEnforcement($mfaSetting, $this->mfaSetting->mfa_enforcement) && in_array($hiOrganization?->id, $mfaSetting->organizations)) {
                     $mfaSetting->update(['mfa_enforcement' => $this->mfaSetting->mfa_enforcement]);
                 }
             }
