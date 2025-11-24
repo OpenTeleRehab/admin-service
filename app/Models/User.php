@@ -21,6 +21,7 @@ class User extends Authenticatable
     const ADMIN_GROUP_COUNTRY_ADMIN = 'country_admin';
     const ADMIN_GROUP_CLINIC_ADMIN = 'clinic_admin';
     const ADMIN_GROUP_REGIONAL_ADMIN = 'regional_admin';
+    const ADMIN_GROUP_PHC_SERVICE_ADMIN = 'phc_service_admin';
     const GROUP_TRANSLATOR = 'translator';
     const GROUP_THERAPIST = 'therapist';
     const GROUP_PATIENT = 'patient';
@@ -31,7 +32,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'first_name', 'last_name', 'email', 'password', 'type', 'country_id', 'clinic_id', 'gender', 'language_id', 'enabled', 'last_login', 'region_id'
+        'first_name', 'last_name', 'email', 'password', 'type', 'country_id', 'clinic_id', 'gender', 'language_id', 'enabled', 'last_login', 'region_id', 'phc_service_id'
     ];
 
      /**
@@ -107,6 +108,14 @@ class User extends Authenticatable
     public function clinic()
     {
         return $this->belongsTo(Clinic::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function phcService()
+    {
+        return $this->belongsTo(PhcService::class);
     }
 
     /**

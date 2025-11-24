@@ -59,10 +59,10 @@ Route::get('public/privacy-policy/{id}', [PrivacyPolicyController::class, 'show'
 
 Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Admin
-    Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin');
-    Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin');
+    Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin, manage_phc_service_admin');
+    Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin, manage_phc_service_admin');
     Route::post('library/delete/by-therapist', [AdminController::class, 'deleteLibraryByTherapist'])->middleware('role:access_all');
-    Route::apiResource('admin', AdminController::class)->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin,manage_regional_admin');
+    Route::apiResource('admin', AdminController::class)->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin,manage_regional_admin, manage_phc_service_admin');
 
     // Mfa Config
     Route::get('mfa-settings', [MfaSettingController::class, 'index'])->middleware('role:manage_mfa_policy');
@@ -324,6 +324,8 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // PHC Service
     Route::get('phc-services', [PhcServiceController::class, 'index'])->middleware('role:manage_phc_service, view_phc_service_list');
+    Route::get('phc-services-by-province', [PhcServiceController::class, 'getByProvince'])->middleware('role:manage_phc_service');
+    Route::get('phc-services-by-region', [PhcServiceController::class, 'getByRegion'])->middleware('role:manage_phc_service');
     Route::post('phc-services', [PhcServiceController::class, 'store'])->middleware('role:manage_phc_service');
     Route::put('phc-services/{phc_service}', [PhcServiceController::class, 'update'])->middleware('role:manage_phc_service');
     Route::delete('phc-services/{phc_service}', [PhcServiceController::class, 'destroy'])->middleware('role:manage_phc_service');

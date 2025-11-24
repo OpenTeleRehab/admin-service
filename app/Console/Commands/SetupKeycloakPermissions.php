@@ -15,7 +15,7 @@ class SetupKeycloakPermissions extends Command
 
     public function handle()
     {
-        $groups = ['library_admin', 'region_admin'];
+        $groups = ['library_admin', 'region_admin', 'phc_service_admin'];
         $roles = [
             'view_profession',
             'view_clinic_list',
@@ -61,6 +61,7 @@ class SetupKeycloakPermissions extends Command
             'view_province_list',
             'manage_phc_service',
             'view_phc_service_list',
+            'manage_phc_service_admin',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -220,7 +221,22 @@ class SetupKeycloakPermissions extends Command
                 'manage_province',
                 'manage_clinic',
                 'manage_phc_service',
+                'manage_phc_service_admin'
             ],
+            'phc_service_admin' => [
+                'view_profession',
+                'view_organization',
+                'view_default_limited_patient',
+                'submit_survey',
+                'skip_survey',
+                'manage_own_profile',
+                'manage_global_patient',
+                'manage_global_at_patient',
+                'view_audit_log',
+                'view_dashboard',
+                'view_language',
+            ],
+
         ];
 
         $this->line("Creating groups...");

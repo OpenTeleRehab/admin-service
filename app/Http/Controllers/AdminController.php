@@ -85,9 +85,14 @@ class AdminController extends Controller
                     ->orWhere('clinics.name', 'like', '%' . $data['search_value'] . '%');
             });
 
-        if (Auth::user()->country_id) {
-            $countryId = Auth::user()->country_id;
+        $authUser = Auth::user();
+        if ($authUser->country_id) {
+            $countryId = $authUser->country_id;
             $query->where('users.country_id', $countryId);
+        }
+
+        if ($authUser->region_id) {
+            $query->where('users.region_id', $authUser->region_id);
         }
 
         if (isset($data['filters'])) {
@@ -109,6 +114,8 @@ class AdminController extends Controller
                         $endDate->format('Y-m-d');
                         $query->whereDate('last_login', '>=', $startDate)
                             ->whereDate('last_login', '<=', $endDate);
+                    } elseif ($filterObj->columnName === 'phc_service') {
+                        $query->where('phc_service_id', $filterObj->value);
                     } else {
                         $query->where($filterObj->columnName, 'like', '%' . $filterObj->value . '%');
                     }
@@ -220,6 +227,10 @@ class AdminController extends Controller
             'region_id' => [
                 Rule::requiredIf(fn() => $request->type === UserType::REGIONAL_ADMIN->value),
                 'exists:regions,id',
+            ],
+            'phc_service_id' => [
+                Rule::requiredIf(fn() => $request->type === UserType::PHC_SERVICE_ADMIN->value),
+                'exists:phc_services,id',
             ],
         ], [
             'email.unique' => 'error_message.email_exists',
@@ -352,6 +363,10 @@ class AdminController extends Controller
             'region_id' => [
                 Rule::requiredIf(fn() => $request->type === UserType::REGIONAL_ADMIN->value),
                 'exists:regions,id',
+            ],
+            'phc_service_id' => [
+                Rule::requiredIf(fn() => $request->type === UserType::PHC_SERVICE_ADMIN->value),
+                'exists:phc_services,id',
             ],
         ]);
 

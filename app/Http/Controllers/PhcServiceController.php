@@ -269,4 +269,30 @@ class PhcServiceController extends Controller
             'data' => $phcWorkerLimitTotal
         ];
     }
+
+    /**
+     * Get PHC Services by province.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getByProvince(Request $request)
+    {
+        $province = Province::findOrFail($request->get('province_id'));
+        $phcServices = $province->phcServices;
+
+        return response()->json(['data' => PhcServiceResource::collection($phcServices)], 200);
+    }
+
+    /**
+     * Get the PHC services associated with the user's region.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getByRegion()
+    {
+        $phcServices = Auth::user()->region->phcServices;
+
+        return response()->json(['data' => $phcServices], 200);
+    }
 }

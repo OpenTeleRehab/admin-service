@@ -71,6 +71,8 @@
     "common.name.placeholder": "Enter name",
     "common.name.error": "Please fill in name",
     "common.province.error": "Please select a province",
+    "common.phc_service": "PHC Service",
+    "common.phc_service_admin.management": "PHC Service Admins manage PHC service workers",
     "toast_title.translation.approve": "Approve Translation",
     "toast_title.translation.reject": "Reject Translation",
     "success_message.translation.approve": "Translation approved successfully",
@@ -99,6 +101,7 @@
     "common.country_admin": "Country Admin",
     "common.clinic_admin": "Clinic Admin",
     "common.regional_admin": "Regional Admin",
+    "common.phc_service_admin": "PHC Service Admin",
     "common.on_going.treatment_let": "On-going Treatment Limit",
     "common.assigned_patient": "Assigned Patient",
     "common.language": "Language",
@@ -1073,5 +1076,11 @@
     "error.phc_service.phc_worker_limit.greater_than.province.phc_worker_limit": "The PHC service's phc worker limit cannot exceed province phc worker limit.",
     "error.phc_service.phc_worker_limit.equal_to.zero": "PHC Worker limit must be greater than 0",
     "error.province.phc_worker_limit.less_than.total.clinic.phc_worker_limit": "The phc worker limit can not set less than total phc worker of rehab service",
-    "error.province.therapist_limit.less_than.total.clinic.therapist_limit": "The therapist limit can not set less than total therapist of rehab service"
+    "error.province.therapist_limit.less_than.total.clinic.therapist_limit": "The therapist limit can not set less than total therapist of rehab service",
+    "phc_service.placeholder": "Select a PHC Service",
+    "phc_service.required": "Please select a PHC Service",
+    "phc_service_admin.new": "New PHC Service Admin",
+    "phc_service_admin.edit": "Edit PHC Service Admin",
+    "phc_service_admin.delete": "PHC Service Admin Deletion",
+    "toast_title.resend_admin_account": "Resend Email"
 }

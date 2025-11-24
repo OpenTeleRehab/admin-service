@@ -15,4 +15,6 @@ enum UserType: string
     case TRANSLATOR = 'translator';
 
     case REGIONAL_ADMIN = 'regional_admin';
+
+    case PHC_SERVICE_ADMIN = 'phc_service_admin';
 }
