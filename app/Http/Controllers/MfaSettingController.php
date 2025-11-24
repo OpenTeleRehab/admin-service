@@ -61,6 +61,13 @@ class MfaSettingController extends Controller
             'skip_mfa_setup_duration' => 'nullable|integer|min:0',
         ]);
 
+        if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_DISABLE) {
+            $validatedData['mfa_expiration_duration'] = null;
+            $validatedData['skip_mfa_setup_duration'] = null;
+        } else if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_ENFORCE) {
+            $validatedData['skip_mfa_setup_duration'] = null;
+        }
+
         $mfaSettingAboutRole = MfaSettingHelper::getMfaSettingAboveRole($authUser, $validatedData['role']);
 
         if (!MfaSettingHelper::validateMfaEnforcement($mfaSettingAboutRole, $validatedData['mfa_enforcement'])) {
@@ -114,6 +121,13 @@ class MfaSettingController extends Controller
             'mfa_expiration_duration' => 'nullable|integer|min:0',
             'skip_mfa_setup_duration' => 'nullable|integer|min:0',
         ]);
+
+        if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_DISABLE) {
+            $validatedData['mfa_expiration_duration'] = null;
+            $validatedData['skip_mfa_setup_duration'] = null;
+        } else if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_ENFORCE) {
+            $validatedData['skip_mfa_setup_duration'] = null;
+        }
 
         $parentSetting = MfaSettingHelper::getMfaSettingAboveRole($authUser, $validatedData['role']);
 

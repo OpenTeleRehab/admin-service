@@ -642,6 +642,7 @@
     "common.planned": "Planned",
     "common.date_of_birth": "Date Of Birth",
     "common.age": "Age",
+    "common.seconds": "seconds",
     "common.ongoing_treatment_status": "Status",
     "common.diagnostic": "Diagnostic",
     "common.next_appointment": "Next Appointment",
@@ -980,5 +981,7 @@
     "mfa.status": "Progress status",
     "mfa.second": "Second",
     "mfa.setting.success_message.update": "MFA setting updated successfully",
-    "mfa.setting.success_message.create": "MFA setting created successfully"
+    "mfa.setting.success_message.create": "MFA setting created successfully",
+    "mfa.expiration.duration.placeholder": "Please fill expiration duration",
+    "mfa.skip.setup.duration.placeholder": "Please fill skip setup duration"
 }
