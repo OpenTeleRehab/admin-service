@@ -196,6 +196,7 @@ class ProvinceController extends Controller
         ]);
 
         $regionLimitation = LimitationHelper::regionLimitation($region);
+        $provinceLimitation = LimitationHelper::provinceLimitation($province->id);
 
         if ($validatedData['therapist_limit'] > $regionLimitation['remaining_therapist_limit'] + $region->therapist_limit) {
             abort(422, 'error.province.therapist_limit.greater_than.region.therapist_limit');
@@ -203,6 +204,14 @@ class ProvinceController extends Controller
 
         if ($validatedData['phc_worker_limit'] > $regionLimitation['remaining_phc_worker_limit'] + $region->phc_worker_limit) {
             abort(422, 'error.province.phc_worker_limit.greater_than.region.phc_worker_limit');
+        }
+
+        if ($provinceLimitation['therapist_limit_used'] > $validatedData['therapist_limit']) {
+            abort(422, 'error.province.therapist_limit.less_than.total.clinic.therapist_limit');
+        }
+
+        if ($provinceLimitation['phc_worker_limit_used'] > $validatedData['phc_worker_limit']) {
+            abort(422, 'error.province.phc_worker_limit.less_than.total.clinic.phc_worker_limit');
         }
 
         $province->update($validatedData);
