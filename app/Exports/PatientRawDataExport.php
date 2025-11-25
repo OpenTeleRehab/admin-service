@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\HealthCondition;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use App\Models\Forwarder;
@@ -11,7 +12,6 @@ use Carbon\Carbon;
 use App\Helpers\TranslationHelper;
 use App\Models\AssistiveTechnology;
 use App\Models\Country;
-use App\Models\InternationalClassificationDisease;
 use App\Models\Language;
 use App\Models\Questionnaire;
 use App\Models\Question;
@@ -136,15 +136,18 @@ class PatientRawDataExport
 
             if (count((array) $patient->treatmentPlans) > 0) {
                 foreach ($patient->treatmentPlans as $index => $treatmentPlan) {
-                    $disease = InternationalClassificationDisease::find($treatmentPlan->disease_id);
-                    $diseasName = $disease?->getTranslation('name', $language?->code ?? 'en');
+                    $healthCondition = HealthCondition::find($treatmentPlan->health_condition_id);
+                    $healthConditionName = $healthCondition?->getTranslation('title', $language?->code ?? 'en');
+                    $healthConditionGroup = $healthCondition->parent;
+                    $healthConditionGroupName = $healthConditionGroup?->getTranslation('title', $language?->code ?? 'en');
                     $startDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->start_date)->format('Y-m-d');
                     $endDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->end_date)->format('Y-m-d');
                     $treatmentStatus = self::getTreatmentPlanStatus($startDate, $endDate, $translations);
 
                     $treatmentPlanData = array_merge($patientData, [
                         $treatmentPlan->name,
-                        $diseasName,
+                        $healthConditionGroupName,
+                        $healthConditionName,
                         $treatmentStatus,
                         $startDate,
                         $endDate,
@@ -182,7 +185,8 @@ class PatientRawDataExport
                             $surveyTitle = $patientTreatmentSurvey->questionnaire->getTranslation('title', $language?->code ?? 'en');
                             $patientTreatmentPlanSurveyData[] = array_merge($patientData, [
                                 $treatmentPlan->name,
-                                $diseasName,
+                                $healthConditionGroupName,
+                                $healthConditionName,
                                 $treatmentStatus,
                                 $startDate,
                                 $endDate,
@@ -195,7 +199,8 @@ class PatientRawDataExport
                     } else {
                         $patientTreatmentPlanSurveyData[] = array_merge($patientData, [
                             $treatmentPlan->name,
-                            $diseasName,
+                            $healthConditionGroupName,
+                            $healthConditionName,
                             $treatmentStatus,
                             $startDate,
                             $endDate,
@@ -217,7 +222,8 @@ class PatientRawDataExport
 
                                 $patientTreatmentQuestionnaireStartEndData[] = array_merge($patientData, [
                                     $treatmentPlan->name,
-                                    $diseasName,
+                                    $healthConditionGroupName,
+                                    $healthConditionName,
                                     $treatmentStatus,
                                     $startDate,
                                     $endDate,
@@ -230,7 +236,8 @@ class PatientRawDataExport
                     } else {
                         $patientTreatmentQuestionnaireStartEndData[] = array_merge($patientData, [
                             $treatmentPlan->name,
-                            $diseasName,
+                            $healthConditionGroupName,
+                            $healthConditionName,
                             $treatmentStatus,
                             $startDate,
                             $endDate,

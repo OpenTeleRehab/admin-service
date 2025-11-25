@@ -17,9 +17,13 @@ use App\Http\Controllers\ForwarderController;
 use App\Http\Controllers\GlobalAssistiveTechnologyPatientController;
 use App\Http\Controllers\GlobalPatientController;
 use App\Http\Controllers\GuidancePageController;
+use App\Http\Controllers\HealthConditionController;
+use App\Http\Controllers\HealthConditionGroupController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InternationalClassificationDiseaseController;
+use App\Http\Controllers\JobTrackerController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\MfaSettingController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProfessionController;
@@ -56,6 +60,11 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin');
     Route::post('library/delete/by-therapist', [AdminController::class, 'deleteLibraryByTherapist'])->middleware('role:access_all');
     Route::apiResource('admin', AdminController::class)->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin');
+
+    // Mfa Config
+    Route::get('mfa-settings', [MfaSettingController::class, 'index'])->middleware('role:manage_mfa_policy');
+    Route::apiResource('mfa-settings', MfaSettingController::class)->middleware('role:manage_mfa_policy');
+    Route::get('mfa-settings-validation', [MfaSettingController::class, 'validateMfaEnforcementAgainstHigherRole'])->middleware('role:manage_mfa_policy');
 
     // Translator
     Route::post('translator/updateStatus/{user}', [TranslatorController::class, 'updateStatus'])->middleware('role:manage_translator');
@@ -206,6 +215,12 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('survey/submit', [SurveyController::class, 'submit'])->middleware('role:submit_survey');
     Route::post('survey/skip', [SurveyController::class, 'skipSurvey'])->middleware('role:skip_survey');
 
+    // Health Condition Group
+    Route::apiResource('health-condition-group', HealthConditionGroupController::class)->middleware('role:manage_health_condition');
+
+    // Health Condition
+    Route::apiResource('health-condition', HealthConditionController::class)->middleware('role:manage_health_condition');
+
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData'])->middleware('role:view_category_tree');
     Route::get('get-categories-for-open-library', [CategoryController::class, 'getCategoriesForOpenLibrary'])->middleware('role:get_library_category');
@@ -311,3 +326,4 @@ Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'ind
 Route::get('clinic/get-by-id/{clinic}', [ClinicController::class, 'getById']);
 Route::get('get-publish-survey', [SurveyController::class, 'getPublishSurveyByUserType']);
 Route::post('audit-logs', [AuditLogController::class, 'store']);
+Route::get('job-trackers/{jobId}', [JobTrackerController::class, 'stream']);
