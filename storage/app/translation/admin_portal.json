@@ -94,6 +94,7 @@
     "common.global_admin": "Global Admin",
     "common.country_admin": "Country Admin",
     "common.clinic_admin": "Clinic Admin",
+    "common.regional_admin": "Regional Admin",
     "common.on_going.treatment_let": "On-going Treatment Limit",
     "common.assigned_patient": "Assigned Patient",
     "common.language": "Language",
@@ -1047,5 +1048,8 @@
     "error.province.therapist_limit.equal_to.zero": "Therapist limit must be greater than 0",
     "error.province.phc_worker_limit.equal_to.zero": "PHC worker limit must be greater than 0",
     "error.province.phc_worker_limit.greater_than.region.phc_worker_limit": "The province's phc worker limit cannot exceed region phc worker limit.",
-    "error.province.therapist_limit.greater_than.region.therapist_limit": "The province's therapist limit cannot exceed region therapist limit."
+    "error.province.therapist_limit.greater_than.region.therapist_limit": "The province's therapist limit cannot exceed region therapist limit.",
+    "error.clinic.therapist_limit": "Please fill in therapist limit",
+    "error.clinic.therapist_limit.less_than.total.therapist": "The therapist limit can not set less than total therapists of the clinic",
+    "error.clinic.therapist_limit.greater_than.province.therapist_limit": "The therapist limit can not be greater than the province's therapist limit"
 }

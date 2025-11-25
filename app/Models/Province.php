@@ -35,6 +35,14 @@ class Province extends Model
     }
 
     /**
+     * Get all clinics for the province.
+     */
+    public function clinics()
+    {
+        return $this->hasMany(Clinic::class);
+    }
+
+    /**
      * Get the options for activity logging.
      *
      * @return \Spatie\Activitylog\LogOptions

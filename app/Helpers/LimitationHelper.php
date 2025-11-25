@@ -3,8 +3,8 @@
 namespace App\Helpers;
 
 use App\Models\Country;
+use App\Models\Province;
 use App\Models\Organization;
-use App\Models\Region;
 use Illuminate\Support\Facades\Auth;
 
 class LimitationHelper
@@ -23,8 +23,8 @@ class LimitationHelper
         $therapistLimitUsed = $countries->sum('therapist_limit');
         $phcWorkerLimitUsed = $countries->sum('phc_worker_limit');
 
-        $remainingTherapistLimit = max(0, $organization->max_number_of_therapist - $therapistLimitUsed);
-        $remainingPhcWorkerLimit = max(0, $organization->max_number_of_phc_worker - $phcWorkerLimitUsed);
+        $remainingTherapistLimit = $organization->max_number_of_therapist - $therapistLimitUsed;
+        $remainingPhcWorkerLimit = $organization->max_number_of_phc_worker - $phcWorkerLimitUsed;
 
         return [
             'therapist_limit_used' => $therapistLimitUsed,
@@ -50,8 +50,8 @@ class LimitationHelper
         $therapistLimitUsed = $country->regions->sum('therapist_limit');
         $phcWorkerLimitUsed = $country->regions->sum('phc_worker_limit');
 
-        $remainingTherapistLimit = max(0, $country->therapist_limit - $therapistLimitUsed);
-        $remainingPhcWorkerLimit = max(0, $country->phc_worker_limit - $phcWorkerLimitUsed);
+        $remainingTherapistLimit = $country->therapist_limit - $therapistLimitUsed;
+        $remainingPhcWorkerLimit = $country->phc_worker_limit - $phcWorkerLimitUsed;
 
         return [
             'therapist_limit_used' => $therapistLimitUsed,
@@ -71,8 +71,44 @@ class LimitationHelper
         $therapistLimitUsed = $region->provinces->sum('therapist_limit');
         $phcWorkerLimitUsed = $region->provinces->sum('phc_worker_limit');
 
-        $remainingTherapistLimit = max(0, $region->therapist_limit - $therapistLimitUsed);
-        $remainingPhcWorkerLimit = max(0, $region->phc_worker_limit - $phcWorkerLimitUsed);
+        $remainingTherapistLimit = $region->therapist_limit - $therapistLimitUsed;
+        $remainingPhcWorkerLimit = $region->phc_worker_limit - $phcWorkerLimitUsed;
+        return [
+            'therapist_limit_used' => $therapistLimitUsed,
+            'remaining_therapist_limit' => $remainingTherapistLimit,
+            'phc_worker_limit_used' => $phcWorkerLimitUsed,
+            'remaining_phc_worker_limit' => $remainingPhcWorkerLimit,
+        ];
+    }
+
+    /**
+     * Get the limitation for a the province.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public static function provinceLimitation($provinceId)
+    {
+        $province = Province::findOrFail($provinceId);
+        $therapistLimitUsed = $province->clinics->sum('therapist_limit');
+        $phcWorkerLimitUsed = $province->clinics->sum('phc_worker_limit');
+        $remainingTherapistLimit = $province->therapist_limit - $therapistLimitUsed;
+        $remainingPhcWorkerLimit = $province->phc_worker_limit - $phcWorkerLimitUsed;
+
+        return [
+            'therapist_limit_used' => $therapistLimitUsed,
+            'remaining_therapist_limit' => $remainingTherapistLimit,
+            'phc_worker_limit_used' => $phcWorkerLimitUsed,
+            'remaining_phc_worker_limit' => $remainingPhcWorkerLimit,
+        ];
+    }
+
+    public static function clinicLimitation($clinic)
+    {
+        $therapistLimitUsed = $clinic->therapists()->count();
+        $phcWorkerLimitUsed = $clinic->phcWorkers()->count();
+        $remainingTherapistLimit = max(0, $clinic->therapist_limit - $therapistLimitUsed);
+        $remainingPhcWorkerLimit = max(0, $clinic->phc_worker_limit - $phcWorkerLimitUsed);
+
         return [
             'therapist_limit_used' => $therapistLimitUsed,
             'remaining_therapist_limit' => $remainingTherapistLimit,

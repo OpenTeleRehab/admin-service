@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\KeycloakHelper;
-use App\Http\Resources\ClinicResource;
+use App\Models\User;
 use App\Models\Clinic;
 use App\Models\Country;
 use App\Models\Forwarder;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Helpers\KeycloakHelper;
+use App\Helpers\LimitationHelper;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Http\Resources\ClinicResource;
 
 define("KEYCLOAK_USERS", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
 
@@ -93,21 +94,21 @@ class ClinicController extends Controller
      *         )
      *     ),
      *     @OA\Parameter(
-     *         name="region",
+     *         name="region_id",
      *         in="query",
      *         description="Region",
      *         required=true,
      *         @OA\Schema(
-     *             type="string"
+     *             type="integer"
      *         )
      *     ),
      *     @OA\Parameter(
-     *         name="province",
+     *         name="province_id",
      *         in="query",
      *         description="Province",
      *         required=false,
      *         @OA\Schema(
-     *             type="string"
+     *             type="integer"
      *         )
      *     ),
      *     @OA\Parameter(
@@ -148,16 +149,24 @@ class ClinicController extends Controller
      */
     public function store(Request $request)
     {
-        Clinic::create([
-            'name' => $request->get('name'),
-            'country_id' => $request->get('country'),
-            'region' => $request->get('region'),
-            'province' => $request->get('province'),
-            'city' => $request->get('city'),
-            'phone' => $request->get('phone'),
-            'dial_code' => $request->get('dial_code'),
-            'therapist_limit' => $request->get('therapist_limit')
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'country_id' => 'required|exists:countries,id',
+            'region_id' => 'required|exists:regions,id',
+            'province_id' => 'nullable|exists:provinces,id',
+            'city' => 'required|string|max:255',
+            'therapist_limit' => 'required|integer|min:0',
+            'phone' => 'nullable|string|max:20',
+            'dial_code' => 'nullable|string|max:10',
         ]);
+
+        $provinceLimitation = LimitationHelper::provinceLimitation($validatedData['province_id']);
+
+        if ($validatedData['therapist_limit'] > $provinceLimitation['remaining_therapist_limit']) {
+            abort(422, 'error.clinic.therapist_limit.greater_than.province.therapist_limit');
+        }
+
+        Clinic::create($validatedData);
 
         return ['success' => true, 'message' => 'success_message.clinic_add'];
     }
@@ -252,15 +261,28 @@ class ClinicController extends Controller
      */
     public function update(Request $request, Clinic $clinic)
     {
-        $clinic->update([
-            'name' => $request->get('name'),
-            'region' => $request->get('region'),
-            'province' => $request->get('province'),
-            'city' => $request->get('city'),
-            'phone' => $request->get('phone'),
-            'dial_code' => $request->get('dial_code'),
-            'therapist_limit' => $request->get('therapist_limit')
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'region_id' => 'required|exists:regions,id',
+            'province_id' => 'nullable|exists:provinces,id',
+            'city' => 'required|string|max:255',
+            'therapist_limit' => 'required|integer|min:0',
+            'phone' => 'nullable|string|max:20',
+            'dial_code' => 'nullable|string|max:10',
         ]);
+
+        $provinceLimitation = LimitationHelper::provinceLimitation($validatedData['province_id']);
+        $totalTherapist = $this->findTotalTherapistByClinic($clinic->id);
+
+        if ($validatedData['therapist_limit'] > $provinceLimitation['remaining_therapist_limit'] + $clinic->therapist_limit) {
+            abort(422, 'error.clinic.therapist_limit.greater_than.province.therapist_limit');
+        }
+
+        if ($totalTherapist > $validatedData['therapist_limit']) {
+            abort(422, 'error.clinic.therapist_limit.less_than.total.therapist');
+        }
+
+        $clinic->update($validatedData);
 
         return ['success' => true, 'message' => 'success_message.clinic_update'];
     }
@@ -456,5 +478,19 @@ class ClinicController extends Controller
     public function getById(Clinic $clinic)
     {
         return new ClinicResource($clinic);
+    }
+
+    private function findTotalTherapistByClinic($clinicId)
+    {
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/chart/get-data-for-clinic-admin', [
+                'clinic_id' => [$clinicId]
+            ]);
+
+        if (!empty($response) && $response->successful()) {
+            return $response->json()['therapistTotal'];
+        }
+
+        return 0;
     }
 }

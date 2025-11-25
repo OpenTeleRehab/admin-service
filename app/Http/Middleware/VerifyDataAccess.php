@@ -47,7 +47,7 @@ class VerifyDataAccess
         }
 
         // Clinic ID check
-        if ($user && isset($clinicId) && $user->type !== User::ADMIN_GROUP_COUNTRY_ADMIN) {
+        if ($user && isset($clinicId) && !in_array($user->type, [User::ADMIN_GROUP_COUNTRY_ADMIN, User::ADMIN_GROUP_REGIONAL_ADMIN])) {
             $decodedClinicId = json_decode($clinicId, true);
             $clinicIds = is_array($decodedClinicId) ? $decodedClinicId : [$decodedClinicId];
 

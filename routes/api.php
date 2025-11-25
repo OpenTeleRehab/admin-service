@@ -317,6 +317,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('provinces', [ProvinceController::class, 'store'])->middleware('role:manage_province');
     Route::put('provinces/{province}', [ProvinceController::class, 'update'])->middleware('role:manage_province');
     Route::delete('provinces/{province}', [ProvinceController::class, 'destroy'])->middleware('role:manage_province');
+    Route::get('provinces-limitation', [ProvinceController::class, 'limitation'])->middleware('role:manage_province, view_province_list');
 });
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);

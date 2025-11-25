@@ -24,7 +24,7 @@ class Clinic extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'country_id', 'region', 'province', 'city', 'therapist_limit', 'phone', 'dial_code'
+        'name', 'country_id', 'region_id', 'province_id', 'city', 'therapist_limit', 'phone', 'dial_code'
     ];
 
     /**
@@ -39,6 +39,26 @@ class Clinic extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->logExcept(['id', 'created_at', 'updated_at']);
+    }
+
+    /**
+     * Get the region that the clinic belongs to.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    /**
+     * Get the province that the clinic belongs to.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
     }
 
     /**

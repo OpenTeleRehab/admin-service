@@ -37,7 +37,7 @@ class ProvinceController extends Controller
      *         )
      *     )
      * )
-     * 
+     *
      * @param \Illuminate\Http\Request $request
      */
     public function index(Request $request)
@@ -49,7 +49,7 @@ class ProvinceController extends Controller
             $query->where('name' ,'like', '%' . $searchValue . '%');
         }
         $provinces = $query->paginate($pageSize);
-        
+
 
         return response()->json(['data' => ProvinceResource::collection($provinces), 'total' => $provinces->total(), 'current_page' => $provinces->currentPage()]);
     }
@@ -216,5 +216,34 @@ class ProvinceController extends Controller
         $province->delete();
 
         return response()->json(['message' => 'province.success_message.delete'], 200);
+    }
+
+    /**
+     * Get the remaining limit for a the country.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function limitation()
+    {
+        $region = Auth::user()->region;
+
+        $provinces = $region->provinces;
+
+        $data = [];
+
+        foreach ($provinces as $province) {
+            $provinceLimitation = LimitationHelper::provinceLimitation($province->id);
+
+            $data[] = [
+                'id' => $province->id,
+                'name' => $province->name,
+                'therapist_limit_used' => $provinceLimitation['therapist_limit_used'],
+                'remaining_therapist_limit' => $provinceLimitation['remaining_therapist_limit'],
+                'phc_worker_limit_used' => $provinceLimitation['phc_worker_limit_used'],
+                'remaining_phc_worker_limit' => $provinceLimitation['remaining_phc_worker_limit'],
+            ];
+        }
+
+        return response()->json(['data' => $data], 200);
     }
 }
