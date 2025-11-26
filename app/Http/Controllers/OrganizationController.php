@@ -45,6 +45,7 @@ class OrganizationController extends Controller
             'max_number_of_phc_worker' => 'required|integer|min:0',
             'max_ongoing_treatment_plan' => 'required|integer|min:0',
             'max_sms_per_week' => 'required|integer|min:0',
+            'max_phc_sms_per_week' => 'required|integer|min:0',
         ], [
             'name.unique' => 'error_message.organization_exists',
             'admin_email.unique' => 'error_message.email_exists',
@@ -77,18 +78,23 @@ class OrganizationController extends Controller
             'max_number_of_phc_worker' => 'required|integer|min:0',
             'max_ongoing_treatment_plan' => 'required|integer|min:0',
             'max_sms_per_week' => 'required|integer|min:0',
+            'max_phc_sms_per_week' => 'required|integer|min:0',
         ], [
             'name.unique' => 'error_message.organization_exists'
         ]);
 
-        $orgLimitation = LimitationHelper::orgLimitation();
+        $hiOrganization = Organization::where('sub_domain_name', env('APP_NAME'))->firstOrFail();
 
-        if ($orgLimitation['therapist_limit_used'] > $validatedData['max_number_of_therapist']) {
-            abort(422, 'error.organization.max_number_of_therapist.less_than.country.total.therapist_limit');
-        }
+        if ($organization->id === $hiOrganization->id) {
+            $orgLimitation = LimitationHelper::orgLimitation($organization);
 
-        if ($orgLimitation['phc_worker_limit_used'] > $validatedData['max_number_of_phc_worker']) {
-            abort(422, 'error.organization.max_number_of_phc_worker.less_than.country.total.phc_worker_limit');
+            if ($orgLimitation['therapist_limit_used'] > $validatedData['max_number_of_therapist']) {
+                abort(422, 'error.organization.max_number_of_therapist.less_than.country.total.therapist_limit');
+            }
+
+            if ($orgLimitation['phc_worker_limit_used'] > $validatedData['max_number_of_phc_worker']) {
+                abort(422, 'error.organization.max_number_of_phc_worker.less_than.country.total.phc_worker_limit');
+            }
         }
 
         $organization->update($validatedData);

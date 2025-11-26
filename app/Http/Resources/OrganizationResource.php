@@ -25,6 +25,7 @@ class OrganizationResource extends JsonResource
             'max_ongoing_treatment_plan' => $this->max_ongoing_treatment_plan,
             'max_sms_per_week' => $this->max_sms_per_week,
             'status' => $this->status,
+            'max_phc_sms_per_week' => $this->max_phc_sms_per_week,
         ];
     }
 }
