@@ -211,25 +211,26 @@ class AdminController extends Controller
      */
     public function store(Request $request)
     {
+        $authUser = Auth::user();
         $validatedData = $request->validate([
             'email' => 'required|email|unique:users,email',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'type' => ['required', Rule::in(array_column(UserType::cases(), 'value'))],
+            'type' => 'required|in:super_admin,organization_admin,country_admin,clinic_admin,regional_admin,phc_service_admin',
             'country_id' => [
-                Rule::requiredIf(fn() => $request->type === UserType::COUNTRY_ADMIN->value),
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_ORG_ADMIN),
                 'exists:countries,id',
             ],
             'clinic_id' => [
-                Rule::requiredIf(fn() => $request->type === UserType::CLINIC_ADMIN->value),
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN),
                 'exists:clinics,id',
             ],
             'region_id' => [
-                Rule::requiredIf(fn() => $request->type === UserType::REGIONAL_ADMIN->value),
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'exists:regions,id',
             ],
             'phc_service_id' => [
-                Rule::requiredIf(fn() => $request->type === UserType::PHC_SERVICE_ADMIN->value),
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN),
                 'exists:phc_services,id',
             ],
         ], [

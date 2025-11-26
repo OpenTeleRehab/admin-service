@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\LogOptions;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -81,6 +82,18 @@ class User extends Authenticatable
             $builder->orderBy('enabled', 'desc');
             $builder->orderBy('last_name');
             $builder->orderBy('first_name');
+        });
+
+        static::creating(function ($user) {
+            $authUser = Auth::user();
+
+            if (in_array($authUser->type, [self::ADMIN_GROUP_COUNTRY_ADMIN, self::ADMIN_GROUP_REGIONAL_ADMIN])) {
+                $user->country_id = $authUser->country_id;
+            }
+
+            if (in_array($authUser->type, [self::ADMIN_GROUP_REGIONAL_ADMIN])) {
+                $user->region_id = $authUser->region_id;
+            }
         });
     }
 
