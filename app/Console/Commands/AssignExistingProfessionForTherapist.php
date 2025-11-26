@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Profession;
 use Illuminate\Console\Command;
 
-class ImportSystemLimit extends Command
+class AssignExistingProfessionForTherapist extends Command
 {
     /**
      * The name and signature of the console command.
