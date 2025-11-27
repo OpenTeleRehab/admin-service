@@ -13,6 +13,7 @@ class Profession extends Model
     use LogsActivity;
 
     const TYPE_THERAPIST = 'therapist';
+    const TYPE_PHC_WORKER = 'phc_worker';
 
     /**
      * The attributes that are mass assignable.

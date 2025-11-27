@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Helpers\LimitationHelper;
 use App\Models\Province;
+use App\Models\Forwarder;
+use Illuminate\Support\Facades\Http;
 
 class PhcServiceController extends Controller
 {
@@ -121,7 +123,7 @@ class PhcServiceController extends Controller
 
         PhcService::create($validatedData);
 
-        return response()->json(['message' => 'phc_service.success_message.add'], 201);;
+        return response()->json(['message' => 'phc_service.success_message.add'], 201);
     }
 
     /**
@@ -294,5 +296,48 @@ class PhcServiceController extends Controller
         $phcServices = Auth::user()->region->phcServices;
 
         return response()->json(['data' => $phcServices], 200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/phc-services/count-phc-worker",
+     *     tags={"PHC Service"},
+     *     summary="Total PHC worker by PHC service",
+     *     operationId="totalPhcWorkerByPhcService",
+     *     @OA\Response(
+     *         response="200",
+     *         description="successful operation"
+     *     ),
+     *     @OA\Response(response=400, description="Bad request"),
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     @OA\Response(response=401, description="Authentication is required"),
+     *     security={
+     *         {
+     *             "oauth2_security": {}
+     *         }
+     *     },
+     * )
+     *
+     * @param Request $request
+     * @return array
+     */
+    public function countPhcWorkerByPhcService()
+    {
+        $phcServiceId = Auth::user()->phc_service_id;
+
+        $phcWorkerData = [];
+        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/phc-workers/count-by-phc-service', [
+                'phc_service_id' => [$phcServiceId]
+            ]);
+
+        if (!empty($response) && $response->successful()) {
+            $phcWorkerData = $response->json();
+        }
+
+        return [
+            'success' => true,
+            'data' => $phcWorkerData
+        ];
     }
 }

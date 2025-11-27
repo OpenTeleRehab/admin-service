@@ -33,6 +33,7 @@ class SetupKeycloakPermissions extends Command
             'view_privacy_policy',
             'submit_survey',
             'skip_survey',
+            'manage_survey',
             'manage_global_patient',
             'manage_global_at_patient',
             'view_number_of_clinic_therapist',
@@ -64,6 +65,9 @@ class SetupKeycloakPermissions extends Command
             'mange_region',
             'manage_regional_admin',
             'manage_phc_service_admin',
+            'manage_phc_worker',
+            'view_phc_worker_list',
+            'view_number_of_phc_service_phc_worker',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -86,6 +90,7 @@ class SetupKeycloakPermissions extends Command
                 'view_default_limited_patient',
                 'view_category_tree',
                 'manage_own_profile',
+                'manage_survey',
                 'import_exercise',
                 'import_disease',
                 'file_upload',
@@ -111,6 +116,7 @@ class SetupKeycloakPermissions extends Command
                 'skip_survey',
                 'manage_own_profile',
                 'manage_global_patient',
+                'manage_survey',
                 'view_clinic_therapist_list',
                 'delete_therapist',
                 'view_therapist_list',
@@ -147,8 +153,9 @@ class SetupKeycloakPermissions extends Command
                 'view_country_therapist_limit',
                 'view_number_of_clinic_therapist',
                 'view_exercise',
+                'manage_survey',
                 'access_all',
-                'mange_region',
+                'manage_region',
                 'manage_regional_admin'
             ],
             'clinic_admin' => [
@@ -170,6 +177,7 @@ class SetupKeycloakPermissions extends Command
                 'view_number_of_clinic_therapist',
                 'view_language',
                 'view_exercise',
+                'manage_survey',
                 'access_all',
             ],
             'library_admin' => [
@@ -223,7 +231,8 @@ class SetupKeycloakPermissions extends Command
                 'manage_province',
                 'manage_clinic',
                 'manage_phc_service',
-                'manage_phc_service_admin'
+                'manage_phc_service_admin',
+                'manage_survey',
             ],
             'phc_service_admin' => [
                 'view_profession',
@@ -234,9 +243,15 @@ class SetupKeycloakPermissions extends Command
                 'manage_own_profile',
                 'manage_global_patient',
                 'manage_global_at_patient',
+                'view_patient_treatment_plan',
+                'view_patient_treatment_plan_detail',
                 'view_audit_log',
                 'view_dashboard',
                 'view_language',
+                'manage_phc_worker',
+                'view_phc_worker_list',
+                'manage_survey',
+                'view_number_of_phc_service_phc_worker',
             ],
 
         ];

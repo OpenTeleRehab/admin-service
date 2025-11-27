@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserType;
 use App\Helpers\KeycloakHelper;
 use App\Http\Resources\UserResource;
 use App\Models\EducationMaterial;
@@ -222,7 +221,8 @@ class AdminController extends Controller
                 'exists:countries,id',
             ],
             'clinic_id' => [
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN),
+                'nullable',
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_CLINIC_ADMIN),
                 'exists:clinics,id',
             ],
             'region_id' => [
@@ -230,7 +230,8 @@ class AdminController extends Controller
                 'exists:regions,id',
             ],
             'phc_service_id' => [
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN),
+                'nullable',
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN),
                 'exists:phc_services,id',
             ],
         ], [
@@ -350,23 +351,27 @@ class AdminController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $authUser = Auth::user();
         $validatedData = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
+            'type' => 'required|in:super_admin,organization_admin,country_admin,clinic_admin,regional_admin,phc_service_admin',
             'country_id' => [
-                Rule::requiredIf(fn() => $request->type === UserType::COUNTRY_ADMIN->value),
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_ORG_ADMIN),
                 'exists:countries,id',
             ],
             'clinic_id' => [
-                Rule::requiredIf(fn() => $request->type === UserType::CLINIC_ADMIN->value),
+                'nullable',
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_CLINIC_ADMIN),
                 'exists:clinics,id',
             ],
             'region_id' => [
-                Rule::requiredIf(fn() => $request->type === UserType::REGIONAL_ADMIN->value),
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'exists:regions,id',
             ],
             'phc_service_id' => [
-                Rule::requiredIf(fn() => $request->type === UserType::PHC_SERVICE_ADMIN->value),
+                'nullable',
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN),
                 'exists:phc_services,id',
             ],
         ]);

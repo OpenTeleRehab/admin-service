@@ -267,7 +267,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // File
     Route::post('file', [FileController::class, 'uploadFile']); // not used
 
-    // Admin Service
+    // Therapist Service
     Route::name('therapist.')->group(function () {
         Route::get('therapist/list/by-clinic-id', [ForwarderController::class, 'index'])->middleware('role:manage_therapist,view_clinic_therapist_list');
         Route::post('therapist/updateStatus/{id}', [ForwarderController::class, 'store'])->middleware('role:manage_therapist');
@@ -277,6 +277,12 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
         Route::post('therapist', [ForwarderController::class, 'store'])->middleware('role:manage_therapist');
         Route::put('therapist/{therapist}', [ForwarderController::class, 'update'])->middleware('role:manage_therapist');
         Route::get('transfer/number/by-therapist', [ForwarderController::class, 'index'])->middleware('role:manage_therapist,view_transfer_list_by_therapist');
+        Route::get('phc-workers', [ForwarderController::class, 'index'])->middleware('role:manage_phc_worker,view_phc_worker_list');
+        Route::post('phc-workers', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
+        Route::put('phc-workers/{phc_worker}', [ForwarderController::class, 'update'])->middleware('role:manage_phc_worker');
+        Route::post('phc-workers/updateStatus/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
+        Route::post('phc-workers/resend-email/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
+        Route::post('phc-workers/delete/by-id/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
     });
 
     // Patient Service
@@ -327,6 +333,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('phc-services', [PhcServiceController::class, 'index'])->middleware('role:manage_phc_service, view_phc_service_list');
     Route::get('phc-services-by-province', [PhcServiceController::class, 'getByProvince'])->middleware('role:manage_phc_service');
     Route::get('phc-services-by-region', [PhcServiceController::class, 'getByRegion'])->middleware('role:manage_phc_service');
+    Route::get('phc-services/count-phc-worker', [PhcServiceController::class, 'countPhcWorkerByPhcService'])->middleware('role:view_number_of_phc_service_phc_worker');
     Route::post('phc-services', [PhcServiceController::class, 'store'])->middleware('role:manage_phc_service');
     Route::put('phc-services/{phc_service}', [PhcServiceController::class, 'update'])->middleware('role:manage_phc_service');
     Route::delete('phc-services/{phc_service}', [PhcServiceController::class, 'destroy'])->middleware('role:manage_phc_service');

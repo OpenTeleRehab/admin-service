@@ -73,6 +73,7 @@
     "common.province.error": "Please select a province",
     "common.phc_service": "PHC Service",
     "common.phc_service_admin.management": "PHC Service Admins manage PHC service workers",
+    "common.phc_worker": "PHC Worker",
     "toast_title.translation.approve": "Approve Translation",
     "toast_title.translation.reject": "Reject Translation",
     "success_message.translation.approve": "Translation approved successfully",
@@ -1090,5 +1091,15 @@
     "phc_service_admin.delete": "PHC Service Admin Deletion",
     "toast_title.resend_admin_account": "Resend Email",
     "error.country.phc_worker_limit.more_than.org_phc_worker_limit": "The number of PHC workers has reached the organization's limit",
-    "error.country.phc_worker_limit.lessthan.phc_worker_limit_clinic": "The number of PHC workers cannot be less than the clinic's PHC worker limit"
+    "error.country.phc_worker_limit.lessthan.phc_worker_limit_clinic": "The number of PHC workers cannot be less than the clinic's PHC worker limit",
+    "phc_worker.list": "PHC Worker List",
+    "phc_worker.edit": "Edit PHC Worker",
+    "phc_worker.new": "New PHC Worker",
+    "phc_worker.delete": "PHC Worker Deletion",
+    "success_message.phc_worker_delete": "PHC Worker deleted successfully",
+    "success_message.phc_worker_update": "PHC Worker updated successfully",
+    "success_message.phc_worker_update_status": "PHC Worker status updated successfully",
+    "success_message.phc_worker_create": "PHC Worker created successfully",
+    "error_message.phc_worker_update_status": "PHC Worker status cannot be updated",
+    "error_message.phc_worker_create": "PHC Worker cannot be created"
 }

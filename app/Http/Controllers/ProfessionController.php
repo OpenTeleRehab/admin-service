@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ProfessionResource;
 use App\Models\Forwarder;
 use App\Models\Profession;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -46,13 +47,22 @@ class ProfessionController extends Controller
      */
     public function index(Request $request)
     {
+        $authUser = Auth::user();
         $countryId = $request->get('country_id');
+        $query = Profession::query();
 
-        if (!$countryId && Auth::user()) {
-            $countryId = Auth::user()->country_id;
+        if (!$countryId && $authUser) {
+            $countryId = $authUser->country_id;
+            $query->where('country_id', $countryId);
         }
 
-        $professions = Profession::where('professions.country_id', $countryId)->get();
+        if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+            $query->where('type', Profession::TYPE_THERAPIST);
+        } else if ($authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+            $query->where('type', Profession::TYPE_PHC_WORKER);
+        }
+
+        $professions = $query->get();
         return ['success' => true, 'data' => ProfessionResource::collection($professions)];
     }
 
