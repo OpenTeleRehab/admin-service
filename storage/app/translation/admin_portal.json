@@ -1045,6 +1045,8 @@
     "error.region.therapist_limit.greater_than.country.therapist_limit": "The region's therapist limit cannot exceed the total region therapist limit in this country.",
     "error.region.phc_worker_limit.less_than.clinic.phc_worker_limit": "The phc worker limit must exceed the total clinic phc worker limint in this region.",
     "error.region.phc_worker_limit.greater_than.country.phc_worker_limit": "The region's phc worker limit cannot exceed the total region phc worker limit in this country.",
+    "error.region.phc_worker_limit.less_than_equal_to.zero": "The phc worker limit must greater that 0",
+    "error.region.therapist_limit.less_than_equal_to.zero": "The therapist limit must greater that 0",
     "province.new": "New Province",
     "province.edit": "Edit Province",
     "province.toast_title.edit": "Edit Province",
