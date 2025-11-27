@@ -28,7 +28,7 @@
     "common.login": "Login",
     "common.forgot_password": "Forgot your password?",
     "common.password": "Password",
-    "common.therapist_portal": "Therapist Portal",
+    "common.therapist_portal": "Therapist / PHC Worker Portal",
     "common.admin_portal": "Admin Portal",
     "common.password-recovery": "Password Recovery",
     "common.recovery-password-instruction": "Please enter your email address. You will receive a reset password instruction via email.",
