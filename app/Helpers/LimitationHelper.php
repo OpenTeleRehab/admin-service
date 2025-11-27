@@ -116,18 +116,4 @@ class LimitationHelper
             'remaining_phc_worker_limit' => $remainingPhcWorkerLimit,
         ];
     }
-    /**
-     * Get the limitation for a the province.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public static function provinceLimitation($province)
-    {
-        $phcWorkerLimitUsed = $province->phcServices->sum('phc_worker_limit');
-        $remainingPhcWorkerLimit = max(0, $province->phc_worker_limit - $phcWorkerLimitUsed);
-        return [
-            'phc_worker_limit_used' => $phcWorkerLimitUsed,
-            'remaining_phc_worker_limit' => $remainingPhcWorkerLimit,
-        ];
-    }
 }

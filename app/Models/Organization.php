@@ -38,6 +38,7 @@ class Organization extends Model
         'status',
         'created_by',
         'max_number_of_phc_worker',
+        'max_phc_sms_per_week',
     ];
 
     /**

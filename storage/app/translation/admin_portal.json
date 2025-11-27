@@ -821,6 +821,9 @@
     "error.country.therapist_limit.more_than.org_therapist_limit": "The therapist limit can not set more than total therapist limit of organization",
     "error_message.organization_sub_domain_exists": "Organization sub domain name already exist",
     "error.organization.max_sms_per_week": "Please fill the number of sms per week",
+    "organization.max_phc_sms_per_week": "Max SMS Per PHC Worker",
+    "placeholder.organization.phc_worker_max_sms_per_week": "Enter max phc worker sms per week",
+    "error.organization.phc_worker_max_sms_per_week": "Please fill the max phc worker sms per week",
     "common.success": "Success",
     "common.ongoing": "Ongoing",
     "common.pending": "Pending",
@@ -1083,5 +1086,7 @@
     "phc_service_admin.new": "New PHC Service Admin",
     "phc_service_admin.edit": "Edit PHC Service Admin",
     "phc_service_admin.delete": "PHC Service Admin Deletion",
-    "toast_title.resend_admin_account": "Resend Email"
+    "toast_title.resend_admin_account": "Resend Email",
+    "error.country.phc_worker_limit.more_than.org_phc_worker_limit": "The number of PHC workers has reached the organization's limit",
+    "error.country.phc_worker_limit.lessthan.phc_worker_limit_clinic": "The number of PHC workers cannot be less than the clinic's PHC worker limit"
 }
