@@ -63,10 +63,10 @@ class RegionController extends Controller
         $pageSize = $request->get('page_size');
         $query = Auth::user()->country->regions();
         if ($searchValue) {
-            $query->where('name' ,'like', '%' . $searchValue . '%');
+            $query->where('name', 'like', '%' . $searchValue . '%');
         }
         $regions = $query->paginate($pageSize);
-        return response()->json(['data' => RegionResource::collection($regions), 'total' => $regions->total(), 'current_page' => $regions->currentPage()]);
+        return response()->json(['success' => true, 'data' => RegionResource::collection($regions), 'total' => $regions->total(), 'current_page' => $regions->currentPage()]);
     }
 
     /**
@@ -315,5 +315,22 @@ class RegionController extends Controller
         $region = Auth::user()->region;
 
         return response()->json(['data' => LimitationHelper::regionLimitation($region)], 200);
+    }
+
+    public function getRegionByCountry(Request $request)
+    {
+        $searchValue = $request->get('search_value');
+        $pageSize = $request->get('page_size');
+        $query = Auth::user()->country->regions();
+        if ($searchValue) {
+            $query->where('name', 'like', '%' . $searchValue . '%');
+        }
+        $regions = $query->paginate($pageSize);
+
+        return response()->json([
+            'data' => RegionResource::collection($regions),
+            'total' => $regions->total(),
+            'current_page' => $regions->currentPage()
+        ], 200);
     }
 }

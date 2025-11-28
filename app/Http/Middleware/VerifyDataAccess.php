@@ -2,29 +2,39 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Country;
 use Closure;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
+use App\Models\Country;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class VerifyDataAccess
 {
-  /**
-   * Handle an incoming request.
-   *
-   * @param  \Illuminate\Http\Request  $request
-   * @param  \Closure  $next
-   * @return \Symfony\Component\HttpFoundation\Response
-   */
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function handle(Request $request, Closure $next): Response
     {
+        $user = Auth::user();
+        if ($user->email == env('KEYCLOAK_BACKEND_CLIENT')) {
+            if ($request->hasHeader('int-country-id')) {
+                $user->country_id = $request->header('int-country-id');
+            }
+
+            if ($request->hasHeader('int-region-id')) {
+                $user->region_id = $request->header('int-region-id');
+            }
+        }
+
         $countryHeader = $request->header('Country');
         $countryId = $request->get('country_id') ?? $request->get('country');
         $clinicId = $request->get('clinic_id') ?? $request->get('clinic');
 
-        /** @var User|null $user */
-        $user = auth()->user();
         $deny = fn() => response()->json(['message' => 'Access denied'], 403);
 
         // Null-safe early exit
