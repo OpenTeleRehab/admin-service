@@ -296,6 +296,6 @@ class ProvinceController extends Controller
      */
     public function getLimitation(Province $province)
     {
-        return response()->json(['data' => LimitationHelper::provinceLimitation($province)], 200);
+        return response()->json(['data' => LimitationHelper::provinceLimitation($province->id)], 200);
     }
 }
