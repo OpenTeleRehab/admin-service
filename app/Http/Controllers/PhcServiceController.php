@@ -40,7 +40,7 @@ class PhcServiceController extends Controller
      *         )
      *     )
      * )
-     * 
+     *
      * @param \Illuminate\Http\Request $request
      */
     public function index(Request $request)
@@ -67,7 +67,7 @@ class PhcServiceController extends Controller
         }
 
         $phcServices = $query->paginate($pageSize);
-        
+
          return response()->json(['data' => PhcServiceResource::collection($phcServices), 'total' => $phcServices->total(), 'current_page' => $phcServices->currentPage()]);
     }
 
@@ -115,7 +115,7 @@ class PhcServiceController extends Controller
             'phc_worker_limit' => 'required|integer|min:1',
         ]);
         $province = Province::findOrFail($validatedData['province_id']);
-        $provinceLimitation = LimitationHelper::provinceLimitation($province);
+        $provinceLimitation = LimitationHelper::provinceLimitation($province->id);
 
         if ($validatedData['phc_worker_limit'] > $provinceLimitation['remaining_phc_worker_limit']) {
             abort(422, 'error.phc_service.phc_worker_limit.greater_than.province.phc_worker_limit');
@@ -172,7 +172,7 @@ class PhcServiceController extends Controller
         ]);
 
         $province = Province::findOrFail($validatedData['province_id']);
-        $provinceLimitation = LimitationHelper::provinceLimitation($province);
+        $provinceLimitation = LimitationHelper::provinceLimitation($province->id);
 
         if ($validatedData['phc_worker_limit'] > $provinceLimitation['remaining_phc_worker_limit'] + $province->phc_worker_limit) {
             abort(422, 'error.phc_service.phc_worker_limit.greater_than.province.phc_worker_limit');
