@@ -2,28 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ApplyExerciseAutoTranslationEvent;
-use App\Exports\ExercisesExport;
+use App\Models\File;
+use App\Models\User;
+use App\Models\Exercise;
+use App\Models\Language;
+use App\Models\Forwarder;
+use App\Helpers\FileHelper;
+use App\Models\SystemLimit;
+use Illuminate\Http\Request;
 use App\Helpers\ContentHelper;
 use App\Helpers\ExerciseHelper;
-use App\Helpers\FileHelper;
+use App\Models\AdditionalField;
+use App\Exports\ExercisesExport;
+use App\Models\ExerciseCategory;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\ExerciseResource;
 use App\Http\Resources\ExerciseListResource;
-use App\Models\AdditionalField;
-use App\Models\Exercise;
-use App\Models\ExerciseCategory;
-use App\Models\File;
-use App\Models\Forwarder;
-use App\Models\Language;
-use App\Models\SystemLimit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Events\ApplyExerciseAutoTranslationEvent;
 
 class ExerciseController extends Controller
 {
@@ -62,7 +63,14 @@ class ExerciseController extends Controller
      */
     public function index(Request $request)
     {
+        $authUser = Auth::user();
+
         $query = ExerciseHelper::generateFilterQuery($request);
+
+        if ($authUser->type === User::GROUP_PHC_WORKER) {
+            $query->where('share_with_phc_worker', true);
+        }
+
         $exercises = $query->paginate($request->get('page_size'));
 
         $info = [

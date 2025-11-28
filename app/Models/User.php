@@ -26,6 +26,7 @@ class User extends Authenticatable
     const GROUP_TRANSLATOR = 'translator';
     const GROUP_THERAPIST = 'therapist';
     const GROUP_PATIENT = 'patient';
+    const GROUP_PHC_WORKER = 'phc_worker';
 
     /**
      * The attributes that are mass assignable.

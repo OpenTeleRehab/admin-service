@@ -63,10 +63,15 @@ class QuestionnaireController extends Controller
      */
     public function index(Request $request)
     {
+        $authUser = Auth::user();
         $therapistId = $request->get('therapist_id');
         $filter = json_decode($request->get('filter'), true);
 
         $query = Questionnaire::select('questionnaires.*')->where('questionnaires.parent_id', null)->where('is_survey', false);
+
+        if ($authUser->type === User::GROUP_PHC_WORKER) {
+            $query->where('share_with_phc_worker', true);
+        }
 
         if (!empty($filter['favorites_only'])) {
             $query->join('favorite_activities_therapists', function ($join) use ($therapistId) {

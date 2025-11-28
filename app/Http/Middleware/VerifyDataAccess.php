@@ -22,12 +22,16 @@ class VerifyDataAccess
     {
         $user = Auth::user();
         if ($user->email == env('KEYCLOAK_BACKEND_CLIENT')) {
-            if ($request->hasHeader('int-country-id')) {
-                $user->country_id = $request->header('int-country-id');
+            if (!empty($request->header('int-country-id'))) {
+                $user->country_id = (int) $request->header('int-country-id');
             }
 
-            if ($request->hasHeader('int-region-id')) {
-                $user->region_id = $request->header('int-region-id');
+            if (!empty($request->header('int-region-id'))) {
+                $user->region_id = (int) $request->header('int-region-id');
+            }
+
+            if (!empty($request->header('int-user-type'))) {
+                $user->type = $request->header('int-user-type');
             }
         }
 
