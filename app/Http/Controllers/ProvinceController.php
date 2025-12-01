@@ -51,7 +51,7 @@ class ProvinceController extends Controller
         $provinces = $query->paginate($pageSize);
 
 
-        return response()->json(['data' => ProvinceResource::collection($provinces), 'total' => $provinces->total(), 'current_page' => $provinces->currentPage()]);
+        return response()->json(['success' => true, 'data' => ProvinceResource::collection($provinces), 'total' => $provinces->total(), 'current_page' => $provinces->currentPage()]);
     }
 
     /**

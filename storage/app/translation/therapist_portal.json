@@ -132,6 +132,8 @@
     "common.active": "Active",
     "common.inactive": "Inactive",
     "portal.name": "Therapist / PHC Worker Portal",
+    "common.region": "Region",
+    "common.province": "Province",
     "home": "Home",
     "login": "Login",
     "dashboard": "Dashboard",
