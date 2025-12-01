@@ -230,6 +230,7 @@ class SetupKeycloakPermissions extends Command
                 'view_region_list',
                 'manage_province',
                 'manage_clinic',
+                'manage_clinic_admin',
                 'manage_phc_service',
                 'manage_phc_service_admin',
                 'manage_survey',
