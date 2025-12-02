@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\Exercise;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 

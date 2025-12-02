@@ -11,6 +11,7 @@ use App\Models\EducationMaterial;
 use App\Models\EducationMaterialCategory;
 use App\Models\File;
 use App\Models\SystemLimit;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
@@ -53,10 +54,15 @@ class EducationMaterialController extends Controller
      */
     public function index(Request $request)
     {
+        $authUser = Auth::user();
         $therapistId = $request->get('therapist_id');
         $filter = json_decode($request->get('filter'), true);
 
         $query = EducationMaterial::select('education_materials.*')->where('education_materials.parent_id', null);
+
+        if ($authUser->type === User::GROUP_PHC_WORKER) {
+            $query->where('share_with_phc_worker', true);
+        }
 
         if (!empty($filter['favorites_only'])) {
             $query->join('favorite_activities_therapists', function ($join) use ($therapistId) {
