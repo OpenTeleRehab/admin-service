@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Forwarder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
 
 class ForwarderController extends Controller
 {
@@ -57,10 +58,17 @@ class ForwarderController extends Controller
     {
         $service_name = $request->route()->getName();
         $endpoint = str_replace('api/', '/', $request->path());
-
+        $user = Auth::user();
         if ($service_name !== null && str_contains($service_name, Forwarder::THERAPIST_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-            return Http::withToken($access_token)->withHeaders(['Accept' => 'application/json'])
+            return Http::withToken($access_token)->withHeaders([
+                'Accept' => 'application/json',
+                'int-country-id' => $user->country_id,
+                'int-region-id' => $user?->region_id,
+                'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
+                'int-phc-service-id' => $user?->phc_service_id,
+                'int-clinic-id' => $user->clinic_id,
+                ])
                 ->post(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
         } elseif ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
