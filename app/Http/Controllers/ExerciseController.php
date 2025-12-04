@@ -408,16 +408,8 @@ class ExerciseController extends Controller
     public static function countTherapistLibrary(Request $request)
     {
         $therapistId = $request->get('therapist_id');
-        $treatmentPresets = 0;
-        $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
-            ->get(env('THERAPIST_SERVICE_URL') . '/treatment-plan/count/by-therapist?therapist_id=' . $therapistId);
-
-        if (!empty($response) && $response->successful()) {
-            $treatmentPresets = $response->json();
-        }
 
         $totalLibries = ContentHelper::countTherapistContents($therapistId);
-        $totalLibries += $treatmentPresets;
 
         return [
             'success' => true,

@@ -68,6 +68,7 @@ class SetupKeycloakPermissions extends Command
             'manage_phc_worker',
             'view_phc_worker_list',
             'view_number_of_phc_service_phc_worker',
+            'manage_health_condition',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -98,6 +99,7 @@ class SetupKeycloakPermissions extends Command
                 'manage_download_tracker',
                 'generate_report',
                 'access_all',
+                'manage_health_condition',
             ],
             'organization_admin' => [
                 'view_profession',
