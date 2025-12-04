@@ -49,7 +49,7 @@ class PhcServiceController extends Controller
         $pageSize = $request->get('page_size');
         $query = Auth::user()->region->phcServices();
         if ($searchValue) {
-            $query->where('phc_services.name' ,'like', '%' . $searchValue . '%');
+            $query->where('phc_services.name', 'like', '%' . $searchValue . '%');
         }
 
         if ($request->has('filters')) {
@@ -68,7 +68,7 @@ class PhcServiceController extends Controller
 
         $phcServices = $query->paginate($pageSize);
 
-         return response()->json(['data' => PhcServiceResource::collection($phcServices), 'total' => $phcServices->total(), 'current_page' => $phcServices->currentPage()]);
+        return response()->json(['data' => PhcServiceResource::collection($phcServices), 'total' => $phcServices->total(), 'current_page' => $phcServices->currentPage()]);
     }
 
     /**
@@ -176,7 +176,7 @@ class PhcServiceController extends Controller
         $totalPhcWorker = $this->countPhcWorker($phcService->id);
 
         if ($totalPhcWorker > $validatedData['phc_worker_limit']) {
-            abort(422, 'error.clinic.therapist_limit.less_than.total.therapist');
+            abort(422, 'error.province.phc_worker_limit.less_than.total.phc_service.phc_worker_limit');
         }
 
         if ($validatedData['phc_worker_limit'] > $provinceLimitation['remaining_phc_worker_limit'] + $province->phc_worker_limit) {
