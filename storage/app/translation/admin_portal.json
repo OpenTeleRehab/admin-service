@@ -1059,6 +1059,7 @@
     "error.province.therapist_limit.equal_to.zero": "Therapist limit must be greater than 0",
     "error.province.phc_worker_limit.equal_to.zero": "PHC worker limit must be greater than 0",
     "error.province.phc_worker_limit.greater_than.region.phc_worker_limit": "The province's phc worker limit cannot exceed region phc worker limit.",
+    "error.province.phc_worker_limit.less_than.total.phc_service.phc_worker_limit": "The phc worker limit can not set less than total phc worker limit of the phc service",
     "error.province.therapist_limit.greater_than.region.therapist_limit": "The province's therapist limit cannot exceed region therapist limit.",
     "error.clinic.therapist_limit": "Please fill in therapist limit",
     "error.clinic.therapist_limit.less_than.total.therapist": "The therapist limit can not set less than total therapists of the clinic",
