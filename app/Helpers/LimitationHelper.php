@@ -90,7 +90,7 @@ class LimitationHelper
     {
         $province = Province::findOrFail($provinceId);
         $therapistLimitUsed = $province->clinics->sum('therapist_limit');
-        $phcWorkerLimitUsed = $province->clinics->sum('phc_worker_limit');
+        $phcWorkerLimitUsed = $province->phcServices->sum('phc_worker_limit');
         $remainingTherapistLimit = $province->therapist_limit - $therapistLimitUsed;
         $remainingPhcWorkerLimit = $province->phc_worker_limit - $phcWorkerLimitUsed;
 
