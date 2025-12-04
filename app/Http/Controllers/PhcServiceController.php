@@ -173,6 +173,11 @@ class PhcServiceController extends Controller
 
         $province = Province::findOrFail($validatedData['province_id']);
         $provinceLimitation = LimitationHelper::provinceLimitation($province->id);
+        $totalPhcWorker = $this->countPhcWorker($phcService->id);
+
+        if ($totalPhcWorker > $validatedData['phc_worker_limit']) {
+            abort(422, 'error.clinic.therapist_limit.less_than.total.therapist');
+        }
 
         if ($validatedData['phc_worker_limit'] > $provinceLimitation['remaining_phc_worker_limit'] + $province->phc_worker_limit) {
             abort(422, 'error.phc_service.phc_worker_limit.greater_than.province.phc_worker_limit');
@@ -325,19 +330,26 @@ class PhcServiceController extends Controller
     {
         $phcServiceId = Auth::user()->phc_service_id;
 
+        $phcWorkerData = $this->countPhcWorker($phcServiceId);
+
+        return [
+            'success' => true,
+            'data' => $phcWorkerData
+        ];
+    }
+
+    private function countPhcWorker($phcServiceId)
+    {
         $phcWorkerData = [];
         $response = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
             ->get(env('THERAPIST_SERVICE_URL') . '/phc-workers/count-by-phc-service', [
-                'phc_service_id' => [$phcServiceId]
+                'phc_service_id' => $phcServiceId
             ]);
 
         if (!empty($response) && $response->successful()) {
             $phcWorkerData = $response->json();
         }
 
-        return [
-            'success' => true,
-            'data' => $phcWorkerData
-        ];
+        return $phcWorkerData['data'] ?? 0;
     }
 }
