@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class PhcService extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
+
+    const SERVICE_TYPE = 'phc';
+
     /**
      * Indicates if the model should be timestamped.
      *
