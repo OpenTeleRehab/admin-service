@@ -11,6 +11,7 @@ use App\Helpers\KeycloakHelper;
 use App\Helpers\LimitationHelper;
 use Illuminate\Support\Facades\Http;
 use App\Http\Resources\CountryResource;
+use App\Models\PhcService;
 use Illuminate\Support\Facades\Storage;
 use Stevebauman\Location\Facades\Location;
 
@@ -416,8 +417,14 @@ class CountryController extends Controller
      */
     public function getCountryByClinicId(Request $request)
     {
-        $clinic = Clinic::find($request->get('clinic_id'));
-        $country = Country::find($clinic->country_id);
+        $serviceType = $request->get('service_type');
+        if ($serviceType === PhcService::SERVICE_TYPE) {
+            $phcService = PhcService::find($request->get('clinic_id'));
+            $country = $phcService?->province?->region?->country;
+        } else {
+            $clinic = Clinic::find($request->get('clinic_id'));
+            $country = $clinic?->province?->region?->country;
+        }
 
         return ['success' => true, 'data' => $country];
     }
