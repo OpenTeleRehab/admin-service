@@ -223,10 +223,20 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('survey/skip', [SurveyController::class, 'skipSurvey'])->middleware('role:skip_survey');
 
     // Health Condition Group
-    Route::apiResource('health-condition-group', HealthConditionGroupController::class)->middleware('role:manage_health_condition');
+    Route::get('health-condition-group', [HealthConditionGroupController::class, 'index'])
+        ->middleware('role:view_health_condition,manage_health_condition');
+
+    Route::apiResource('health-condition-group', HealthConditionGroupController::class)
+        ->except(['index'])
+        ->middleware('role:manage_health_condition');
 
     // Health Condition
-    Route::apiResource('health-condition', HealthConditionController::class)->middleware('role:manage_health_condition');
+    Route::get('health-condition', [HealthConditionController::class, 'index'])
+        ->middleware('role:view_health_condition,manage_health_condition');
+
+    Route::apiResource('health-condition', HealthConditionController::class)
+        ->except(['index'])
+        ->middleware('role:manage_health_condition');
 
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData'])->middleware('role:view_category_tree');
