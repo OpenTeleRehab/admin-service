@@ -38,7 +38,8 @@ class ForwarderController extends Controller
         if ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
             $response = Http::withToken($access_token)->withHeaders([
-                'country' => $country
+                'country' => $country,
+                'int-clinic-id' => $user->clinic_id,
             ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $params);
             return response($response->body(), $response->status())
                 ->withHeaders([
@@ -72,8 +73,11 @@ class ForwarderController extends Controller
                 ->post(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
         } elseif ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
-            return Http::withToken($access_token)
+            $response = Http::withToken($access_token)
                 ->post(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
+
+            return response($response->body(), $response->status())
+                ->withHeaders($response->headers());
         }
 
         abort('400');

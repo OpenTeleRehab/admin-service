@@ -69,6 +69,8 @@ class SetupKeycloakPermissions extends Command
             'view_phc_worker_list',
             'view_number_of_phc_service_phc_worker',
             'manage_health_condition',
+            'manage_patient_referral',
+            'manage_patient_referral_assignment',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -181,6 +183,8 @@ class SetupKeycloakPermissions extends Command
                 'view_exercise',
                 'manage_survey',
                 'access_all',
+                'manage_patient_referral',
+                'manage_patient_referral_assignment',
             ],
             'library_admin' => [
                 'get_library_category',
