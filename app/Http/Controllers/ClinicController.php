@@ -274,8 +274,26 @@ class ClinicController extends Controller
         $provinceLimitation = LimitationHelper::provinceLimitation($validatedData['province_id']);
         $totalTherapist = $this->findTotalTherapistByClinic($clinic->id);
 
+        if ($validatedData['province_id'] !== $clinic->province_id && $validatedData['therapist_limit'] > $provinceLimitation['remaining_therapist_limit']) {
+            return response()->json([
+                'message' => 'error.clinic.therapist_limit.greater_than.province.therapist_limit',
+                'translate_params' => [
+                    'allocated_therapist_limit' => $provinceLimitation['allocated_therapist_limit'],
+                    'remaining_therapist_limit' => $provinceLimitation['remaining_therapist_limit'],
+                    'therapist_limit_used' => $provinceLimitation['therapist_limit_used'],
+                ]
+            ], 422);
+        }
+
         if ($validatedData['therapist_limit'] > $provinceLimitation['remaining_therapist_limit'] + $clinic->therapist_limit) {
-            abort(422, 'error.clinic.therapist_limit.greater_than.province.therapist_limit');
+            return response()->json([
+                'message' => 'error.clinic.therapist_limit.greater_than.province.therapist_limit',
+                'translate_params' => [
+                    'allocated_therapist_limit' => $provinceLimitation['allocated_therapist_limit'],
+                    'remaining_therapist_limit' => $provinceLimitation['remaining_therapist_limit'] + $clinic->therapist_limit,
+                    'therapist_limit_used' => $provinceLimitation['therapist_limit_used'] - $clinic->therapist_limit,
+                ]
+            ], 422);
         }
 
         if ($totalTherapist > $validatedData['therapist_limit']) {

@@ -1063,7 +1063,7 @@
     "error.province.therapist_limit.greater_than.region.therapist_limit": "The province's therapist limit cannot exceed region therapist limit.",
     "error.clinic.therapist_limit": "Please fill in therapist limit",
     "error.clinic.therapist_limit.less_than.total.therapist": "The therapist limit can not set less than total therapists of the clinic",
-    "error.clinic.therapist_limit.greater_than.province.therapist_limit": "The therapist limit can not be greater than the province's therapist limit",
+    "error.clinic.therapist_limit.greater_than.province.therapist_limit": "The total therapist limit allocated for this province is ${allocated_therapist_limit}. ${therapist_limit_used} have been used, leaving ${remaining_therapist_limit} remaining. You can only assign up to the remaining number.",
     "phc_service.new": "New PHC Service",
     "phc_service.edit": "Edit PHC Service",
     "phc_service.delete": "PHC Service Deletion",
