@@ -1038,6 +1038,7 @@
     "region.therapist_limit.cannot_greater_than.country.therapist_limit": "Therapist limit cannot greater than country therapist limit",
     "region.phc_worker_limit.cannot_greater_than.country.phc_worker_limit": "PHC worker cannot greater than country phc worker limit",
     "region.edit.title": "Edit Region",
+    "region.required": "Please select the region",
     "error.region.therapist_limit.less_than.clinic.therapist_limit": "The therapist limit must exceed the total clinic therapist limit in this region.",
     "error.region.therapist_limit.greater_than.country.therapist_limit": "The region's therapist limit cannot exceed the total region therapist limit in this country.",
     "error.region.phc_worker_limit.less_than.clinic.phc_worker_limit": "The phc worker limit must exceed the total clinic phc worker limint in this region.",
