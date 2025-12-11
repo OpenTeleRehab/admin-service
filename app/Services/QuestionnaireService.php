@@ -45,7 +45,7 @@ class QuestionnaireService
                     'description' => $data->description,
                     'share_to_hi_library' => false,
                     'therapist_id' => $therapistId,
-                    'share_with_phc_worker' => $data->share_with_phc_worker,
+                    'share_with_phc_worker' => $data->share_with_phc_worker ?? false,
                     'global' => env('APP_NAME') == 'hi',
                 ]);
             } else {
@@ -57,7 +57,7 @@ class QuestionnaireService
                     'global' => env('APP_NAME') == 'hi',
                     'include_at_the_start' => $data->include_at_the_start ?? false,
                     'include_at_the_end' => $data->include_at_the_end ?? false,
-                    'share_with_phc_worker' => $data->share_with_phc_worker,
+                    'share_with_phc_worker' => $data->share_with_phc_worker ?? false,
                     'is_survey' => $data->is_survey ?? false,
                 ]);
             }
