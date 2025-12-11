@@ -57,6 +57,7 @@
     "common.phone": "Mobile Number",
     "common.phone.number": "Phone Number",
     "common.patient": "Patient",
+    "patient.referral.list": "Referral List",
     "common.rural_area": "Rural area",
     "common.urban_area": "Urban area",
     "common.skip": "Skip",
@@ -72,6 +73,8 @@
     "common.name.error": "Please fill in name",
     "common.province.error": "Please select a province",
     "common.phc_service": "PHC Service",
+    "common.accept": "Accept",
+    "common.declined": "Declined",
     "common.phc_service_admin.management": "PHC Service Admins manage PHC service workers",
     "common.phc_worker": "PHC Worker",
     "toast_title.translation.approve": "Approve Translation",
@@ -1099,5 +1102,11 @@
     "success_message.phc_worker_create": "PHC Worker created successfully",
     "error_message.phc_worker_update_status": "PHC Worker status cannot be updated",
     "error_message.phc_worker_create": "PHC Worker cannot be created",
-    "regional_admin.new": "New Regional Admin"
+    "regional_admin.new": "New Regional Admin",
+    "referral.referred_by": "Referred by",
+    "referral.lead.and.supplementary": "Lead / Supplementary PHC Worker",
+    "patient.referral.title": "Patient Referral",
+    "patient.referral_assignment.title": "Patient Referral Assignment",
+    "success_message.referral_assignment.create": "Patient referral assignment created successfully",
+    "referral_assignment.already_assigned": "This referral already assigned to therapist"
 }
