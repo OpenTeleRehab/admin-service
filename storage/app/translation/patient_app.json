@@ -351,5 +351,20 @@
     "question.threshold.validation": "Value must be between ${minValue} and ${maxValue}",
     "question.answer_threshold": "Threshold",
     "questionnaire.total_score": "Total Score",
-    "question.answer_value": "Value"
+    "question.answer_value": "Value",
+    "phc.patient.list": "Patient List",
+    "phc.patient.new": "New Patient",
+    "phc.patient.treatment_status": "Treatment Status",
+    "phc.patient.referral_status": "Referral Status",
+    "phc.patient.transfer_status": "Transfer Status",
+    "phc.patient.detail": "Patient Detail",
+    "phc.patient.treatment_status.ongoing": "Ongoing",
+    "phc.patient.treatment_status.planned": "Planned",
+    "phc.patient.treatment_status.finished": "Finished",
+    "phc.patient.interview_patient": "Interview Patient",
+    "phc.patient.patient_referral": "Patient Referral",
+    "phc.patient.patient_transfer": "Transfer",
+    "phc.patient.create": "Create Patient",
+    "phc.patient.phone": "Phone number",
+    "phc.patient.therapist": "Therapist"
 }
