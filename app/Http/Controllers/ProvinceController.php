@@ -279,6 +279,7 @@ class ProvinceController extends Controller
             $data[] = [
                 'id' => $province->id,
                 'name' => $province->name,
+                'allocated_therapist_limit' => $provinceLimitation['allocated_therapist_limit'],
                 'therapist_limit_used' => $provinceLimitation['therapist_limit_used'],
                 'remaining_therapist_limit' => $provinceLimitation['remaining_therapist_limit'],
                 'phc_worker_limit_used' => $provinceLimitation['phc_worker_limit_used'],
