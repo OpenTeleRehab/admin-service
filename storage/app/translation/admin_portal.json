@@ -738,6 +738,7 @@
     "common.treatment_name": "Treatment Name",
     "common.reps": "reps",
     "common.sets": "sets",
+    "common.reason": "Reason",
     "profile.faq": "FAQ",
     "profile.tc": "Term and Condition",
     "profile.pp": "Privacy Policy",
@@ -1106,8 +1107,9 @@
     "regional_admin.new": "New Regional Admin",
     "referral.referred_by": "Referred by",
     "referral.lead.and.supplementary": "Lead / Supplementary PHC Worker",
-    "patient.referral.title": "Patient Referral",
-    "patient.referral_assignment.title": "Patient Referral Assignment",
-    "success_message.referral_assignment.create": "Patient referral assignment created successfully",
-    "referral_assignment.already_assigned": "This referral already assigned to therapist"
+    "patient.referral.accept.title": "Accept Referral",
+    "patient.referral.decline.title": "Decline Referral",
+    "success_message.referral_assignment.create": "Referral has been assigned to the therapist successfully",
+    "referral_assignment.already_assigned": "Referral has already been assigned to a therapist",
+    "success_message.referral.decline": "Referral declined successfully"
 }

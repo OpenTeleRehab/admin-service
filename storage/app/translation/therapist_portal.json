@@ -138,6 +138,7 @@
     "common.lead_supplementary_phc_worker": "Lead/Supplementary PHC Worker",
     "common.phc_service": "PHC Service",
     "common.supplementary_phc_worker": "Supplementary PHC Worker",
+    "common.reason": "Reason",
     "home": "Home",
     "login": "Login",
     "dashboard": "Dashboard",
@@ -645,10 +646,14 @@
     "error_message.export": "Export failed",
     "export.name.questionnaire_result": "Questionnaire result",
     "patient.referral": "Patient Referral",
-    "patient.referral.title": "Patient Referral",
+    "patient.referral.accept.title": "Accept Referral",
+    "patient.referral.decline.title": "Decline Referral",
     "referral.list": "Referral List",
     "referral.referred_by": "Referred by",
     "success_message.referral.create": "Patient referral created successfully",
     "referral.lead.and.supplementary": "Lead / Supplementary PHC Worker",
-    "patient.pending_referral": "This patient has pending referral"
+    "patient.pending_referral": "This patient has pending referral",
+    "success_message.referral.declined": "Referral declined successfully",
+    "success_message.referral.accepted": "Referral accepted successfully",
+    "patient.referral_assignment.accept.title": "Accept referral"
 }
