@@ -6,6 +6,8 @@ use App\Http\Resources\GlobalPatientResource;
 use App\Models\Country;
 use App\Models\Forwarder;
 use App\Models\GlobalPatient;
+use App\Models\HealthCondition;
+use App\Models\HealthConditionGroup;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -118,7 +120,7 @@ class GlobalPatientController extends Controller
                             });
                         } elseif ($filterObj->columnName === 'ongoing_treatment_plan') {
                             $query->whereHas('treatmentPlans', function (Builder $query) use ($filterObj) {
-                                $query->where('name', 'like', '%' .  $filterObj->value . '%');
+                                $query->where('name', 'like', '%' . $filterObj->value . '%');
                             });
                         } elseif ($filterObj->columnName === 'secondary_therapist') {
                             if ($filterObj->value == GlobalPatient::SECONDARY_TERAPIST) {
@@ -127,11 +129,26 @@ class GlobalPatientController extends Controller
                                 });
                             } else {
                                 $query->where(function ($query) use ($therapist_id) {
-                                    $query->where('secondary_therapists',  'like', '%[]%');
+                                    $query->where('secondary_therapists', 'like', '%[]%');
+                                });
+                            }
+                        } elseif ($filterObj->columnName === 'health_condition_groups' && $filterObj->value !== '') {
+                            // Fetch ID from AdminService
+                            $group = HealthConditionGroup::where('title', 'like', '%' . $filterObj->value . '%')->first();
+                            if ($group) {
+                                $query->whereHas('treatmentPlans', function (Builder $q) use ($group) {
+                                    $q->where('health_condition_group_id', $group->id);
+                                });
+                            }
+                        } elseif ($filterObj->columnName === 'health_conditions' && $filterObj->value !== '') {
+                            $condition = HealthCondition::where('title', 'like', '%' . $filterObj->value . '%')->first();
+                            if ($condition) {
+                                $query->whereHas('treatmentPlans', function (Builder $q) use ($condition) {
+                                    $q->where('health_condition_id', $condition->id);
                                 });
                             }
                         } else {
-                            $query->where($filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
+                            $query->where($filterObj->columnName, 'like', '%' . $filterObj->value . '%');
                         }
                     }
                 });

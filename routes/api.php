@@ -256,6 +256,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('health-condition-group/{healthConditionGroup}', [HealthConditionGroupController::class, 'show'])->middleware('role:manage_health_condition,translate_health_condition');
     Route::put('health-condition-group/{healthConditionGroup}', [HealthConditionGroupController::class, 'update'])->middleware('role:manage_health_condition,translate_health_condition');
     Route::delete('health-condition-group/{healthConditionGroup}', [HealthConditionGroupController::class, 'destroy'])->middleware('role:manage_health_condition');
+    Route::get('health-condition-groups/find', [HealthConditionGroupController::class, 'find'])->middleware('role:manage_health_condition');
 
     // Health Condition
     Route::get('health-condition', [HealthConditionController::class, 'index'])->middleware('role:view_health_condition,manage_health_condition,translate_health_condition');
@@ -263,6 +264,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('health-condition/{healthCondition}', [HealthConditionController::class, 'show'])->middleware('role:manage_health_condition,translate_health_condition');
     Route::put('health-condition/{healthCondition}', [HealthConditionController::class, 'update'])->middleware('role:manage_health_condition,translate_health_condition');
     Route::delete('health-condition/{healthCondition}', [HealthConditionController::class, 'destroy'])->middleware('role:manage_health_condition');
+    Route::get('health-conditions/find', [HealthConditionController::class, 'find'])->middleware('role:manage_health_condition');
 
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData'])->middleware('role:view_category_tree');
