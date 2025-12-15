@@ -24,15 +24,6 @@ class ClinicController extends Controller
      *     tags={"Clinic"},
      *     summary="Lists all clinics",
      *     operationId="clinicList",
-     *     @OA\Parameter(
-     *         name="country_id",
-     *         in="query",
-     *         description="Country id",
-     *         required=false,
-     *         @OA\Schema(
-     *             type="integer"
-     *         )
-     *     ),
      *     @OA\Response(
      *         response="200",
      *         description="successful operation"
@@ -47,24 +38,11 @@ class ClinicController extends Controller
      *     },
      * )
      *
-     * @param \Illuminate\Http\Request $request
-     *
      * @return array
      */
-    public function index(Request $request)
+    public function index()
     {
-        $query = Clinic::select('clinics.*');
-
-        $countryId = $request->get('country_id');
-        if (!$countryId && Auth::user()) {
-            $countryId = Auth::user()->country_id;
-        }
-
-        if ($countryId) {
-            $query->where('clinics.country_id', $countryId);
-        }
-
-        $clinics = $query->get();
+        $clinics = Auth::user()->region->clinics;
 
         return ['success' => true, 'data' => ClinicResource::collection($clinics)];
     }
