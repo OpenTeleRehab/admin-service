@@ -235,8 +235,8 @@ class RegionController extends Controller
                 'message' => 'error.region.therapist_limit.greater_than.country.therapist_limit',
                 'translate_params' => [
                     'allocated_therapist_limit' => $countryLimitation['allocated_therapist_limit'],
-                    'remaining_therapist_limit' => $countryLimitation['remaining_therapist_limit'],
-                    'therapist_limit_used' => $countryLimitation['therapist_limit_used'],
+                    'remaining_therapist_limit' => $countryLimitation['remaining_therapist_limit'] + $region->therapist_limit,
+                    'therapist_limit_used' => $countryLimitation['therapist_limit_used'] - $region->therapist_limit,
                 ]
             ], 422);
         }
@@ -246,8 +246,8 @@ class RegionController extends Controller
                 'message' => 'error.region.phc_worker_limit.greater_than.country.phc_worker_limit',
                 'translate_params' => [
                     'allocated_phc_worker_limit' => $countryLimitation['allocated_phc_worker_limit'],
-                    'remaining_phc_worker_limit' => $countryLimitation['remaining_phc_worker_limit'],
-                    'phc_worker_limit_used' => $countryLimitation['phc_worker_limit_used'],
+                    'remaining_phc_worker_limit' => $countryLimitation['remaining_phc_worker_limit'] + $country->phc_worker_limit,
+                    'phc_worker_limit_used' => $countryLimitation['phc_worker_limit_used'] - $country->phc_worker_limit,
                 ]
             ], 422);
         }
