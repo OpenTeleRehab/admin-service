@@ -54,8 +54,10 @@ class LimitationHelper
         $remainingPhcWorkerLimit = $country->phc_worker_limit - $phcWorkerLimitUsed;
 
         return [
+            'allocated_therapist_limit' => $country->therapist_limit,
             'therapist_limit_used' => $therapistLimitUsed,
             'remaining_therapist_limit' => $remainingTherapistLimit,
+            'allocated_phc_worker_limit' => $country->phc_worker_limit,
             'phc_worker_limit_used' => $phcWorkerLimitUsed,
             'remaining_phc_worker_limit' => $remainingPhcWorkerLimit,
         ];
