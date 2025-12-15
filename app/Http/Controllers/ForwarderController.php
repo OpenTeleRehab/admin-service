@@ -84,6 +84,30 @@ class ForwarderController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     *
+     * @return \GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response|\Illuminate\Http\Response
+     */
+    public function show(Request $request)
+    {
+        $service_name = $request->route()->getName();
+        $country = $request->header('country');
+        $endpoint = str_replace('api/', '/', $request->path());
+        $user = Auth::user();
+
+        if ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
+            return Http::withToken($access_token)->withHeaders([
+                'country' => $country,
+                'int-clinic-id' => $user->clinic_id,
+            ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
+        }
+    }
+
+    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -94,11 +118,23 @@ class ForwarderController extends Controller
     {
         $service_name = $request->route()->getName();
         $endpoint = str_replace('api/', '/', $request->path());
+        $user = Auth::user();
 
         if ($service_name !== null && str_contains($service_name, Forwarder::THERAPIST_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
             $response = Http::withToken($access_token)
                 ->put(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
+        }
+
+        if ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
+            $accessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
+            $response = Http::withToken($accessToken)
+                ->withHeaders([
+                    'Accept' => 'application/json',
+                    'int-clinic-id' => $user->clinic_id,
+                ])
+                ->put(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
         }
 
         return $response;
