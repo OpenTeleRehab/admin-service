@@ -430,5 +430,8 @@
     "phc.patient.message.pending_supplementary_phc_worker_removed": "Pending supplementary PHC worker has been removed.",
     "phc.patient.message.patient_account_deleted": "Patient account has been deleted successfully.",
     "phc.patient.message.account_deactivated": "Patient account has been deactivated successfully.",
-    "phc.patient.message.account_activated": "Patient account has been activated successfully."
+    "phc.patient.message.account_activated": "Patient account has been activated successfully.",
+    "phc.patient.deactivate_account": "Deactivate Account",
+    "phc.patient.activate_account": "Activate Account",
+    "phc.patient.no_more_option": "No more option available"
 }
