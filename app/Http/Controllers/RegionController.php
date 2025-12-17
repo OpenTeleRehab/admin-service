@@ -231,11 +231,25 @@ class RegionController extends Controller
         $countryLimitation = LimitationHelper::countryLimitation($country->id);
 
         if ($validatedData['therapist_limit'] > $countryLimitation['remaining_therapist_limit'] + $region->therapist_limit) {
-            abort(422, 'error.region.therapist_limit.greater_than.country.therapist_limit');
+            return response()->json([
+                'message' => 'error.region.therapist_limit.greater_than.country.therapist_limit',
+                'translate_params' => [
+                    'allocated_therapist_limit' => $countryLimitation['allocated_therapist_limit'],
+                    'remaining_therapist_limit' => $countryLimitation['remaining_therapist_limit'],
+                    'therapist_limit_used' => $countryLimitation['therapist_limit_used'],
+                ]
+            ], 422);
         }
 
         if ($validatedData['phc_worker_limit'] > $countryLimitation['remaining_phc_worker_limit'] + $country->phc_worker_limit) {
-            abort(422, 'error.region.phc_worker_limit.greater_than.country.phc_worker_limit');
+            return response()->json([
+                'message' => 'error.region.phc_worker_limit.greater_than.country.phc_worker_limit',
+                'translate_params' => [
+                    'allocated_phc_worker_limit' => $countryLimitation['allocated_phc_worker_limit'],
+                    'remaining_phc_worker_limit' => $countryLimitation['remaining_phc_worker_limit'],
+                    'phc_worker_limit_used' => $countryLimitation['phc_worker_limit_used'],
+                ]
+            ], 422);
         }
 
         $region->update($validatedData);
