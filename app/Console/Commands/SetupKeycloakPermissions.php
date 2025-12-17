@@ -86,6 +86,7 @@ class SetupKeycloakPermissions extends Command
             'get_question_file',
             'get_question_answer',
             'get_questionnaire_category',
+            'manage_profession',
         ];
         $groupRoles = [
             'super_admin' => [
@@ -242,6 +243,7 @@ class SetupKeycloakPermissions extends Command
                 'manage_phc_service',
                 'manage_phc_service_admin',
                 'manage_survey',
+                'view_default_limited_patient',
             ],
             'phc_service_admin' => [
                 'view_profession',
@@ -261,6 +263,7 @@ class SetupKeycloakPermissions extends Command
                 'view_phc_worker_list',
                 'manage_survey',
                 'view_number_of_phc_service_phc_worker',
+                'manage_download_tracker',
             ],
 
         ];
