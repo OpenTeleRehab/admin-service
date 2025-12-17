@@ -31,6 +31,7 @@ use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\QuestionnaireController;
+use App\Http\Controllers\ScreeningQuestionnaireController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StaticPageController;
@@ -221,6 +222,14 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('survey/publish/{survey}', [SurveyController::class, 'publish'])->middleware('role:manage_survey');
     Route::post('survey/submit', [SurveyController::class, 'submit'])->middleware('role:submit_survey');
     Route::post('survey/skip', [SurveyController::class, 'skipSurvey'])->middleware('role:skip_survey');
+
+    // Screening Questionnaire
+    Route::get('screening-questionnaires', [ScreeningQuestionnaireController::class, 'index'])->middleware('role:access_all');
+    Route::get('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'show'])->middleware('role:manage_screening_questionnaire');
+    Route::put('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'update'])->middleware('role:manage_screening_questionnaire');
+    Route::post('screening-questionnaires/{screeningQuestionnaire}/submit', [ScreeningQuestionnaireController::class, 'submit'])->middleware('role:access_all');
+    Route::post('screening-questionnaires', [ScreeningQuestionnaireController::class, 'store'])->middleware('role:manage_screening_questionnaire');
+    Route::post('screening-questionnaires/{screeningQuestionnaire}/publish', [ScreeningQuestionnaireController::class, 'publish'])->middleware('role:manage_screening_questionnaire');
 
     // Health Condition Group
     Route::get('health-condition-group', [HealthConditionGroupController::class, 'index'])

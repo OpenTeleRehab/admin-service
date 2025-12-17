@@ -18,6 +18,7 @@ class File extends Model
     const EXERCISE_PATH = 'exercise';
     const EDUCATION_MATERIAL_PATH = 'education_material';
     const QUESTIONNAIRE_PATH = 'questionnaire';
+    const SCREENING_QUESTIONNAIRE_PATH = 'screening_questionnaire';
     const EXERCISE_THUMBNAIL_PATH = self::EXERCISE_PATH . '/thumbnail';
     const EDUCATION_MATERIAL_THUMBNAIL_PATH = self::EDUCATION_MATERIAL_PATH . '/thumbnail';
     const STATIC_PAGE_PATH = 'static_page';
@@ -63,10 +64,10 @@ class File extends Model
             ]);
             if (!empty($response) && $response->successful()) {
                 $therapist = json_decode($response);
-            } 
+            }
         }
         $activity->causer_id = $therapist ? $therapist->id : $user->id;
-        $activity->full_name = $therapist ? $therapist->last_name . ' ' . $therapist->first_name : null; 
+        $activity->full_name = $therapist ? $therapist->last_name . ' ' . $therapist->first_name : null;
         $activity->clinic_id = $therapist ? $therapist->clinic_id : null;
         $activity->country_id = $therapist ? $therapist->country_id : null;
         $activity->group = $therapist ? 'therapist' : null;
