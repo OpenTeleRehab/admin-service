@@ -39,6 +39,16 @@ class Country extends Model
     }
 
     /**
+     * Get all provinces that belong to this country through its regions.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function provinces()
+    {
+        return $this->hasManyThrough(Province::class, Region::class);
+    }
+
+    /**
      * Get the options for activity logging.
      *
      * @return \Spatie\Activitylog\LogOptions
