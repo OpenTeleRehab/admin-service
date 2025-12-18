@@ -45,12 +45,6 @@ class AuditLogController extends Controller
     {
         $user = Auth::user();
         $data = $request->all();
-        if (!in_array($user->type, [self::SUPER_ADMIN, self::COUNTRY_ADMIN, self::CLINIC_ADMIN, self::ORGANIZATION_ADMIN])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'error_message.permission'
-            ], 403);
-        }
 
         $auditLogs = ExtendActivity::latest('created_at');
 

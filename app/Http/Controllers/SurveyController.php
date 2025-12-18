@@ -38,6 +38,8 @@ class SurveyController extends Controller
     {
         $user = Auth::user();
 
+        $surveys = [];
+
         if ($user->type === self::SUPER_ADMIN) {
             $surveys = $this->getSurveysForSuperAdmin()->get();
         }
