@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Helpers\LimitationHelper;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProvinceResource;
+use App\Models\Region;
 
 class ProvinceController extends Controller
 {
@@ -46,10 +47,9 @@ class ProvinceController extends Controller
         $pageSize = $request->get('page_size');
         $query = Auth::user()->region->provinces();
         if ($searchValue) {
-            $query->where('name' ,'like', '%' . $searchValue . '%');
+            $query->where('name', 'like', '%' . $searchValue . '%');
         }
         $provinces = $query->paginate($pageSize);
-
 
         return response()->json(['success' => true, 'data' => ProvinceResource::collection($provinces), 'total' => $provinces->total(), 'current_page' => $provinces->currentPage()]);
     }
@@ -81,7 +81,7 @@ class ProvinceController extends Controller
      *     )
      * )
      */
-    public function getByRegion()
+    public function getByUserRegion()
     {
         $provinces = Auth::user()->region->provinces;
         return response()->json(['data' => ProvinceResource::collection($provinces)]);
@@ -298,5 +298,19 @@ class ProvinceController extends Controller
     public function getLimitation(Province $province)
     {
         return response()->json(['data' => LimitationHelper::provinceLimitation($province->id)], 200);
+    }
+
+    /**
+     * Get all provinces that belong to the authenticated user's country.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProvincesByUserCountry()
+    {
+        $authUser = Auth::user();
+
+        $provinces = $authUser->country->provinces;
+
+        return response()->json(['data' => $provinces]);
     }
 }

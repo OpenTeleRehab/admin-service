@@ -345,7 +345,8 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Province
     Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province, view_province_list');
-    Route::get('provinces-by-region', [ProvinceController::class, 'getByRegion'])->middleware('role:manage_province');
+    Route::get('provinces-by-user-country', [ProvinceController::class, 'getProvincesByUserCountry'])->middleware('role:access_all');
+    Route::get('provinces-by-user-region', [ProvinceController::class, 'getByUserRegion'])->middleware('role:manage_province');
     Route::get('province-limitation/{province}', [ProvinceController::class, 'getLimitation'])->middleware('role:manage_province, view_province_list');
     Route::post('provinces', [ProvinceController::class, 'store'])->middleware('role:manage_province');
     Route::put('provinces/{province}', [ProvinceController::class, 'update'])->middleware('role:manage_province');
