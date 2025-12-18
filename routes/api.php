@@ -308,6 +308,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::name('patient.')->group(function () {
         Route::get('patient', [ForwarderController::class, 'index'])->middleware('role:access_all');
         Route::get('patient/list/by-therapist-ids', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_therapist_patient_list');
+        Route::get('patient/list/by-phc-worker-ids', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_therapist_patient_list');
         Route::get('patient/list/by-therapist-id', [ForwarderController::class, 'index'])->middleware('role:manage_patient');
         Route::get('patient/list/for-therapist-remove', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_remove_therapist_patient');
         Route::get('patient-treatment-plan', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_patient_treatment_plan');
