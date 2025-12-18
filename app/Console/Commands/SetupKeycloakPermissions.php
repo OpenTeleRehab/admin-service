@@ -264,6 +264,7 @@ class SetupKeycloakPermissions extends Command
                 'manage_survey',
                 'view_number_of_phc_service_phc_worker',
                 'manage_download_tracker',
+                'manage_patient'
             ],
 
         ];
