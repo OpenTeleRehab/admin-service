@@ -22,6 +22,7 @@ class ScreeningQuestionnaireQuestionResource extends JsonResource
             'order' => $this->order,
             'file' => $this->file,
             'options' => ScreeningQuestionnaireOptionResource::collection($this->options),
+            'logics' => ScreeningQuestionnaireQuestionLogicResource::collection($this->logics),
         ];
     }
 }

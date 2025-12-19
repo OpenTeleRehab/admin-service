@@ -56,6 +56,14 @@ class ScreeningQuestionnaireQuestion extends Model
     }
 
     /**
+     * Get the logic for the question.
+     */
+    public function logics(): HasMany
+    {
+        return $this->hasMany(ScreeningQuestionnaireQuestionLogic::class, 'question_id');
+    }
+
+    /**
      * Get the file that the question belongs to.
      */
     public function file(): BelongsTo
