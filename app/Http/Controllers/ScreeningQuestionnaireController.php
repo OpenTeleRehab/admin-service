@@ -107,7 +107,7 @@ class ScreeningQuestionnaireController extends Controller
 
                     if ($questionIndex >= 1) {
                         foreach ($questionItem['logics'] ?? [] as $logicItem) {
-                            if ($logicItem['target_question_id']) {
+                            if ($logicItem['target_question_id'] && $logicItem['condition_rule']) {
                                 $questionIds = array_column($sectionItem['questions'], 'id');
                                 $targetQuestionIndex = array_search($logicItem['target_question_id'], $questionIds);
 
@@ -178,7 +178,7 @@ class ScreeningQuestionnaireController extends Controller
             $sections = json_decode($request->get('sections'), true);
 
             foreach ($sections ?? [] as $sectionIndex => $sectionItem) {
-                ScreeningQuestionnaireSection::updateOrCreate(
+                $section = ScreeningQuestionnaireSection::updateOrCreate(
                     [
                         'id' => $sectionItem['id'],
                     ],
@@ -199,7 +199,7 @@ class ScreeningQuestionnaireController extends Controller
                         );
                     }
 
-                    ScreeningQuestionnaireQuestion::updateOrCreate(
+                    $question = ScreeningQuestionnaireQuestion::updateOrCreate(
                         [
                             'id' => $questionItem['id'],
                         ],
@@ -208,6 +208,8 @@ class ScreeningQuestionnaireController extends Controller
                             'question_type' => $questionItem['question_type'],
                             'mandatory' => (bool) $questionItem['mandatory'],
                             'order' => $questionIndex + 1,
+                            'section_id' => $section->id,
+                            'questionnaire_id' => $screeningQuestionnaire->id,
                             'file_id' => $file['id'] ?? null,
                         ],
                     );
@@ -227,6 +229,7 @@ class ScreeningQuestionnaireController extends Controller
                                 'id' => $optionItem['id'],
                             ],
                             [
+                                'question_id' => $question->id,
                                 'option_text' => $optionItem['option_text'] ?? '',
                                 'option_point' => $optionItem['option_point'] ?? null,
                                 'threshold' => $optionItem['threshold'] ?? null,
@@ -239,7 +242,7 @@ class ScreeningQuestionnaireController extends Controller
 
                     if ($questionIndex >= 1) {
                         foreach ($questionItem['logics'] ?? [] as $logicItem) {
-                            if ($logicItem['target_question_id']) {
+                            if ($logicItem['target_question_id'] && $logicItem['condition_rule']) {
                                 // TODO: Set new target_option_id for new question option.
                                 ScreeningQuestionnaireQuestionLogic::updateOrCreate(
                                     [
