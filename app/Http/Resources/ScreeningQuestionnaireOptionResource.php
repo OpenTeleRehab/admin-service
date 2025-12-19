@@ -18,7 +18,7 @@ class ScreeningQuestionnaireOptionResource extends JsonResource
             'id' => $this->id,
             'option_text' => $this->option_text,
             'option_point' => $this->option_point,
-            'threshold ' => $this->threshold,
+            'threshold' => $this->threshold,
             'min' => $this->min,
             'max' => $this->max,
             'file' => $this->file,
