@@ -35,6 +35,14 @@ class MfaSetting extends Model
         'skip' => 3,
     ];
 
+    const TIME_UNIT_MULTIPLIER = [
+        'seconds' => 1,
+        'minutes' => 60,
+        'hours' => 3600,
+        'days' => 86400,
+        'weeks' => 604800,
+    ];
+
     /**
      * The attributes that are mass assignable.
      */
@@ -48,6 +56,8 @@ class MfaSetting extends Model
         'mfa_enforcement',
         'mfa_expiration_duration',
         'skip_mfa_setup_duration',
+        'mfa_expiration_unit',
+        'skip_mfa_setup_unit',
     ];
 
     /**
@@ -104,5 +114,29 @@ class MfaSetting extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function getMfaExpirationDurationInSecondsAttribute(): ?int
+    {
+        if (!$this->mfa_expiration_duration || !$this->mfa_expiration_unit) {
+            return null;
+        }
+
+        return (int) (
+            $this->mfa_expiration_duration *
+            (self::TIME_UNIT_MULTIPLIER[$this->mfa_expiration_unit] ?? 1)
+        );
+    }
+
+    public function getSkipMfaSetupDurationInSecondsAttribute(): ?int
+    {
+        if (!$this->skip_mfa_setup_duration || !$this->skip_mfa_setup_unit) {
+            return null;
+        }
+
+        return (int) (
+            $this->skip_mfa_setup_duration *
+            (self::TIME_UNIT_MULTIPLIER[$this->skip_mfa_setup_unit] ?? 1)
+        );
     }
 }

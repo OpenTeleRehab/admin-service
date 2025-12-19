@@ -99,6 +99,8 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                     $mfaSetting->update([
                         'mfa_expiration_duration' => $this->mfaSetting?->mfa_expiration_duration,
                         'skip_mfa_setup_duration' => $this->mfaSetting?->skip_mfa_setup_duration,
+                        'mfa_expiration_unit' => $this->mfaSetting?->mfa_expiration_unit,
+                        'skip_mfa_setup_unit' => $this->mfaSetting?->skip_mfa_setup_unit,
                     ]);
                 }
             }
@@ -122,6 +124,10 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                             'mfa_enforcement' => $mfaSetting->mfa_enforcement,
                             'mfa_expiration_duration' => $mfaSetting->mfa_expiration_duration,
                             'skip_mfa_setup_duration' => $mfaSetting->skip_mfa_setup_duration,
+                            'mfa_expiration_unit' => $mfaSetting->mfa_expiration_unit,
+                            'skip_mfa_setup_unit' => $mfaSetting->skip_mfa_setup_unit,
+                            'mfa_expiration_duration_in_seconds' => $mfaSetting->mfa_expiration_duration_in_seconds,
+                            'skip_mfa_setup_duration_in_seconds' => $mfaSetting->skip_mfa_setup_duration_in_seconds,
                         ]);
 
                     if (!$response->successful()) {
@@ -182,8 +188,8 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
 
                     $payload = [
                         'mfaEnforcement' => $mfaSetting->mfa_enforcement ?? null,
-                        'trustedDeviceMaxAge' => $mfaSetting->mfa_expiration_duration ?? null,
-                        'skipMfaMaxAge' => $mfaSetting->skip_mfa_setup_duration ?? null,
+                        'trustedDeviceMaxAge' => $mfaSetting->mfa_expiration_duration_in_seconds ?? null,
+                        'skipMfaMaxAge' => $mfaSetting->skip_mfa_setup_duration_in_seconds ?? null,
                     ];
 
                     if (isset($existingAttributes['skipMfaUntil'])) {
@@ -191,7 +197,7 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
 
                         $now = Carbon::now();
 
-                        $futureDate = $now->copy()->addSeconds($mfaSetting->skip_mfa_setup_duration);
+                        $futureDate = $now->copy()->addSeconds($mfaSetting->skip_mfa_setup_duration_in_seconds);
 
                         $isoString = $futureDate->format('Y-m-d\TH:i:s.u\Z');
 
