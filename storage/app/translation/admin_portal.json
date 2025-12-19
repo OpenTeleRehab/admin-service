@@ -223,6 +223,8 @@
     "screening_questionnaire.number_of_question": "No. of Questions",
     "screening_questionnaire.publish_confirmation_title": "Publish Screening Questionnaire",
     "screening_questionnaire.publish_confirmation_message": "Are you sure you want to publish this questionnaire?",
+    "screening_questionnaire.used_update_confirmation_title": "Screening questionnaire update",
+    "screening_questionnaire.used_update_confirmation_message": "Attention, any update will apply to questionnaires currently and previously shared with patients. Are you still want to update ?",
     "exercise.search": "Search exercises",
     "education_material.search": "Search materials",
     "questionnaire.search": "Search questionnaires",

@@ -11,10 +11,12 @@ use App\Http\Resources\ScreeningQuestionnaireResource;
 use App\Models\File;
 use App\Models\ScreeningQuestionnaire;
 use App\Models\ScreeningQuestionnaireQuestion;
+use App\Models\ScreeningQuestionnaireQuestionLogic;
 use App\Models\ScreeningQuestionnaireQuestionOption;
 use App\Models\ScreeningQuestionnaireSection;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ScreeningQuestionnaireController extends Controller
 {
@@ -41,71 +43,106 @@ class ScreeningQuestionnaireController extends Controller
      */
     public function store(StoreScreeningQuestionnaireRequest $request)
     {
-        $allFiles = $request->allFiles();
+        DB::beginTransaction();
 
-        $screeningQuestionnaire = ScreeningQuestionnaire::create($request->validated());
+        try {
+            $allFiles = $request->allFiles();
 
-        $sections = json_decode($request->get('sections'), true);
+            $screeningQuestionnaire = ScreeningQuestionnaire::create($request->validated());
 
-        foreach ($sections ?? [] as $sectionIndex => $sectionItem) {
-            $section = ScreeningQuestionnaireSection::create([
-                'title' => $sectionItem['title'],
-                'description' => $sectionItem['description'],
-                'order' => $sectionIndex + 1,
-                'questionnaire_id' => $screeningQuestionnaire->id,
-            ]);
+            $sections = json_decode($request->get('sections'), true);
 
-            foreach ($sectionItem['questions'] ?? [] as $questionIndex => $questionItem) {
-                $fileId = null;
-
-                if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'])) {
-                    $file = FileHelper::createFile(
-                        $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'],
-                        File::SCREENING_QUESTIONNAIRE_PATH,
-                    );
-
-                    $fileId = $file?->id ?? null;
-                }
-
-                $question = ScreeningQuestionnaireQuestion::create([
-                    'question_text' => $questionItem['question_text'],
-                    'question_type' => $questionItem['question_type'],
-                    'mandatory' => (bool) $questionItem['mandatory'],
-                    'order' => $questionIndex + 1,
-                    'section_id' => $section->id,
+            foreach ($sections ?? [] as $sectionIndex => $sectionItem) {
+                $section = ScreeningQuestionnaireSection::create([
+                    'title' => $sectionItem['title'],
+                    'description' => $sectionItem['description'],
+                    'order' => $sectionIndex + 1,
                     'questionnaire_id' => $screeningQuestionnaire->id,
-                    'file_id' => $fileId,
                 ]);
 
-                foreach ($questionItem['options'] ?? [] as $optionIndex => $optionItem) {
+                foreach ($sectionItem['questions'] ?? [] as $questionIndex => $questionItem) {
                     $fileId = null;
 
-                    if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'])) {
+                    if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'])) {
                         $file = FileHelper::createFile(
-                            $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'],
+                            $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'],
                             File::SCREENING_QUESTIONNAIRE_PATH,
                         );
 
                         $fileId = $file?->id ?? null;
                     }
 
-                    ScreeningQuestionnaireQuestionOption::create([
-                        'option_text' => $optionItem['option_text'] ?? '',
-                        'option_point' => $optionItem['option_point'] ?? null,
-                        'threshold' => $optionItem['threshold'] ?? null,
-                        'min' => $optionItem['min'] ?? null,
-                        'max' => $optionItem['max'] ?? null,
-                        'question_id' => $question->id,
+                    $question = ScreeningQuestionnaireQuestion::create([
+                        'question_text' => $questionItem['question_text'],
+                        'question_type' => $questionItem['question_type'],
+                        'mandatory' => (bool) $questionItem['mandatory'],
+                        'order' => $questionIndex + 1,
+                        'section_id' => $section->id,
+                        'questionnaire_id' => $screeningQuestionnaire->id,
                         'file_id' => $fileId,
                     ]);
+
+                    foreach ($questionItem['options'] ?? [] as $optionIndex => $optionItem) {
+                        $fileId = null;
+
+                        if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'])) {
+                            $file = FileHelper::createFile(
+                                $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'],
+                                File::SCREENING_QUESTIONNAIRE_PATH,
+                            );
+
+                            $fileId = $file?->id ?? null;
+                        }
+
+                        ScreeningQuestionnaireQuestionOption::create([
+                            'option_text' => $optionItem['option_text'] ?? '',
+                            'option_point' => $optionItem['option_point'] ?? null,
+                            'threshold' => $optionItem['threshold'] ?? null,
+                            'min' => $optionItem['min'] ?? null,
+                            'max' => $optionItem['max'] ?? null,
+                            'question_id' => $question->id,
+                            'file_id' => $fileId,
+                        ]);
+                    }
+
+                    if ($questionIndex >= 1) {
+                        foreach ($questionItem['logics'] ?? [] as $logicItem) {
+                            if ($logicItem['target_question_id']) {
+                                $questionIds = array_column($sectionItem['questions'], 'id');
+                                $targetQuestionIndex = array_search($logicItem['target_question_id'], $questionIds);
+
+                                if ($section->questions[$targetQuestionIndex]?->id) {
+                                    $targetQuestions = $section->questions[$targetQuestionIndex];
+                                    $targetOptionIndex = $logicItem['target_option_id'];
+
+                                    ScreeningQuestionnaireQuestionLogic::create([
+                                        'question_id' => $question->id,
+                                        'target_question_id' => $targetQuestions->id,
+                                        'target_option_id' => $targetQuestions->options[$targetOptionIndex]?->id ?? null,
+                                        'condition_type' => $logicItem['condition_type'],
+                                        'condition_rule' => $logicItem['condition_rule'],
+                                    ]);
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'success_message.questionnaire_create',
-        ]);
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'success_message.questionnaire_create',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -128,81 +165,114 @@ class ScreeningQuestionnaireController extends Controller
      */
     public function update(UpdateScreeningQuestionnaireRequest $request, ScreeningQuestionnaire $screeningQuestionnaire)
     {
-        $allFiles = $request->allFiles();
+        DB::beginTransaction();
 
-        $screeningQuestionnaire->update([
-            'title' => $request->get('title'),
-            'description' => $request->get('description'),
-        ]);
+        try {
+            $allFiles = $request->allFiles();
 
-        $sections = json_decode($request->get('sections'), true);
+            $screeningQuestionnaire->update([
+                'title' => $request->get('title'),
+                'description' => $request->get('description'),
+            ]);
 
-        foreach ($sections ?? [] as $sectionIndex => $sectionItem) {
-            ScreeningQuestionnaireSection::updateOrCreate(
-                [
-                    'id' => $sectionItem['id'],
-                ],
-                [
-                    'title' => $sectionItem['title'],
-                    'description' => $sectionItem['description'],
-                    'order' => $sectionIndex + 1,
-                ],
-            );
+            $sections = json_decode($request->get('sections'), true);
 
-            foreach ($sectionItem['questions'] ?? [] as $questionIndex => $questionItem) {
-                $file = $questionItem['file'] ?? null;
-
-                if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'])) {
-                    $file = FileHelper::createFile(
-                        $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'],
-                        File::SCREENING_QUESTIONNAIRE_PATH,
-                    );
-                }
-
-                ScreeningQuestionnaireQuestion::updateOrCreate(
+            foreach ($sections ?? [] as $sectionIndex => $sectionItem) {
+                ScreeningQuestionnaireSection::updateOrCreate(
                     [
-                        'id' => $questionItem['id'],
+                        'id' => $sectionItem['id'],
                     ],
                     [
-                        'question_text' => $questionItem['question_text'],
-                        'question_type' => $questionItem['question_type'],
-                        'mandatory' => (bool) $questionItem['mandatory'],
-                        'order' => $questionIndex + 1,
-                        'file_id' => $file['id'] ?? null,
+                        'title' => $sectionItem['title'],
+                        'description' => $sectionItem['description'],
+                        'order' => $sectionIndex + 1,
                     ],
                 );
 
-                foreach ($questionItem['options'] ?? [] as $optionIndex => $optionItem) {
-                    $file = $optionItem['file'] ?? null;
+                foreach ($sectionItem['questions'] ?? [] as $questionIndex => $questionItem) {
+                    $file = $questionItem['file'] ?? null;
 
-                    if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'])) {
+                    if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'])) {
                         $file = FileHelper::createFile(
-                            $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'],
+                            $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'],
                             File::SCREENING_QUESTIONNAIRE_PATH,
                         );
                     }
 
-                    ScreeningQuestionnaireQuestionOption::updateOrCreate(
+                    ScreeningQuestionnaireQuestion::updateOrCreate(
                         [
-                            'id' => $optionItem['id'],
+                            'id' => $questionItem['id'],
                         ],
                         [
-                            'option_text' => $optionItem['option_text'] ?? '',
-                            'option_point' => $optionItem['option_point'] ?? null,
-                            'threshold' => $optionItem['threshold'] ?? null,
-                            'min' => $optionItem['min'] ?? null,
-                            'max' => $optionItem['max'] ?? null,
+                            'question_text' => $questionItem['question_text'],
+                            'question_type' => $questionItem['question_type'],
+                            'mandatory' => (bool) $questionItem['mandatory'],
+                            'order' => $questionIndex + 1,
                             'file_id' => $file['id'] ?? null,
                         ],
                     );
+
+                    foreach ($questionItem['options'] ?? [] as $optionIndex => $optionItem) {
+                        $file = $optionItem['file'] ?? null;
+
+                        if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'])) {
+                            $file = FileHelper::createFile(
+                                $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'],
+                                File::SCREENING_QUESTIONNAIRE_PATH,
+                            );
+                        }
+
+                        ScreeningQuestionnaireQuestionOption::updateOrCreate(
+                            [
+                                'id' => $optionItem['id'],
+                            ],
+                            [
+                                'option_text' => $optionItem['option_text'] ?? '',
+                                'option_point' => $optionItem['option_point'] ?? null,
+                                'threshold' => $optionItem['threshold'] ?? null,
+                                'min' => $optionItem['min'] ?? null,
+                                'max' => $optionItem['max'] ?? null,
+                                'file_id' => $file['id'] ?? null,
+                            ],
+                        );
+                    }
+
+                    if ($questionIndex >= 1) {
+                        foreach ($questionItem['logics'] ?? [] as $logicItem) {
+                            if ($logicItem['target_question_id']) {
+                                // TODO: Set new target_option_id for new question option.
+                                ScreeningQuestionnaireQuestionLogic::updateOrCreate(
+                                    [
+                                        'id' => $logicItem['id'],
+                                    ],
+                                    [
+                                        'question_id' => $questionItem['id'],
+                                        'target_question_id' => $logicItem['target_question_id'],
+                                        'target_option_id' => $logicItem['target_option_id'],
+                                        'condition_type' => $logicItem['condition_type'],
+                                        'condition_rule' => $logicItem['condition_rule'],
+                                    ]
+                                );
+                            }
+                        }
+                    }
                 }
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'success_message.questionnaire_update',
-        ]);
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'success_message.questionnaire_update',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
