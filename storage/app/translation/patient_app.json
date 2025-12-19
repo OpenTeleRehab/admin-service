@@ -433,5 +433,10 @@
     "phc.patient.message.account_activated": "Patient account has been activated successfully.",
     "phc.patient.deactivate_account": "Deactivate Account",
     "phc.patient.activate_account": "Activate Account",
-    "phc.patient.no_more_option": "No more option available"
+    "phc.patient.no_more_option": "No more option available",
+    "phc.patient.referral_status.invited": "Invited",
+    "phc.patient.referral_status.accepted": "Accepted",
+    "phc.patient.referral_status.declined": "Declined",
+    "phc.patient.transfer_status.invited": "Invited",
+    "phc.patient.transfer_status.declined": "Declined"
 }
