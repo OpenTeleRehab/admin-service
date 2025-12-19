@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\ScreeningQuestionnaireStatus;
 use App\Helpers\FileHelper;
+use App\Http\Requests\ListHistoryScreeningQuestionnaireRequest;
 use App\Http\Requests\StoreScreeningQuestionnaireRequest;
 use App\Http\Requests\SubmitScreeningQuestionnaireRequest;
 use App\Http\Requests\UpdateScreeningQuestionnaireRequest;
 use App\Http\Resources\ScreeningQuestionnaireResource;
 use App\Models\File;
 use App\Models\ScreeningQuestionnaire;
+use App\Models\ScreeningQuestionnaireAnswer;
 use App\Models\ScreeningQuestionnaireQuestion;
 use App\Models\ScreeningQuestionnaireQuestionLogic;
 use App\Models\ScreeningQuestionnaireQuestionOption;
@@ -31,6 +33,23 @@ class ScreeningQuestionnaireController extends Controller
         return response()->json([
             'success' => true,
             'data' => ScreeningQuestionnaireResource::collection(ScreeningQuestionnaire::all()),
+        ]);
+    }
+
+
+    /**
+     * Display a published listing of the resource.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getScreeningQuestionnarieList(Request $request)
+    {
+        $questionnaires = ScreeningQuestionnaire::where('status', 'published')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => ScreeningQuestionnaireResource::collection($questionnaires),
         ]);
     }
 
@@ -327,5 +346,31 @@ class ScreeningQuestionnaireController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+        /**
+     * Get Interview History List the specified resource in storage.
+     *
+     * @param ListHistoryScreeningQuestionnaireRequest $request
+     * @param ScreeningQuestionnaire $screeningQuestionnaire
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function listHistoryScreeningQuestionnarie(ListHistoryScreeningQuestionnaireRequest $request)
+    {
+        $userId = $request->input('user_id');
+        $questionnaireId = $request->input('questionnaire_id');
+
+        $data = ScreeningQuestionnaireAnswer::
+        where([
+            'user_id' => $userId,
+            'questionnaire_id' => $questionnaireId,
+        ])->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => "success_get_interview_history_list",
+            'data' => $data,
+        ]);
     }
 }
