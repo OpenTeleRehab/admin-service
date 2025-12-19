@@ -12,7 +12,7 @@ class LimitationHelper
     /**
      * Get the limitation for a the organization.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return array
      */
     public static function orgLimitation()
     {
@@ -37,7 +37,7 @@ class LimitationHelper
     /**
      * Get the limitation for a the country.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return array
      */
     public static function countryLimitation($countryId = null)
     {
@@ -66,7 +66,7 @@ class LimitationHelper
     /**
      * Get the limitation for a the region.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return array
      */
     public static function regionLimitation($region)
     {
@@ -86,7 +86,7 @@ class LimitationHelper
     /**
      * Get the limitation for a the province.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return array
      */
     public static function provinceLimitation($provinceId)
     {
