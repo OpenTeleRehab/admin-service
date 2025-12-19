@@ -31,6 +31,7 @@ class GlobalPatient extends Model
         'identity',
         'country_id',
         'clinic_id',
+        'phc_service_id',
         'enabled',
         'location',
         'deleted_at',
