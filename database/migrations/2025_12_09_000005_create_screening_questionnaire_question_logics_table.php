@@ -18,6 +18,7 @@ class CreateScreeningQuestionnaireQuestionLogicsTable extends Migration
             $table->unsignedBigInteger('question_id');
             $table->unsignedBigInteger('target_question_id');
             $table->unsignedBigInteger('target_option_id')->nullable();
+            $table->integer('target_option_value')->nullable();
             $table->string('condition_type');
             $table->string('condition_rule');
             $table->timestamps();

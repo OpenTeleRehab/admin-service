@@ -18,19 +18,10 @@ class ScreeningQuestionnaireQuestionLogic extends Model
         'question_id',
         'target_question_id',
         'target_option_id',
+        'target_option_value',
         'condition_type',
         'condition_rule',
     ];
-
-    /**
-     * Bootstrap the model and its traits.
-     *
-     * @return void
-     */
-    public static function boot()
-    {
-        parent::boot();
-    }
 
     /**
      * Get the options for the question.
