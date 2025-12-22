@@ -90,8 +90,6 @@ class SetupKeycloakPermissions extends Command
         ];
         $groupRoles = [
             'super_admin' => [
-                'view_profession',
-                'view_clinic_list',
                 'view_default_limited_patient',
                 'view_category_tree',
                 'manage_own_profile',
@@ -107,10 +105,8 @@ class SetupKeycloakPermissions extends Command
                 'manage_health_condition',
             ],
             'organization_admin' => [
-                'view_profession',
                 'view_organization',
                 'view_country_therapist_limit',
-                'view_clinic_list',
                 'view_exercise_list',
                 'view_educational_material_list',
                 'view_default_limited_patient',
@@ -163,7 +159,8 @@ class SetupKeycloakPermissions extends Command
                 'manage_survey',
                 'access_all',
                 'manage_region',
-                'manage_regional_admin'
+                'manage_regional_admin',
+                'manage_profession',
             ],
             'clinic_admin' => [
                 'view_profession',

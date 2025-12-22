@@ -212,7 +212,7 @@ class RegionController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Region $region
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, Region $region)
     {
@@ -229,13 +229,24 @@ class RegionController extends Controller
         ]);
 
         $countryLimitation = LimitationHelper::countryLimitation($country->id);
+        $regionLimitation = LimitationHelper::regionLimitation($region);
+        $remainingTherapistLimitExcluded = $countryLimitation['remaining_therapist_limit'] + $region->therapist_limit;
 
-        if ($validatedData['therapist_limit'] > $countryLimitation['remaining_therapist_limit'] + $region->therapist_limit) {
+        if ($validatedData['therapist_limit'] > $remainingTherapistLimitExcluded) {
             return response()->json([
                 'message' => 'error.region.therapist_limit.greater_than.country.therapist_limit',
                 'translate_params' => [
                     'allocated_therapist_limit' => $countryLimitation['allocated_therapist_limit'],
-                    'remaining_therapist_limit' => $countryLimitation['remaining_therapist_limit'],
+                    'remaining_therapist_limit' => $remainingTherapistLimitExcluded,
+                    'therapist_limit_used' => $countryLimitation['therapist_limit_used'] - $region->therapist_limit,
+                ]
+            ], 422);
+        }
+
+        if ($validatedData['therapist_limit'] < $regionLimitation['therapist_limit_used']) {
+            return response()->json([
+                'message' => 'error.region.therapist_limit.less_than.provinces.total.therapist_limit',
+                'translate_params' => [
                     'therapist_limit_used' => $countryLimitation['therapist_limit_used'],
                 ]
             ], 422);
@@ -246,7 +257,16 @@ class RegionController extends Controller
                 'message' => 'error.region.phc_worker_limit.greater_than.country.phc_worker_limit',
                 'translate_params' => [
                     'allocated_phc_worker_limit' => $countryLimitation['allocated_phc_worker_limit'],
-                    'remaining_phc_worker_limit' => $countryLimitation['remaining_phc_worker_limit'],
+                    'remaining_phc_worker_limit' => $countryLimitation['remaining_phc_worker_limit'] + $country->phc_worker_limit,
+                    'phc_worker_limit_used' => $countryLimitation['phc_worker_limit_used'] - $country->phc_worker_limit,
+                ]
+            ], 422);
+        }
+
+        if ($validatedData['phc_worker_limit'] < $regionLimitation['phc_worker_limit_used']) {
+            return response()->json([
+                'message' => 'error.region.phc_worker_limit.less_than.provinces.total.phc_worker_limit',
+                'translate_params' => [
                     'phc_worker_limit_used' => $countryLimitation['phc_worker_limit_used'],
                 ]
             ], 422);
@@ -346,5 +366,34 @@ class RegionController extends Controller
             'total' => $regions->total(),
             'current_page' => $regions->currentPage()
         ], 200);
+    }
+
+    /**
+     * Retrieve the list of limitations for all regions within the authenticated user's country.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function countryRegionLimitations()
+    {
+        $country = Auth::user()->country;
+
+        $regions = $country->regions;
+
+        $data = [];
+
+        foreach ($regions as $region) {
+            $regionLimitation = LimitationHelper::regionLimitation($region);
+
+            $data[] = [
+                'id' => $region->id,
+                'name' => $region->name,
+                'therapist_limit_used' => $regionLimitation['therapist_limit_used'],
+                'remaining_therapist_limit' => $regionLimitation['remaining_therapist_limit'],
+                'phc_worker_limit_used' => $regionLimitation['phc_worker_limit_used'],
+                'remaining_phc_worker_limit' => $regionLimitation['remaining_phc_worker_limit'],
+            ];
+        }
+
+        return response()->json(['data' => $data], 200);
     }
 }

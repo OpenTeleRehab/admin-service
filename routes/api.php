@@ -345,6 +345,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Region
     Route::apiResource('regions', RegionController::class)->middleware('role:manage_region,view_region_list');
     Route::get('region-limitation', [RegionController::class, 'getLimitation'])->middleware('role:view_region_list');
+    Route::get('region-limitations-by-user-country', [RegionController::class, 'countryRegionLimitations'])->middleware('role:view_region_list');
 
     // Province
     Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province, view_province_list');
