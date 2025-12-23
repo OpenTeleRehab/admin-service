@@ -16,7 +16,7 @@ class CreateScreeningQuestionnairesTable extends Migration
         Schema::create('screening_questionnaires', function (Blueprint $table) {
             $table->id();
             $table->json('title');
-            $table->json('description');
+            $table->json('description')->nullable();
             $table->dateTime('published_date')->nullable();
             $table->string('status');
             $table->json('auto_translated')->nullable();

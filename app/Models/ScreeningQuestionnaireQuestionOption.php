@@ -21,8 +21,11 @@ class ScreeningQuestionnaireQuestionOption extends Model
         'threshold',
         'min',
         'max',
+        'min_note',
+        'max_note',
         'question_id',
         'file_id',
+        'ref',
         'auto_translated',
     ];
 
@@ -33,6 +36,8 @@ class ScreeningQuestionnaireQuestionOption extends Model
      */
     public $translatable = [
         'option_text',
+        'min_note',
+        'max_note',
         'auto_translated',
     ];
 

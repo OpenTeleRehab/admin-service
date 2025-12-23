@@ -19,6 +19,7 @@ class ScreeningQuestionnaireQuestionLogicResource extends JsonResource
             'question_id' => $this->question_id,
             'target_question_id' => $this->target_question_id,
             'target_option_id' => $this->target_option_id,
+            'target_option_value' => $this->target_option_value,
             'condition_type' => $this->condition_type,
             'condition_rule' => $this->condition_rule,
         ];

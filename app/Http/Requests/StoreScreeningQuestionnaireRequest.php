@@ -23,7 +23,7 @@ class StoreScreeningQuestionnaireRequest extends FormRequest
     {
         return [
             'title' => 'required|string',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
         ];
     }
 }

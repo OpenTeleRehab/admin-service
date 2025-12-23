@@ -119,8 +119,11 @@ class ScreeningQuestionnaireController extends Controller
                             'threshold' => $optionItem['threshold'] ?? null,
                             'min' => $optionItem['min'] ?? null,
                             'max' => $optionItem['max'] ?? null,
+                            'min_note' => $optionItem['min_note'] ?? null,
+                            'max_note' => $optionItem['max_note'] ?? null,
                             'question_id' => $question->id,
                             'file_id' => $fileId,
+                            'ref' => $optionItem['id'], // For logic target option finding.
                         ]);
                     }
 
@@ -130,14 +133,15 @@ class ScreeningQuestionnaireController extends Controller
                                 $questionIds = array_column($sectionItem['questions'], 'id');
                                 $targetQuestionIndex = array_search($logicItem['target_question_id'], $questionIds);
 
-                                if ($section->questions[$targetQuestionIndex]?->id) {
-                                    $targetQuestions = $section->questions[$targetQuestionIndex];
-                                    $targetOptionIndex = $logicItem['target_option_id'];
+                                if ($section->questions[$targetQuestionIndex]) {
+                                    $targetQuestion = $section->questions[$targetQuestionIndex];
+                                    $targetOption = ScreeningQuestionnaireQuestionOption::firstWhere('ref', $logicItem['target_option_id']);
 
                                     ScreeningQuestionnaireQuestionLogic::create([
                                         'question_id' => $question->id,
-                                        'target_question_id' => $targetQuestions->id,
-                                        'target_option_id' => $targetQuestions->options[$targetOptionIndex]?->id ?? null,
+                                        'target_question_id' => $targetQuestion->id,
+                                        'target_option_id' => $targetOption?->id ?? null,
+                                        'target_option_value' => $logicItem['target_option_value'] ?? null,
                                         'condition_type' => $logicItem['condition_type'],
                                         'condition_rule' => $logicItem['condition_rule'],
                                     ]);
@@ -243,34 +247,74 @@ class ScreeningQuestionnaireController extends Controller
                             );
                         }
 
+                        $existingQuestionOption = ScreeningQuestionnaireQuestionOption::find($optionItem['id']);
+
+                        $questionOptionData = [
+                            'question_id' => $question->id,
+                            'option_text' => $optionItem['option_text'] ?? '',
+                            'option_point' => $optionItem['option_point'] ?? null,
+                            'threshold' => $optionItem['threshold'] ?? null,
+                            'min' => $optionItem['min'] ?? null,
+                            'max' => $optionItem['max'] ?? null,
+                            'min_note' => $optionItem['min_note'] ?? null,
+                            'max_note' => $optionItem['max_note'] ?? null,
+                            'file_id' => $file['id'] ?? null,
+                        ];
+
+                        if ($existingQuestionOption) {
+                            $questionOptionData = [
+                                ...$questionOptionData,
+                                'ref' => $existingQuestionOption->ref,
+                            ];
+                        } else {
+                            $questionOptionData = [
+                                ...$questionOptionData,
+                                'ref' => $optionItem['id'],
+                            ];
+                        }
+
                         ScreeningQuestionnaireQuestionOption::updateOrCreate(
                             [
                                 'id' => $optionItem['id'],
                             ],
-                            [
-                                'question_id' => $question->id,
-                                'option_text' => $optionItem['option_text'] ?? '',
-                                'option_point' => $optionItem['option_point'] ?? null,
-                                'threshold' => $optionItem['threshold'] ?? null,
-                                'min' => $optionItem['min'] ?? null,
-                                'max' => $optionItem['max'] ?? null,
-                                'file_id' => $file['id'] ?? null,
-                            ],
+                            $questionOptionData,
                         );
                     }
 
-                    if ($questionIndex >= 1) {
-                        foreach ($questionItem['logics'] ?? [] as $logicItem) {
-                            if ($logicItem['target_question_id'] && $logicItem['condition_rule']) {
-                                // TODO: Set new target_option_id for new question option.
+                    // Get existing logic ids.
+                    $logicIds = $question->logics->pluck('id')->toArray();
+
+                    $targetLogicIds = collect($questionItem['logics'])->pluck('id')->toArray();
+
+                    // Find logic ids that exist in the database but not in the submitted data.
+                    $diffLogicIds = array_diff($logicIds, $targetLogicIds);
+
+                    // Delete orphaned logics that are no longer in the submitted data.
+                    if (!empty($diffLogicIds)) {
+                        $question->logics()->whereIn('id', $diffLogicIds)->delete();
+                    }
+
+                    foreach ($questionItem['logics'] ?? [] as $logicItem) {
+                        if ($logicItem['target_question_id'] && $logicItem['condition_rule']) {
+                            $questions = ScreeningQuestionnaireQuestion::where('section_id', $section->id)->get();
+                            $questionIds = array_column($sectionItem['questions'], 'id');
+                            $targetQuestionIndex = array_search($logicItem['target_question_id'], $questionIds);
+
+                            if ($questions[$targetQuestionIndex]) {
+                                $targetQuestion = $questions[$targetQuestionIndex];
+                                $targetOption = ScreeningQuestionnaireQuestionOption::where('id', $logicItem['target_option_id'])
+                                    ->orWhere('ref', $logicItem['target_option_id'])
+                                    ->first();
+
                                 ScreeningQuestionnaireQuestionLogic::updateOrCreate(
                                     [
                                         'id' => $logicItem['id'],
                                     ],
                                     [
-                                        'question_id' => $questionItem['id'],
-                                        'target_question_id' => $logicItem['target_question_id'],
-                                        'target_option_id' => $logicItem['target_option_id'],
+                                        'question_id' => $question->id,
+                                        'target_question_id' => $targetQuestion->id,
+                                        'target_option_id' => $targetOption?->id ?? null,
+                                        'target_option_value' => $logicItem['target_option_value'],
                                         'condition_type' => $logicItem['condition_type'],
                                         'condition_rule' => $logicItem['condition_rule'],
                                     ]

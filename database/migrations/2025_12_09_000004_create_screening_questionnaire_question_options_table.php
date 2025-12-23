@@ -20,8 +20,11 @@ class CreateScreeningQuestionnaireQuestionOptionsTable extends Migration
             $table->integer('threshold')->nullable();
             $table->integer('min')->nullable();
             $table->integer('max')->nullable();
+            $table->json('min_note')->nullable();
+            $table->json('max_note')->nullable();
             $table->unsignedBigInteger('question_id');
             $table->unsignedBigInteger('file_id')->nullable();
+            $table->string('ref');
             $table->json('auto_translated')->nullable();
             $table->timestamps();
 

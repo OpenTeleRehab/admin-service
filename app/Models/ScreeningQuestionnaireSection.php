@@ -35,16 +35,6 @@ class ScreeningQuestionnaireSection extends Model
     ];
 
     /**
-     * Bootstrap the model and its traits.
-     *
-     * @return void
-     */
-    public static function boot()
-    {
-        parent::boot();
-    }
-
-    /**
      * Get the questions for the section.
      */
     public function questions(): HasMany
