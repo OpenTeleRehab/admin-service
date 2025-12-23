@@ -41,4 +41,12 @@ class ScreeningQuestionnaireSection extends Model
     {
         return $this->hasMany(ScreeningQuestionnaireQuestion::class, 'section_id');
     }
+
+    /**
+     * Get the actions for the section.
+     */
+    public function actions(): HasMany
+    {
+        return $this->hasMany(ScreeningQuestionnaireAction::class, 'section_id');
+    }
 }

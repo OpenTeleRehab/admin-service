@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateScreeningQuestionnaireRequest;
 use App\Http\Resources\ScreeningQuestionnaireResource;
 use App\Models\File;
 use App\Models\ScreeningQuestionnaire;
+use App\Models\ScreeningQuestionnaireAction;
 use App\Models\ScreeningQuestionnaireAnswer;
 use App\Models\ScreeningQuestionnaireQuestion;
 use App\Models\ScreeningQuestionnaireQuestionLogic;
@@ -149,6 +150,15 @@ class ScreeningQuestionnaireController extends Controller
                             }
                         }
                     }
+                }
+
+                foreach ($sectionItem['actions'] ?? [] as $actionItem) {
+                    ScreeningQuestionnaireAction::create([
+                        'section_id' => $section->id,
+                        'from' => $actionItem['from'],
+                        'to' => $actionItem['to'],
+                        'action_text' => $actionItem['action_text'],
+                    ]);
                 }
             }
 
@@ -323,6 +333,20 @@ class ScreeningQuestionnaireController extends Controller
                         }
                     }
                 }
+
+                foreach ($sectionItem['actions'] ?? [] as $actionItem) {
+                    ScreeningQuestionnaireAction::updateOrCreate(
+                        [
+                            'id' => $actionItem['id'],
+                        ],
+                        [
+                            'section_id' => $section->id,
+                            'from' => $actionItem['from'],
+                            'to' => $actionItem['to'],
+                            'action_text' => $actionItem['action_text'],
+                        ]
+                    );
+                }
             }
 
             DB::commit();
@@ -385,11 +409,16 @@ class ScreeningQuestionnaireController extends Controller
      * Remove the specified resource from storage.
      *
      * @param $id
-     * @return void
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id)
+    public function destroy(ScreeningQuestionnaire $screeningQuestionnaire)
     {
-        //
+        $screeningQuestionnaire->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'success_message.questionnaire_delete',
+        ]);
     }
 
         /**
