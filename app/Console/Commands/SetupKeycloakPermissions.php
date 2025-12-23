@@ -87,6 +87,8 @@ class SetupKeycloakPermissions extends Command
             'get_question_answer',
             'get_questionnaire_category',
             'manage_profession',
+            'manage_phc_worker_guidance',
+            'translate_phc_worker_guidance',
         ];
         $groupRoles = [
             'super_admin' => [
@@ -103,6 +105,8 @@ class SetupKeycloakPermissions extends Command
                 'generate_report',
                 'access_all',
                 'manage_health_condition',
+                'manage_phc_worker_guidance',
+                'translate_phc_worker_guidance',
             ],
             'organization_admin' => [
                 'view_organization',

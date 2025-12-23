@@ -18,7 +18,7 @@ class Guidance extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['content', 'order', 'title', 'auto_translated'];
+    protected $fillable = ['content', 'order', 'title', 'auto_translated', 'target_role'];
 
     /**
      * Get the options for activity logging.

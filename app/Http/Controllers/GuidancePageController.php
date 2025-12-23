@@ -36,9 +36,13 @@ class GuidancePageController extends Controller
      *
      * @return array
      */
-    public function index()
+    public function index(Request $request)
     {
-        $guidancePages = Guidance::all();
+        $validatedData = $request->validate([
+            'target_role' => 'required|in:therapist,phc_worker',
+        ]);
+
+        $guidancePages = Guidance::where('target_role', $validatedData['target_role'])->get();
 
         return ['success' => true, 'data' => GuidancePageResource::collection($guidancePages)];
     }
@@ -67,6 +71,15 @@ class GuidancePageController extends Controller
      *             type="string"
      *         )
      *     ),
+     *     @OA\Parameter(
+     *         name="target_role",
+     *         in="query",
+     *         description="Target Role",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
      *     @OA\Response(
      *         response="200",
      *         description="successful operation"
@@ -87,12 +100,13 @@ class GuidancePageController extends Controller
      */
     public function store(Request $request)
     {
-        $lastOrderingIndex = Guidance::all()->count() + 1;
+        $lastOrderingIndex = Guidance::count() + 1;
 
         $guidance = Guidance::create([
             'title' => $request->get('title'),
             'content' => $request->get('content'),
-            'order' => $lastOrderingIndex
+            'order' => $lastOrderingIndex,
+            'target_role' => $request->get('target_role'),
         ]);
 
         // Add automatic translation for Guidance.
@@ -148,6 +162,15 @@ class GuidancePageController extends Controller
      *             type="string"
      *         )
      *     ),
+     *     @OA\Parameter(
+     *         name="target_role",
+     *         in="query",
+     *         description="Target Role",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
      *     @OA\Response(
      *         response="200",
      *         description="successful operation"
@@ -172,6 +195,7 @@ class GuidancePageController extends Controller
         $guidancePage->update([
             'title' => $request->get('title'),
             'content' => $request->get('content'),
+            'target_role' => $request->get('target_role'),
             'auto_translated' => false,
         ]);
 
@@ -187,15 +211,11 @@ class GuidancePageController extends Controller
     {
         $data = json_decode($request->get('data'));
         $guidancePages = $data->guidancePages;
-        foreach ($guidancePages as $index => $guidencePage) {
-            $guidancePage = Guidance::updateOrCreate(
-                [
-                    'id' => isset($guidencePage->id) ? $guidencePage->id : null,
-                ],
-                [
+        foreach ($guidancePages as $index => $guidancePage) {
+            Guidance::where('id', $guidancePage->id)
+                ->update([
                     'order' => $index,
-                ]
-            );
+                ]);
         }
 
         return ['success' => true, 'message' => 'success_message.guidance.update'];
