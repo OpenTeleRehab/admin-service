@@ -138,6 +138,7 @@
     "common.lead_supplementary_phc_worker": "Lead/Supplementary PHC Worker",
     "common.phc_service": "PHC Service",
     "common.supplementary_phc_worker": "Supplementary PHC Worker",
+    "common.phc_worker": "PHC Worker",
     "home": "Home",
     "login": "Login",
     "dashboard": "Dashboard",
@@ -294,6 +295,7 @@
     "placeholder.location": "Please select a location",
     "placeholder.supplementary_phc_worker": "Please select supplementary PHC worker",
     "placeholder.province": "Please select a province",
+    "placeholder.phc_worker": "Please select a phc worker",
     "error_message.comment.time": "Please select ",
     "error.field.required": "Please fill above filed",
     "error.nongsm": "NON GSM 7 character is not supported.",
@@ -661,5 +663,6 @@
     "patient.pending_referral": "This patient has pending referral",
     "success_message.referral.declined": "Referral declined successfully",
     "success_message.referral.accepted": "Referral accepted successfully",
-    "patient.referral_assignment.accept.title": "Accept referral"
+    "patient.referral_assignment.accept.title": "Accept referral",
+    "required.phc_worker": "Please select a phc worker"
 }
