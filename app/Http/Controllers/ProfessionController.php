@@ -58,7 +58,7 @@ class ProfessionController extends Controller
 
         if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
             $query->where('type', Profession::TYPE_THERAPIST);
-        } else if ($authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+        } else if ($authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN || $authUser->type === User::GROUP_PHC_WORKER) {
             $query->where('type', Profession::TYPE_PHC_WORKER);
         }
 
