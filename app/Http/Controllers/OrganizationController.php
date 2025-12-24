@@ -44,6 +44,7 @@ class OrganizationController extends Controller
             'max_number_of_therapist' => 'required|integer|min:0',
             'max_number_of_phc_worker' => 'required|integer|min:0',
             'max_ongoing_treatment_plan' => 'required|integer|min:0',
+            'max_phc_ongoing_treatment_plan' => 'required|integer|min:0',
             'max_sms_per_week' => 'required|integer|min:0',
             'max_phc_sms_per_week' => 'integer|min:0',
         ], [
@@ -77,6 +78,7 @@ class OrganizationController extends Controller
             'max_number_of_therapist' => 'required|integer|min:0',
             'max_number_of_phc_worker' => 'required|integer|min:0',
             'max_ongoing_treatment_plan' => 'required|integer|min:0',
+            'max_phc_ongoing_treatment_plan' => 'required|integer|min:0',
             'max_sms_per_week' => 'required|integer|min:0',
             'max_phc_sms_per_week' => 'integer|min:0',
         ], [
