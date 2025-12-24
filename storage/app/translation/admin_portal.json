@@ -1200,7 +1200,6 @@
     "success_message.referral_assignment.create": "Referral has been assigned to the therapist successfully",
     "referral_assignment.already_assigned": "Referral has already been assigned to a therapist",
     "success_message.referral.decline": "Referral declined successfully",
-    "error.region.therapist_limit.less_than.provinces.total.therapist_limit": "You cannot set the region therapist limit below the total of all province therapist limits ${therapist_limit_used}.",
-    "error.region.phc_worker_limit.less_than.provinces.total.phc_worker_limit": "You cannot set the region phc worker limit below the total of all province phc worker limits ${phc_worker_limit_used}.",
-    "restricted.languages": "You are not allowed to update content in this language."
+    "error.region.therapist_limit.less_than.provinces.total.therapist_limit": "The total therapist limit assigned to provinces in this region is ${therapist_limit_used}. You cannot set the therapist limit for this region to a number lower than the total therapist limit currently allocated to those provinces.",
+    "error.region.phc_worker_limit.less_than.provinces.total.phc_worker_limit": "The total PHC worker limit assigned to provinces in this region is ${phc_worker_limit_used}.You cannot set the PHC worker limit for this region to a number lower than the total PHC worker limit currently allocated to those provinces."
 }
