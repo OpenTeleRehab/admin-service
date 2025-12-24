@@ -446,5 +446,15 @@
     "phc.screening_questionnaire.leave_alert_title": "Are you sure to leave this interview?",
     "phc.screening_questionnaire.leave_alert_confirm_description": "When you leave all your interview data will be lost",
     "phc.interview_detail": "Interview Detail",
-    "phc.patient.interview_patient": "Interview Patient"
+    "phc.patient.interview_patient": "Interview Patient",
+    "phc.patient.filter": "Filter",
+    "phc.patient.from_date": "From Date",
+    "phc.patient.to_date": "To Date",
+    "phc.patient.button.apply": "Apply",
+    "phc.patient.button.reset": "Reset",
+    "phc.patient.from_date.placeholder": "Select from date",
+    "phc.patient.to_date.placeholder": "Select to date",
+    "phc.patient.referral_status.placeholder": "Select referral status",
+    "phc.patient.treatment_status.placeholder": "Select treatment status",
+    "phc.patient.date_of_birth_to.error": "Please select to date"
 }
