@@ -232,6 +232,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('screening-questionnaires/{screeningQuestionnaire}/submit', [ScreeningQuestionnaireController::class, 'submit'])->middleware('role:submit_interview_screening_questionnaire');
     Route::post('screening-questionnaires', [ScreeningQuestionnaireController::class, 'store'])->middleware('role:manage_screening_questionnaire');
     Route::post('screening-questionnaires/{screeningQuestionnaire}/publish', [ScreeningQuestionnaireController::class, 'publish'])->middleware('role:manage_screening_questionnaire');
+    Route::delete('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'destroy'])->middleware('role:manage_screening_questionnaire');
 
     // Health Condition Group
     Route::get('health-condition-group', [HealthConditionGroupController::class, 'index'])

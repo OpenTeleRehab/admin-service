@@ -17,18 +17,27 @@ class ScreeningQuestionnaireResource extends JsonResource
     public function toArray($request)
     {
         $userId = $request->get('user_id');
+
+        $totalQuestion = ScreeningQuestionnaireQuestion::where('questionnaire_id', $this->id)
+            ->count();
+
+        $totalInterviewHistory = ScreeningQuestionnaireAnswer::where('questionnaire_id', $this->id)
+            ->where('user_id', $userId)
+            ->count();
+
+        $isUsed = ScreeningQuestionnaireAnswer::where('questionnaire_id', $this->id)->exists();
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
             'sections' => ScreeningQuestionnaireSectionResource::collection($this->sections),
-            'total_question' => ScreeningQuestionnaireQuestion::where('questionnaire_id', $this->id)->count(),
-            'total_interview_history' => ScreeningQuestionnaireAnswer::where('questionnaire_id', $this->id)
-            ->where('user_id', $userId)
-            ->count(),
+            'total_question' => $totalQuestion,
+            'total_interview_history' => $totalInterviewHistory,
             'published_date' => $this->published_date,
             'status' => $this->status,
             'auto_translated' => $this->auto_translated,
+            'isUsed' => $isUsed,
         ];
     }
 }
