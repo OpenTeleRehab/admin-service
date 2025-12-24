@@ -374,7 +374,7 @@ class ScreeningQuestionnaireController extends Controller
      */
     public function submit(SubmitScreeningQuestionnaireRequest $request, ScreeningQuestionnaire $screeningQuestionnaire)
     {
-        $screeningQuestionnaire->answer()->create([
+        $result = $screeningQuestionnaire->answer()->create([
             'questionnaire_id' => $screeningQuestionnaire->id,
             'user_id' => $request->integer('user_id'),
             'answers' => $request->get('answers'),
@@ -383,6 +383,7 @@ class ScreeningQuestionnaireController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'success_message.questionnaire_submit',
+            'data'=> $result
         ]);
     }
 
