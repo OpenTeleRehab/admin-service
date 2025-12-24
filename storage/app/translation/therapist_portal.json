@@ -148,6 +148,7 @@
     "category": "Categories",
     "service_setup": "Services Setup",
     "therapist": "Therapists",
+    "phc_worker": "PHC Workers",
     "global_admin": "Global Admin",
     "country_admin": "Country Admin",
     "clinic_admin": "Clinic Admin",
