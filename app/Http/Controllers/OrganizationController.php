@@ -140,6 +140,7 @@ class OrganizationController extends Controller
             'data' => [
                 'max_therapist' => $org->max_number_of_therapist,
                 'max_ongoing_treatment_plan' => $org->max_ongoing_treatment_plan,
+                'max_phc_ongoing_treatment_plan' => $org->max_phc_ongoing_treatment_plan,
             ],
         ];
     }
