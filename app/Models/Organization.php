@@ -34,6 +34,7 @@ class Organization extends Model
         'sub_domain_name',
         'max_number_of_therapist',
         'max_ongoing_treatment_plan',
+        'max_phc_ongoing_treatment_plan',
         'max_sms_per_week',
         'status',
         'created_by',
