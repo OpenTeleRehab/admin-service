@@ -49,6 +49,16 @@ class Country extends Model
     }
 
     /**
+     * Get all clinics that belong to this country.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function clinics()
+    {
+        return $this->hasMany(Clinic::class);
+    }
+
+    /**
      * Get the options for activity logging.
      *
      * @return \Spatie\Activitylog\LogOptions
