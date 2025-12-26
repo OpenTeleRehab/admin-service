@@ -65,6 +65,7 @@
     "common.download.history": "Download History",
     "common.download.history.clear": "Clear history",
     "common.download.failed": "Failed",
+    "common.created_by": "Created by",
     "common.download.history.message": "Important: The generated file will be deleted after 7 days.",
     "treatment_plan.back_to_list": "Back To Treatment History",
     "treatment_plan.back_to_preset_list": "Back To Preset Treatments",
