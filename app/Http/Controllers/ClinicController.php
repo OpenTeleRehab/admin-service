@@ -489,4 +489,18 @@ class ClinicController extends Controller
 
         return 0;
     }
+
+    /**
+     * Get all provinces that belong to the authenticated user's country.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getClinicsByUserCountry()
+    {
+        $authUser = Auth::user();
+
+        $clinics = $authUser->country->clinics;
+
+        return response()->json(['data' => ClinicResource::collection($clinics)]);
+    }
 }
