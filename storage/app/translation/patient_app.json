@@ -458,5 +458,6 @@
     "phc.patient.to_date.placeholder": "Select to date",
     "phc.patient.referral_status.placeholder": "Select referral status",
     "phc.patient.treatment_status.placeholder": "Select treatment status",
-    "phc.patient.date_of_birth_to.error": "Please select to date"
+    "phc.patient.date_of_birth_to.error": "Please select to date",
+    "success_message.referral.create": "Patient referral created successfully"
 }
