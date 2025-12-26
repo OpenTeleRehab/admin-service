@@ -6,7 +6,7 @@ use App\Http\Resources\GlobalPatientResource;
 use App\Models\Country;
 use App\Models\Forwarder;
 use App\Models\GlobalPatient;
-use App\Models\GlobalTreatmentPlan;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -23,6 +23,7 @@ class GlobalPatientController extends Controller
     {
         $data = $request->all();
         $info = [];
+        $authUser = Auth::user();
 
         if (isset($data['id'])) {
             $users = GlobalPatient::where('patient_id', $data['id'])->get();
@@ -39,12 +40,18 @@ class GlobalPatientController extends Controller
                 $query->where('enabled', boolval($data['enabled']));
             }
 
-            if (isset($data['country'])) {
-                $query->where('country_id', $data['country']);
-            }
-
-            if (isset($data['clinic'])) {
-                $query->where('clinic_id', $data['clinic']);
+            switch ($authUser->type) {
+                case User::ADMIN_GROUP_COUNTRY_ADMIN:
+                    $query->where('country_id', $authUser->country_id);
+                    break;
+                case User::ADMIN_GROUP_CLINIC_ADMIN:
+                    $query->where('clinic_id', $authUser->clinic_id);
+                    break;
+                case User::ADMIN_GROUP_PHC_SERVICE_ADMIN:
+                    $query->where('phc_service_id', $authUser->phc_service_id);
+                    break;
+                default:
+                    $query;
             }
 
             if (isset($data['search_value'])) {
