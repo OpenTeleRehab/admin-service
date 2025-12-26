@@ -219,17 +219,20 @@ class ScreeningQuestionnaireController extends Controller
                         'title' => $sectionItem['title'],
                         'description' => $sectionItem['description'],
                         'order' => $sectionIndex + 1,
+                        'questionnaire_id' => $screeningQuestionnaire->id,
                     ],
                 );
 
                 foreach ($sectionItem['questions'] ?? [] as $questionIndex => $questionItem) {
-                    $file = $questionItem['file'] ?? null;
+                    $fileId = $questionItem['file']['id'] ?? null;
 
                     if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'])) {
                         $file = FileHelper::createFile(
                             $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['file'],
                             File::SCREENING_QUESTIONNAIRE_PATH,
                         );
+
+                        $fileId = $file?->id ?? null;
                     }
 
                     $question = ScreeningQuestionnaireQuestion::updateOrCreate(
@@ -243,18 +246,20 @@ class ScreeningQuestionnaireController extends Controller
                             'order' => $questionIndex + 1,
                             'section_id' => $section->id,
                             'questionnaire_id' => $screeningQuestionnaire->id,
-                            'file_id' => $file['id'] ?? null,
+                            'file_id' => $fileId,
                         ],
                     );
 
                     foreach ($questionItem['options'] ?? [] as $optionIndex => $optionItem) {
-                        $file = $optionItem['file'] ?? null;
+                        $fileId = $optionItem['file']['id'] ?? null;
 
                         if (isset($allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'])) {
                             $file = FileHelper::createFile(
                                 $allFiles['sections'][$sectionIndex]['questions'][$questionIndex]['options'][$optionIndex]['file'],
                                 File::SCREENING_QUESTIONNAIRE_PATH,
                             );
+
+                            $fileId = $file?->id ?? null;
                         }
 
                         $existingQuestionOption = ScreeningQuestionnaireQuestionOption::find($optionItem['id']);
@@ -268,7 +273,7 @@ class ScreeningQuestionnaireController extends Controller
                             'max' => $optionItem['max'] ?? null,
                             'min_note' => $optionItem['min_note'] ?? null,
                             'max_note' => $optionItem['max_note'] ?? null,
-                            'file_id' => $file['id'] ?? null,
+                            'file_id' => $fileId,
                         ];
 
                         if ($existingQuestionOption) {
