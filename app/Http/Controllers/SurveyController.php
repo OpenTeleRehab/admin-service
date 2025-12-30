@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\LanguageHelper;
 use App\Helpers\SurveyHelper;
 use App\Http\Resources\SurveyListResource;
 use App\Http\Resources\SurveyResource;
@@ -40,7 +41,7 @@ class SurveyController extends Controller
 
         $surveys = [];
 
-        if ($user->type === self::SUPER_ADMIN) {
+        if ($user->type === self::SUPER_ADMIN || $user->type === User::GROUP_TRANSLATOR) {
             $surveys = $this->getSurveysForSuperAdmin()->get();
         }
 
@@ -150,6 +151,8 @@ class SurveyController extends Controller
      */
     public function update(Request $request, Survey $survey)
     {
+        LanguageHelper::validateAssignedLanguage($request->get('lang'));
+
         $startDate = null;
         $endDate = null;
         if ($request->get('start_date')) {
@@ -240,8 +243,8 @@ class SurveyController extends Controller
         $user = Auth::user();
         $country = Country::firstWhere('id', $user->country_id);
         $userIds = User::where('country_id', $country->id)
-                    ->where('type', self::COUNTRY_ADMIN)
-                    ->pluck('id');
+            ->where('type', self::COUNTRY_ADMIN)
+            ->pluck('id');
         return Survey::whereIn('author', $userIds);
     }
 
@@ -255,8 +258,8 @@ class SurveyController extends Controller
         $user = Auth::user();
         $clinic = Clinic::firstWhere('id', $user->clinic_id);
         $userIds = User::where('clinic_id', $clinic->id)
-                    ->where('type', self::CLINIC_ADMIN)
-                    ->pluck('id');
+            ->where('type', self::CLINIC_ADMIN)
+            ->pluck('id');
         return Survey::whereIn('author', $userIds);
     }
 
@@ -456,7 +459,8 @@ class SurveyController extends Controller
                     'status' => UserSurvey::STATUS_COMPLETED,
                     'completed_at' => Carbon::now(),
                     'survey_phase' => $request->string('survey_phase'),
-                ]);
+                ]
+            );
         } else {
             $userSurvey = UserSurvey::updateOrCreate(
                 [
@@ -467,7 +471,8 @@ class SurveyController extends Controller
                     'answer' => json_decode($request->get('answers')),
                     'status' => UserSurvey::STATUS_COMPLETED,
                     'completed_at' => Carbon::now(),
-                ]);
+                ]
+            );
         }
 
         $totalScore = SurveyHelper::getTotalScore($userSurvey);
@@ -492,7 +497,8 @@ class SurveyController extends Controller
             [
                 'status' => UserSurvey::STATUS_SKIPPED,
                 'skipped_at' => Carbon::now(),
-            ]);
+            ]
+        );
 
         return ['success' => true, 'message' => 'success_message.survey_skipped'];
     }

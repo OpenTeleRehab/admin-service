@@ -193,7 +193,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Guidance
     Route::post('guidance-page/update-order', [GuidancePageController::class, 'updateOrder'])->middleware('role:manage_guidance_page');
-    Route::apiResource('guidance-page', GuidancePageController::class)->middleware('role:manage_guidance_page');
+    Route::apiResource('guidance-page', GuidancePageController::class)->middleware('role:manage_guidance_page,translate_guidance_page');
 
     // Settings
     Route::get('getDefaultLimitedPatient', [SettingController::class, 'getDefaultLimitedPatient'])->middleware('role:view_default_limited_patient');
@@ -209,17 +209,17 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('term-condition', [TermAndConditionController::class, 'index'])->middleware('role:manage_term_condition,view_term_condition_list');
     Route::post('term-condition', [TermAndConditionController::class, 'store'])->middleware('role:manage_term_condition');
     Route::get('term-condition/{id}', [TermAndConditionController::class, 'show'])->middleware('role:manage_term_condition,view_term_condition');
-    Route::put('term-condition/{id}', [TermAndConditionController::class, 'update'])->middleware('role:manage_term_condition');
+    Route::put('term-condition/{id}', [TermAndConditionController::class, 'update'])->middleware('role:manage_term_condition,translate_term_condition');
     Route::get('privacy-policy', [PrivacyPolicyController::class, 'index'])->middleware('role:manage_privacy_policy,view_privacy_policy_list');
     Route::post('privacy-policy', [PrivacyPolicyController::class, 'store'])->middleware('role:manage_privacy_policy');
-    Route::get('privacy-policy/{id}', [PrivacyPolicyController::class, 'show'])->middleware('role:manage_privacy_policy,view_privacy_policy');
-    Route::put('privacy-policy/{id}', [PrivacyPolicyController::class, 'update'])->middleware('role:manage_privacy_policy');
+    Route::get('privacy-policy/{id}', [PrivacyPolicyController::class, 'show'])->middleware('role:manage_privacy_policy,view_privacy_policy,translate_privacy_policy');
+    Route::put('privacy-policy/{id}', [PrivacyPolicyController::class, 'update'])->middleware('role:manage_privacy_policy,translate_privacy_policy');
 
     // Survey
-    Route::get('survey', [SurveyController::class, 'index'])->middleware('role:manage_survey');
-    Route::post('survey', [SurveyController::class, 'store'])->middleware('role:manage_survey');
-    Route::get('survey/{survey}', [SurveyController::class, 'show'])->middleware('role:manage_survey');
-    Route::put('survey/{survey}', [SurveyController::class, 'update'])->middleware('role:manage_survey');
+    Route::get('survey', [SurveyController::class, 'index'])->middleware('role:manage_survey,translate_survey');
+    Route::post('survey', [SurveyController::class, 'store'])->middleware('role:manage_survey,translate_survey');
+    Route::get('survey/{survey}', [SurveyController::class, 'show'])->middleware('role:manage_survey,translate_survey');
+    Route::put('survey/{survey}', [SurveyController::class, 'update'])->middleware('role:manage_survey,translate_survey');
     Route::post('survey/publish/{survey}', [SurveyController::class, 'publish'])->middleware('role:manage_survey');
     Route::post('survey/submit', [SurveyController::class, 'submit'])->middleware('role:submit_survey');
     Route::post('survey/skip', [SurveyController::class, 'skipSurvey'])->middleware('role:skip_survey');
@@ -227,9 +227,9 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Screening Questionnaire
     Route::get('screening-questionnaires-list', [ScreeningQuestionnaireController::class, 'getScreeningQuestionnarieList'])->middleware('role:view_screening_questionnaire_list');
     Route::get('screening-questionnaires-history-list', [ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnarie'])->middleware('role:view_interview_screening_questionnaire_history');
-    Route::get('screening-questionnaires', [ScreeningQuestionnaireController::class, 'index'])->middleware('role:access_all');
-    Route::get('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'show'])->middleware('role:manage_screening_questionnaire');
-    Route::put('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'update'])->middleware('role:manage_screening_questionnaire');
+    Route::get('screening-questionnaires', [ScreeningQuestionnaireController::class, 'index'])->middleware('role:access_all,translate_screening_questionnaire');
+    Route::get('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'show'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');
+    Route::put('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'update'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');
     Route::post('screening-questionnaires/{screeningQuestionnaire}/submit', [ScreeningQuestionnaireController::class, 'submit'])->middleware('role:submit_interview_screening_questionnaire');
     Route::post('screening-questionnaires', [ScreeningQuestionnaireController::class, 'store'])->middleware('role:manage_screening_questionnaire');
     Route::post('screening-questionnaires/{screeningQuestionnaire}/publish', [ScreeningQuestionnaireController::class, 'publish'])->middleware('role:manage_screening_questionnaire');

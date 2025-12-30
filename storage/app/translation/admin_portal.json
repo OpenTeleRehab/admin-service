@@ -391,6 +391,7 @@
     "translator.new": "New Translator",
     "translator.management": "Translator Management",
     "translator.edit": "Edit Translator",
+    "translator.edit_languages": "Edit languages",
     "assistive_technology.new": "New Assistive Technology",
     "assistive_technology.edit": "Edit Assistive Technology",
     "assistive_technology.code": "Code",
@@ -445,6 +446,7 @@
     "placeholder.date": "Please select date",
     "placeholder.region": "Select region",
     "placeholder.title": "Please fill title",
+    "placeholder.edit_languages": "Select edit languages",
     "error.field.required": "Please fill above filed",
     "error.phone": "Please fill mobile number",
     "error.email": "Please fill in the email",
@@ -457,6 +459,7 @@
     "error.clinic": "Please select a clinic",
     "error.limit_patient": "Please fill limit patient",
     "error.limit_patient.lessthan": "The treatment limit can not set less than total on-going treatment plans of the therapist",
+    "error.edit_language": "Please select edit languages",
     "toast_title.new_admin_account": "New admin account",
     "toast_title.new_translator_account": "New translator account",
     "toast_title.edit_admin_account": "Edit admin account",
@@ -1197,5 +1200,6 @@
     "referral_assignment.already_assigned": "Referral has already been assigned to a therapist",
     "success_message.referral.decline": "Referral declined successfully",
     "error.region.therapist_limit.less_than.provinces.total.therapist_limit": "You cannot set the region therapist limit below the total of all province therapist limits ${therapist_limit_used}.",
-    "error.region.phc_worker_limit.less_than.provinces.total.phc_worker_limit": "You cannot set the region phc worker limit below the total of all province phc worker limits ${phc_worker_limit_used}."
+    "error.region.phc_worker_limit.less_than.provinces.total.phc_worker_limit": "You cannot set the region phc worker limit below the total of all province phc worker limits ${phc_worker_limit_used}.",
+    "restricted.languages": "You are not allowed to update content in this language."
 }

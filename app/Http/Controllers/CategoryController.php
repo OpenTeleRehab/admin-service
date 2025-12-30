@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\ApplyCategoryAutoTranslationEvent;
+use App\Helpers\LanguageHelper;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\CategoryTreeResource;
 use App\Models\Category;
@@ -217,6 +218,8 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
+        LanguageHelper::validateAssignedLanguage($request->get('lang'));
+
         $category->update([
             'title' => $request->get('category'),
         ]);

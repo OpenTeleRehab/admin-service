@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class TranslatorController extends Controller
 {
@@ -59,13 +60,17 @@ class TranslatorController extends Controller
     public function index(Request $request)
     {
         $data = $request->all();
-        $query = User::select('users.*')
-            ->where('type', User::GROUP_TRANSLATOR)
-            ->where(function ($query) use ($data) {
+        $query = User::with(['translatorLanguages:id,name'])
+            ->select('users.*')
+            ->where('type', User::GROUP_TRANSLATOR);
+
+        if (isset($data['search_value'])) {
+            $query->where(function ($query) use ($data) {
                 $query->where('first_name', 'like', '%' . $data['search_value'] . '%')
                     ->orWhere('last_name', 'like', '%' . $data['search_value'] . '%')
                     ->orWhere('email', 'like', '%' . $data['search_value'] . '%');
             });
+        }
 
         if (isset($data['filters'])) {
             $filters = $request->get('filters');
@@ -89,12 +94,14 @@ class TranslatorController extends Controller
             });
         }
 
-        $users = $query->paginate($data['page_size']);
+        $query->orderBy('id', 'desc');
+
+        $users = $query->paginate($data['page_size'] ?? 10);
         $info = [
             'current_page' => $users->currentPage(),
             'total_count' => $users->total(),
         ];
-        return ['success' => true, 'data' => UserResource::collection($users), 'info' => $info];
+        return response()->json(['success' => true, 'data' => UserResource::collection($users), 'info' => $info]);
     }
 
     /**
@@ -150,38 +157,26 @@ class TranslatorController extends Controller
      */
     public function store(Request $request)
     {
-        DB::beginTransaction();
-        $firstName = $request->get('first_name');
-        $lastName = $request->get('last_name');
-        $type = User::GROUP_TRANSLATOR;
-        $email = $request->get('email');
-
-        $availableEmail = User::where('email', $email)->count();
-        if ($availableEmail) {
-            // Todo: message will be replaced.
-            return abort(409, 'error_message.email_exists');
-        }
-
-        $user = User::create([
-            'email' => $email,
-            'first_name' => $firstName,
-            'last_name' => $lastName,
-            'type' => $type
+        $validatedData = $request->validate([
+            'email' => 'required|email|unique:users,email',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'edit_language_ids' => 'required|array|min:1',
+            'edit_language_ids.*' => 'required|integer|exists:languages,id',
+        ], [
+            'email.unique' => 'error_message.email_exists',
         ]);
 
-        if (!$user) {
-            return ['success' => false, 'message' => 'error_message.translator_add'];
-        }
+        DB::transaction(function () use ($validatedData) {
+            $type = User::GROUP_TRANSLATOR;
+            $user = User::create([...$validatedData, 'type' => $type]);
 
-        try {
+            $user->translatorLanguages()->attach($validatedData['edit_language_ids']);
+
             self::createKeycloakUser($user, $type);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
+        });
 
-        DB::commit();
-        return ['success' => true, 'message' => 'success_message.translator_add'];
+        return response()->json(['success' => true, 'message' => 'success_message.translator_add'], 201);
     }
 
     /**
@@ -238,18 +233,21 @@ class TranslatorController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try {
-            $user = User::findOrFail($id);
-            $data = $request->all();
-            $user->update([
-                'first_name' => $data['first_name'],
-                'last_name' => $data['last_name'],
-            ]);
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
+        $validatedData = $request->validate([
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'edit_language_ids' => 'required|array|min:1',
+            'edit_language_ids.*' => 'required|integer|exists:languages,id',
+        ]);
 
-        return ['success' => true, 'message' => 'success_message.translator_update'];
+        DB::transaction(function () use ($id, $validatedData) {
+            $user = User::findOrFail($id);
+            $user->update($validatedData);
+
+            $user->translatorLanguages()->sync($validatedData['edit_language_ids']);
+        });
+
+        return response()->json(['success' => true, 'message' => 'success_message.translator_update']);
     }
 
     /**
@@ -300,9 +298,13 @@ class TranslatorController extends Controller
             $enabled = $request->boolean('enabled');
             $token = KeycloakHelper::getKeycloakAccessToken();
             $userUrl = KeycloakHelper::getUserUrl() . '?email=' . $user->email;
-            $user->update(['enabled' => $enabled]);
 
             $response = Http::withToken($token)->get($userUrl);
+
+            if (!$response->successful()) {
+                throw new HttpException($response->status(), $response->body());
+            }
+
             $keyCloakUsers = $response->json();
             $url = KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id'];
 
@@ -310,9 +312,12 @@ class TranslatorController extends Controller
                 ->put($url, ['enabled' => $enabled]);
 
             if ($userUpdated) {
+                $user->update(['enabled' => $enabled]);
+
                 return ['success' => true, 'message' => 'success_message.translator_update'];
             }
-            return ['success' => false, 'message' => 'error_message.translator_update'];
+
+            return response()->json(['success' => false, 'message' => 'error_message.translator_update'], 502);
         } catch (\Exception $e) {
             return ['success' => false, 'message' => $e->getMessage()];
         }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\ApplyMaterialAutoTranslationEvent;
 use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\LanguageHelper;
 use App\Http\Resources\EducationMaterialResource;
 use App\Models\Category;
 use App\Models\EducationMaterial;
@@ -393,6 +394,8 @@ class EducationMaterialController extends Controller
      */
     public function update(Request $request, EducationMaterial $educationMaterial)
     {
+        LanguageHelper::validateAssignedLanguage($request->get('lang'));
+
         $therapistId = $request->get('therapist_id');
         if (!Auth::user() && !$therapistId) {
             return ['success' => false, 'message' => 'error_message.education_material_update'];

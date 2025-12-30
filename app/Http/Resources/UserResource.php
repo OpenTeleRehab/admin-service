@@ -30,7 +30,12 @@ class UserResource extends JsonResource
             'therapist_limit' => $this->therapist_limit,
             'region_name' => $this->region?->name,
             'region_id' => $this->region_id,
-            'phc_service' => new PhcServiceResource($this->phcService)
+            'phc_service' => new PhcServiceResource($this->phcService),
+            'edit_languages' => $this->translatorLanguages->map(fn($lang) => [
+                'id' => $lang->id,
+                'name' => $lang->name,
+                'code' => $lang->code,
+            ]),
         ];
     }
 }

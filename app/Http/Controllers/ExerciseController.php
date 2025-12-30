@@ -6,7 +6,6 @@ use App\Models\File;
 use App\Models\User;
 use App\Models\Exercise;
 use App\Models\Language;
-use App\Models\Forwarder;
 use App\Helpers\FileHelper;
 use App\Models\SystemLimit;
 use Illuminate\Http\Request;
@@ -19,12 +18,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\GoogleTranslateHelper;
 use App\Http\Resources\ExerciseResource;
 use App\Http\Resources\ExerciseListResource;
 use App\Events\ApplyExerciseAutoTranslationEvent;
+use App\Helpers\LanguageHelper;
 
 class ExerciseController extends Controller
 {
@@ -247,6 +246,8 @@ class ExerciseController extends Controller
      */
     public function update(Request $request, Exercise $exercise)
     {
+        LanguageHelper::validateAssignedLanguage($request->get('lang'));
+
         $therapistId = $request->get('therapist_id');
 
         if (!Auth::user() && !$therapistId) {

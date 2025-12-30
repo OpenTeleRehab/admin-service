@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ApplyStaticPageAutoTranslationEvent;
 use App\Helpers\FileHelper;
+use App\Helpers\LanguageHelper;
 use App\Http\Resources\StaticPageResource;
 use App\Http\Resources\StaticPageIndexResource;
 use App\Models\StaticPage;
@@ -300,6 +301,8 @@ class StaticPageController extends Controller
      */
     public function update(Request $request, StaticPage $staticPage)
     {
+        LanguageHelper::validateAssignedLanguage($request->get('lang'));
+
         $uploadedFile = $request->file('file');
 
         if ($uploadedFile) {

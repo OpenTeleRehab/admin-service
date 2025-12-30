@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ApplyGuidanceAutoTranslationEvent;
 use App\Helpers\FileHelper;
+use App\Helpers\LanguageHelper;
 use App\Http\Resources\GuidancePageResource;
 use App\Models\Guidance;
 use App\Models\StaticPage;
@@ -192,6 +193,8 @@ class GuidancePageController extends Controller
      */
     public function update(Request $request, Guidance $guidancePage)
     {
+        LanguageHelper::validateAssignedLanguage($request->get('lang'));
+
         $guidancePage->update([
             'title' => $request->get('title'),
             'content' => $request->get('content'),

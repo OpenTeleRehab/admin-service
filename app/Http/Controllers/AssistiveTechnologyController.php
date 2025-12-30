@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ApplyAssistiveTechnologyAutoTranslationEvent;
 use App\Helpers\FileHelper;
+use App\Helpers\LanguageHelper;
 use App\Http\Resources\AssistiveTechnologyResource;
 use App\Http\Resources\AssistiveTechnologyListResource;
 use App\Models\AssistiveTechnology;
@@ -82,6 +83,8 @@ class AssistiveTechnologyController extends Controller
      */
     public function update(Request $request, AssistiveTechnology $assistiveTechnology)
     {
+        LanguageHelper::validateAssignedLanguage($request->get('lang'));
+
         $existing = AssistiveTechnology::where('id', '<>', $assistiveTechnology->id)
             ->where('code', $request->get('code'))
             ->count();

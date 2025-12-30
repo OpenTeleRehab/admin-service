@@ -127,7 +127,7 @@ class KeycloakHelper
             $token_arr = explode('.', $access_token);
             $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
             $token_exp_at = $token_obj['exp'];
-            $current_timestamp = Carbon::now()->timestamp;
+            $current_timestamp = Carbon::now()->subMinute()->timestamp;
 
             if ($current_timestamp < $token_exp_at) {
                 return $access_token;
@@ -148,7 +148,7 @@ class KeycloakHelper
             $token_arr = explode('.', $access_token);
             $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
             $token_exp_at = $token_obj['exp'];
-            $current_timestamp = Carbon::now()->timestamp;
+            $current_timestamp = Carbon::now()->subMinute()->timestamp;
 
             if ($current_timestamp > $token_exp_at) {
                 return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN);
@@ -174,7 +174,7 @@ class KeycloakHelper
             $token_arr = explode('.', $access_token);
             $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
             $token_exp_at = (int) $token_obj['exp'];
-            $current_timestamp = Carbon::now()->timestamp;
+            $current_timestamp = Carbon::now()->subMinute()->timestamp;
 
             if ($current_timestamp < $token_exp_at) {
                 return $access_token;
