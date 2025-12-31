@@ -97,6 +97,7 @@ class SetupKeycloakPermissions extends Command
             'manage_guidance_page',
             'manage_phc_worker_guidance',
             'translate_phc_worker_guidance',
+            'manage_api_client',
         ];
         $groupRoles = [
             'super_admin' => [
@@ -116,6 +117,7 @@ class SetupKeycloakPermissions extends Command
                 'manage_guidance_page',
                 'manage_phc_worker_guidance',
                 'translate_phc_worker_guidance',
+                'manage_api_client',
             ],
             'organization_admin' => [
                 'view_organization',
