@@ -6,6 +6,7 @@ use App\Http\Resources\TranslationResource;
 use App\Models\Language;
 use App\Models\Localization;
 use App\Models\Translation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -191,9 +192,21 @@ class TranslationController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try {
-            $data = $request->all();
+        $data = $request->all();
+        $authUser = Auth::user();
 
+        if ($authUser->type !== User::ADMIN_GROUP_SUPER_ADMIN) {
+            $authLanguageCodes = $authUser->translatorLanguages
+                ->pluck('code')
+                ->toArray();
+            $invalidLangs = array_diff(array_keys($data), $authLanguageCodes);
+
+            if (!empty($invalidLangs)) {
+                abort(422, 'restricted.languages');
+            }
+        }
+
+        try {
             // Update default language.
             if (array_key_exists(self::DEFAULT_LANG_CODE, $data)) {
                 $translation = Translation::findOrFail($id);

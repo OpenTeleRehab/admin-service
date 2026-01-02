@@ -132,6 +132,16 @@ class User extends Authenticatable
         return $this->belongsTo(PhcService::class);
     }
 
+    public function translatorLanguages()
+    {
+        return $this->belongsToMany(
+            Language::class,
+            'translator_languages',
+            'translator_id',
+            'language_id'
+        );
+    }
+
     /**
      * Get the user's full name.
      *

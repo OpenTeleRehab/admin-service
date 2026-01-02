@@ -45,6 +45,7 @@ class VerifyDataAccess
         if (
             $user && $user->type === User::ADMIN_GROUP_SUPER_ADMIN ||
             $user && $user->type === User::ADMIN_GROUP_ORG_ADMIN ||
+            $user && $user->type === User::GROUP_TRANSLATOR ||
             $user && $user->email === env('KEYCLOAK_BACKEND_CLIENT')
         ) {
             return $next($request);

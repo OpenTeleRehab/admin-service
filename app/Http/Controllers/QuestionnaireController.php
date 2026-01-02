@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ContentHelper;
+use App\Helpers\LanguageHelper;
 use App\Http\Resources\QuestionnaireListResource;
 use App\Http\Resources\QuestionnaireResource;
 use App\Models\Answer;
@@ -345,6 +346,8 @@ class QuestionnaireController extends Controller
      */
     public function update(Request $request, Questionnaire $questionnaire)
     {
+        LanguageHelper::validateAssignedLanguage($request->get('lang'));
+
         $therapistId = $request->get('therapist_id');
         if (!Auth::user() && !$therapistId) {
             return ['success' => false, 'message' => 'error_message.questionnaire_update'];
