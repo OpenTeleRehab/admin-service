@@ -87,7 +87,12 @@ class QuestionnaireController extends Controller
         }
 
         if (!empty($filter['suggestions'])) {
-            $query->whereHas('children');
+            $authUser = Auth::user();
+            $translatorLanguages = $authUser->translatorLanguages->pluck('code');
+
+            $query->whereHas('children', function ($q) use ($translatorLanguages) {
+                $q->whereIn('suggested_lang', $translatorLanguages);
+            });
         }
 
         $query->where(function ($query) use ($therapistId) {
@@ -227,6 +232,8 @@ class QuestionnaireController extends Controller
      */
     public function approveTranslation(Request $request, Questionnaire $questionnaire)
     {
+        LanguageHelper::validateAssignedLanguageCode($questionnaire->suggested_lang);
+
         $parentQuestionnaire = Questionnaire::find($questionnaire->parent_id);
 
         if (!$parentQuestionnaire) {
@@ -333,6 +340,8 @@ class QuestionnaireController extends Controller
      */
     public function destroy(Questionnaire $questionnaire)
     {
+        LanguageHelper::validateAssignedLanguageCode($questionnaire->suggested_lang);
+
         $questionnaire->delete();
 
         return ['success' => true, 'message' => 'success_message.questionnaire_delete'];

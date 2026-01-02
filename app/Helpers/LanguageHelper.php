@@ -30,9 +30,30 @@ class LanguageHelper
 
         $language = Language::findOrFail($langId);
 
-        $validLang = $user->translatorLanguages->pluck('code')->contains($language->code);
+        $isAllowed = $user->translatorLanguages()
+            ->where('code', $language->code)
+            ->exists();
 
-        if (!$validLang) {
+        if (!$isAllowed) {
+            throw new HttpException(422, 'restricted.languages');
+        }
+
+        return true;
+    }
+
+    public static function validateAssignedLanguageCode($langCode): bool
+    {
+        $user = Auth::user();
+
+        if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN) {
+            return true;
+        }
+
+        $isAllowed = $user->translatorLanguages()
+            ->where('code', $langCode)
+            ->exists();
+
+        if (!$isAllowed) {
             throw new HttpException(422, 'restricted.languages');
         }
 

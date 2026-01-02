@@ -78,7 +78,12 @@ class EducationMaterialController extends Controller
         }
 
         if (!empty($filter['suggestions'])) {
-            $query->whereHas('children');
+            $authUser = Auth::user();
+            $translatorLanguages = $authUser->translatorLanguages->pluck('code');
+
+            $query->whereHas('children', function ($q) use ($translatorLanguages) {
+                $q->whereIn('suggested_lang', $translatorLanguages);
+            });
         }
 
         $query->where(function ($query) use ($therapistId) {
@@ -289,6 +294,8 @@ class EducationMaterialController extends Controller
      */
     public function approveTranslation(Request $request, EducationMaterial $educationMaterial)
     {
+        LanguageHelper::validateAssignedLanguageCode($educationMaterial->suggested_lang);
+
         $parentEducationMaterial = EducationMaterial::find($educationMaterial->parent_id);
 
         if (!$parentEducationMaterial) {
@@ -470,7 +477,10 @@ class EducationMaterialController extends Controller
      */
     public function destroy(EducationMaterial $educationMaterial)
     {
+        LanguageHelper::validateAssignedLanguageCode($educationMaterial->suggested_lang);
+
         $educationMaterial->delete();
+
         return ['success' => true, 'message' => 'success_message.education_material_delete'];
     }
 
