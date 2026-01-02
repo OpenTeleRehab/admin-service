@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 
 class ExerciseHelper
 {
@@ -33,7 +34,12 @@ class ExerciseHelper
         }
 
         if (!empty($filter['suggestions'])) {
-            $query->whereHas('children');
+            $authUser = Auth::user();
+            $translatorLanguages = $authUser->translatorLanguages->pluck('code');
+
+            $query->whereHas('children', function ($q) use ($translatorLanguages) {
+                $q->whereIn('suggested_lang', $translatorLanguages);
+            });
         }
 
         $query->where(function ($query) use ($therapistId) {

@@ -343,6 +343,8 @@ class ExerciseController extends Controller
      */
     public function approveTranslation(Request $request, Exercise $exercise)
     {
+        LanguageHelper::validateAssignedLanguageCode($exercise->suggested_lang);
+
         $parentExercise = Exercise::find($exercise->parent_id);
 
         if (!$parentExercise) {
@@ -453,7 +455,10 @@ class ExerciseController extends Controller
      */
     public function destroy(Exercise $exercise)
     {
+        LanguageHelper::validateAssignedLanguageCode($exercise->suggested_lang);
+
         $exercise->delete();
+
         return ['success' => true, 'message' => 'success_message.exercise_delete'];
     }
 

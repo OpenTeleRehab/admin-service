@@ -28,6 +28,7 @@ class ExerciseListResource extends JsonResource
             'share_to_hi_library' => $this->share_to_hi_library,
             'therapist_id' => $this->therapist_id,
             'is_favorite' => ContentHelper::getFavoriteActivity($this, $request->get('therapist_id')),
+            'auto_translated' => $this->auto_translated,
         ];
     }
 }

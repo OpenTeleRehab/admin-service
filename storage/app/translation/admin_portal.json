@@ -288,6 +288,7 @@
     "exercise.bulk_upload.number_of_updated_exercises": "${number} exercise(s) have been updated.",
     "exercise.bulk_upload.back_to_exercises": "Back to Exercises",
     "exercise.bulk_upload.upload_exercises": "Upload Exercises",
+    "exercise.show_suggestions": "Show suggested translations only",
     "education_material.create": "Add new Education Material",
     "education_material.new": "New Education Material",
     "education_material.edit": "Edit Education Material",
