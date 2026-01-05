@@ -115,6 +115,8 @@ class AdminController extends Controller
                             ->whereDate('last_login', '<=', $endDate);
                     } elseif ($filterObj->columnName === 'phc_service') {
                         $query->where('phc_service_id', $filterObj->value);
+                    } elseif ($filterObj->columnName === 'regions') {
+                        $query->where('users.region_id', $filterObj->value);
                     } else {
                         $query->where($filterObj->columnName, 'like', '%' . $filterObj->value . '%');
                     }
