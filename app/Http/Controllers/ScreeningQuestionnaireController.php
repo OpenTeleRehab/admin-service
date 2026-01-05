@@ -120,8 +120,8 @@ class ScreeningQuestionnaireController extends Controller
                             'threshold' => $optionItem['threshold'] ?? null,
                             'min' => $optionItem['min'] ?? null,
                             'max' => $optionItem['max'] ?? null,
-                            'min_note' => $optionItem['min_note'] ?? null,
-                            'max_note' => $optionItem['max_note'] ?? null,
+                            'min_note' => $optionItem['min_note'] ?? '',
+                            'max_note' => $optionItem['max_note'] ?? '',
                             'question_id' => $question->id,
                             'file_id' => $fileId,
                             'ref' => $optionItem['id'], // For logic target option finding.
@@ -262,17 +262,18 @@ class ScreeningQuestionnaireController extends Controller
                             $fileId = $file?->id ?? null;
                         }
 
-                        $existingQuestionOption = ScreeningQuestionnaireQuestionOption::find($optionItem['id']);
+                        $existingQuestionOption = ScreeningQuestionnaireQuestionOption::where('id', $optionItem['id'])
+                            ->where('question_id', $question->id)
+                            ->first();
 
                         $questionOptionData = [
-                            'question_id' => $question->id,
                             'option_text' => $optionItem['option_text'] ?? '',
                             'option_point' => $optionItem['option_point'] ?? null,
                             'threshold' => $optionItem['threshold'] ?? null,
                             'min' => $optionItem['min'] ?? null,
                             'max' => $optionItem['max'] ?? null,
-                            'min_note' => $optionItem['min_note'] ?? null,
-                            'max_note' => $optionItem['max_note'] ?? null,
+                            'min_note' => $optionItem['min_note'] ?? '',
+                            'max_note' => $optionItem['max_note'] ?? '',
                             'file_id' => $fileId,
                         ];
 
@@ -291,6 +292,7 @@ class ScreeningQuestionnaireController extends Controller
                         ScreeningQuestionnaireQuestionOption::updateOrCreate(
                             [
                                 'id' => $optionItem['id'],
+                                'question_id' => $question->id,
                             ],
                             $questionOptionData,
                         );
