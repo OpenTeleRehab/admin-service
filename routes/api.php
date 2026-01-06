@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ApiClientController;
 use App\Http\Controllers\AssistiveTechnologyController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CategoryController;
@@ -367,7 +368,24 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('phc-services', [PhcServiceController::class, 'store'])->middleware('role:manage_phc_service');
     Route::put('phc-services/{phc_service}', [PhcServiceController::class, 'update'])->middleware('role:manage_phc_service');
     Route::delete('phc-services/{phc_service}', [PhcServiceController::class, 'destroy'])->middleware('role:manage_phc_service');
+
+    // Api client
+    Route::put('api-clients/{apiClient}/update-status', [ApiClientController::class, 'updateStatus'])->middleware('role:manage_api_client');
+    Route::put('api-clients/{apiKey}/generate-secret-key', [ApiClientController::class, 'regenerateSecretKey'])->middleware('role:manage_api_client');
+    Route::apiResource('api-clients', ApiClientController::class)->middleware('role:manage_api_client');
 });
+
+Route::group(['prefix' => 'external', 'middleware' => ['check.api.client']], function () {
+    Route::get('get-exercises', [ExerciseController::class, 'getExercises']);
+    Route::get('get-exercise-files', [ExerciseController::class, 'getExerciseFiles']);
+    Route::get('get-education-materials', [EducationMaterialController::class, 'getEducationMaterials']);
+    Route::get('get-education-material-files', [EducationMaterialController::class, 'getEducationMaterialFiles']);
+    Route::get('get-questionnaires', [QuestionnaireController::class, 'getQuestionnaires']);
+    Route::get('get-questionnaire-questions', [QuestionnaireController::class, 'getQuestionnaireQuestions']);
+    Route::get('get-question-file', [QuestionnaireController::class, 'getQuestionFile']);
+    Route::get('get-question-answers', [QuestionnaireController::class, 'getQuestionAnswers']);
+});
+
 // Public Access
 Route::get('color-scheme', [ColorSchemeController::class, 'index']);
 Route::get('page/static', [StaticPageController::class, 'getStaticPage']);
