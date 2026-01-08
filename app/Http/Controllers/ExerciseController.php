@@ -610,7 +610,7 @@ class ExerciseController extends Controller
      */
     public function getExercises()
     {
-        return Exercise::withTrashed()->get();
+        return Exercise::withTrashed()->whereNull('therapist_id')->get();
     }
 
     /**

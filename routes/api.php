@@ -256,6 +256,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData'])->middleware('role:view_category_tree');
     Route::get('get-categories-for-open-library', [CategoryController::class, 'getCategoriesForOpenLibrary'])->middleware('role:get_library_category');
     Route::get('category', [CategoryController::class, 'index'])->middleware('role:setup_category,view_category_list');
+    Route::get('get-categories', [CategoryController::class, 'getCategories'])->middleware('role:access_all');
     Route::post('category', [CategoryController::class, 'store'])->middleware('role:setup_category');
     Route::get('category/{category}', [CategoryController::class, 'show'])->middleware('role:setup_category');
     Route::put('category/{category}', [CategoryController::class, 'update'])->middleware('role:setup_category');
@@ -384,6 +385,7 @@ Route::group(['prefix' => 'external', 'middleware' => ['check.api.client']], fun
     Route::get('get-questionnaire-questions', [QuestionnaireController::class, 'getQuestionnaireQuestions']);
     Route::get('get-question-file', [QuestionnaireController::class, 'getQuestionFile']);
     Route::get('get-question-answers', [QuestionnaireController::class, 'getQuestionAnswers']);
+    Route::get('get-categories', [CategoryController::class, 'getCategories']);
 });
 
 // Public Access

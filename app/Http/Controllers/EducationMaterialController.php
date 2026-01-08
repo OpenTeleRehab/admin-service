@@ -604,7 +604,7 @@ class EducationMaterialController extends Controller
      */
     public function getEducationMaterials()
     {
-        return EducationMaterial::withTrashed()->get();
+        return EducationMaterial::withTrashed()->whereNull('therapist_id')->get();
     }
 
     /**

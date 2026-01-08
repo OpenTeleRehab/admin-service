@@ -5,13 +5,12 @@ namespace App\Console\Commands;
 use App\Helpers\FileHelper;
 use App\Models\Exercise;
 use App\Models\File;
-use App\Models\Forwarder;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\GlobalDataSyncHelper;
 
 class SyncExerciseData extends Command
 {
@@ -37,8 +36,11 @@ class SyncExerciseData extends Command
     {
         if (env('APP_NAME') != 'hi') {
             // Sync exercise data.
-            $access_token = Forwarder::getAccessToken(Forwarder::GADMIN_SERVICE);
-            $globalExercises = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercises'));
+            $globalExercises = GlobalDataSyncHelper::fetchData('get-exercises');
+            if (!$globalExercises) {
+                $this->error('Failed to fetch exercises from global.');
+                return;
+            }
             // Remove existing global data before import.
             $exercises = Exercise::withTrashed()->where('global', true)->get();
             if ($exercises) {
@@ -76,7 +78,7 @@ class SyncExerciseData extends Command
                 $newExercise = Exercise::withTrashed()->where('exercise_id', $globalExercise->id)->where('global', true)->first();
 
                 // Add files.
-                $files = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-exercise-files', ['exercise_id' => $globalExercise->id]));
+                $files = GlobalDataSyncHelper::fetchData('get-exercise-files', ['exercise_id' => $globalExercise->id]);
 
                 if (!empty($files)) {
                     $index = 0;

@@ -30,7 +30,7 @@ class Category extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'type', 'parent_id', 'auto_translated'];
+    protected $fillable = ['title', 'type', 'parent_id', 'auto_translated', 'global_category_id'];
 
     /**
      * Get the options for activity logging.
@@ -43,7 +43,7 @@ class Category extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->logExcept(['id', 'created_at', 'updated_at']);
+            ->logExcept(['id', 'created_at', 'updated_at', 'global_category_id']);
     }
 
     /**
