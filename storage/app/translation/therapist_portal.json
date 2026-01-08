@@ -370,6 +370,7 @@
     "success_message.transfer_declined": "The patient transfer was successfully declined",
     "success_message.transfer_accepted": "The patient transfer was successfully accepted",
     "success_message.transfer_deleted": "The patient transfer was successfully deleted",
+    "success_message.transfer_rejected": "Transfer declined successfully",
     "age.single_year": "year",
     "age.single_month": "month",
     "age.single_day": "day",
