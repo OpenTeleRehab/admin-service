@@ -557,6 +557,7 @@
     "patient.message.save.draft": "Save as draft",
     "patient.message.send": "Send",
     "patient.assistive_technology.create_follow_up_appointment": "Create follow up appointment",
+    "patient.not_found": "Patient not found",
     "common.profession": "Profession",
     "placeholder.profession": "Please select a profession",
     "treatment_plan.save_as_preset_title": "Save Treatment As Preset",
