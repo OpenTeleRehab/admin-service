@@ -69,4 +69,34 @@ class GlobalPatient extends Model
     {
         return $this->hasMany(GlobalTreatmentPlan::class, ['patient_id', 'country_id'], ['patient_id', 'country_id']);
     }
+
+    /**
+     * Get the country associated with the patient.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Country>
+     */
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    /**
+     * Get the clinic associated with the patient.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Clinic>
+     */
+    public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
+    }
+
+    /**
+     * Get the PHC service associated with the patient.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\PhcService>
+     */
+    public function phcService()
+    {
+        return $this->belongsTo(PhcService::class);
+    }
 }

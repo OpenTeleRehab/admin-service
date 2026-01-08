@@ -160,7 +160,7 @@ class GlobalPatientController extends Controller
     {
         $patient = GlobalPatient::where('patient_id', $patientId)->first();
         $country = Country::find($patient->country_id);
-        $user = auth()->user();
+        $user = Auth::user();
 
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code),
