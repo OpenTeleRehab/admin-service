@@ -3,13 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Helpers\FileHelper;
+use App\Helpers\GlobalDataSyncHelper;
 use App\Models\EducationMaterial;
 use App\Models\File;
-use App\Models\Forwarder;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -37,8 +36,11 @@ class SyncEducationMaterialData extends Command
     {
         if (env('APP_NAME') != 'hi') {
             // Sync eduction material data.
-            $access_token = Forwarder::getAccessToken(Forwarder::GADMIN_SERVICE);
-            $globalEducationMaterials = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-education-materials'));
+            $globalEducationMaterials = GlobalDataSyncHelper::fetchData('get-education-materials');
+            if (!$globalEducationMaterials) {
+                $this->error('Failed to fetch education materials from global.');
+                return;
+            }
             $educationMaterials = DB::table('education_materials')->where('global', true)->get();
             // Remove data before import.
             if ($educationMaterials) {
@@ -64,7 +66,7 @@ class SyncEducationMaterialData extends Command
                     ]
                 );
                 $filesIDs = array_values(get_object_vars($globalEducationMaterial->file_id));
-                $files = json_decode(Http::withToken($access_token)->get(env('GLOBAL_ADMIN_SERVICE_URL') . '/get-education-material-files', ['file_ids' => $filesIDs]));
+                $files = GlobalDataSyncHelper::fetchData('get-education-material-files', ['file_ids' => $filesIDs]);
                 $newFileIDs = $globalEducationMaterial->file_id;
                 if (!empty($files)) {
                     foreach ($files as $file) {

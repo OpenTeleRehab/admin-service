@@ -324,4 +324,16 @@ class CategoryController extends Controller
 
         return ['success' => false, 'message' => 'error_message.category_delete'];
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     */
+    public function getCategories()
+    {
+        return Category::with([
+            'exercises',
+            'educationMaterials',
+            'questionnaires',
+        ])->get();
+    }
 }

@@ -522,7 +522,7 @@ class QuestionnaireController extends Controller
      */
     public function getQuestionnaires()
     {
-        return Questionnaire::withTrashed()->get();
+        return Questionnaire::withTrashed()->whereNull('therapist_id')->where('is_survey', false)->get();
     }
 
     /**

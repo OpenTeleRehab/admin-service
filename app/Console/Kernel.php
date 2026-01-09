@@ -27,6 +27,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('hi:sync-exercise-data')->dailyAt('0:00')->runInBackground();
         $schedule->command('hi:sync-education-material-data')->dailyAt('0:15')->runInBackground();
         $schedule->command('hi:sync-questionnaire-data')->dailyAt('0:30')->runInBackground();
+        $schedule->command('hi:sync-category-data')->dailyAt('0:45')->runInBackground();
         $schedule->command('hi:sync-patient-data --all')->dailyAt('1:00')->runInBackground();
         $schedule->command('hi:sync-assistive-technology-patient-data')->dailyAt('1:30')->runInBackground();
         $schedule->command('hi:sync-patient-twilio-call-data')->dailyAt('2:00')->runInBackground();
