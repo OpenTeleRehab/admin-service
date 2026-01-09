@@ -67,6 +67,7 @@
     "common.download.failed": "Failed",
     "common.created_by": "Created by",
     "common.download.history.message": "Important: The generated file will be deleted after 7 days.",
+    "common.counter_referral": "Counter referral",
     "treatment_plan.back_to_list": "Back To Treatment History",
     "treatment_plan.back_to_preset_list": "Back To Preset Treatments",
     "common.status": "Status",
@@ -371,6 +372,7 @@
     "success_message.transfer_accepted": "The patient transfer was successfully accepted",
     "success_message.transfer_deleted": "The patient transfer was successfully deleted",
     "success_message.transfer_rejected": "Transfer declined successfully",
+    "success_message.counter_referral": "Counter referral completed successfully",
     "age.single_year": "year",
     "age.single_month": "month",
     "age.single_day": "day",
@@ -680,5 +682,9 @@
     "success_message.referral.declined": "Referral declined successfully",
     "success_message.referral.accepted": "Referral accepted successfully",
     "patient.referral_assignment.accept.title": "Accept referral",
-    "required.phc_worker": "Please select a phc worker"
+    "required.phc_worker": "Please select a phc worker",
+    "counter_referral.toast.title": "Counter referral",
+    "counter_referral.confirmation.title": "Patient Counter Referral Confirmation",
+    "counter_referral.confirmation.message": "Are you sure you want to counter refer this patient?",
+    "counter_referral.not_found": "This patient has no referrals"
 }
