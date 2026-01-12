@@ -98,6 +98,9 @@ class SetupKeycloakPermissions extends Command
             'manage_phc_worker_guidance',
             'translate_phc_worker_guidance',
             'manage_api_client',
+            'manage_clinic',
+            'translate_guidance_page',
+            'translate_health_condition',
         ];
         $groupRoles = [
             'super_admin' => [
@@ -225,11 +228,11 @@ class SetupKeycloakPermissions extends Command
                 'translate_privacy_policy',
                 'translate_guidance_page',
                 'translate_term_condition',
+                'translate_health_condition',
                 'manage_phc_worker_guidance',
                 'manage_translation',
                 'manage_assistive_technology',
                 'manage_static_page',
-                'manage_health_condition',
                 'manage_own_profile',
                 'manage_download_tracker',
                 'setup_educational_material',

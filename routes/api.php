@@ -194,7 +194,11 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Guidance
     Route::post('guidance-page/update-order', [GuidancePageController::class, 'updateOrder'])->middleware('role:manage_guidance_page');
-    Route::apiResource('guidance-page', GuidancePageController::class)->middleware('role:manage_guidance_page,translate_guidance_page');
+    Route::get('guidance-page', [GuidancePageController::class, 'index'])->middleware('role:manage_guidance_page,translate_guidance_page');
+    Route::get('guidance-page/{guidancePage}', [GuidancePageController::class, 'show'])->middleware('role:manage_guidance_page,translate_guidance_page');
+    Route::post('guidance-page', [GuidancePageController::class, 'store'])->middleware('role:manage_guidance_page');
+    Route::put('guidance-page/{guidancePage}', [GuidancePageController::class, 'update'])->middleware('role:manage_guidance_page,translate_guidance_page');
+    Route::delete('guidance-page/{guidancePage}', [GuidancePageController::class, 'destroy'])->middleware('role:manage_guidance_page');
 
     // Settings
     Route::get('getDefaultLimitedPatient', [SettingController::class, 'getDefaultLimitedPatient'])->middleware('role:view_default_limited_patient');
@@ -237,20 +241,18 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::delete('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'destroy'])->middleware('role:manage_screening_questionnaire');
 
     // Health Condition Group
-    Route::get('health-condition-group', [HealthConditionGroupController::class, 'index'])
-        ->middleware('role:view_health_condition,manage_health_condition');
-
-    Route::apiResource('health-condition-group', HealthConditionGroupController::class)
-        ->except(['index'])
-        ->middleware('role:manage_health_condition');
+    Route::get('health-condition-group', [HealthConditionGroupController::class, 'index'])->middleware('role:view_health_condition,manage_health_condition,translate_health_condition');
+    Route::post('health-condition-group', [HealthConditionGroupController::class, 'store'])->middleware('role:manage_health_condition');
+    Route::get('health-condition-group/{healthConditionGroup}', [HealthConditionGroupController::class, 'show'])->middleware('role:manage_health_condition,translate_health_condition');
+    Route::put('health-condition-group/{healthConditionGroup}', [HealthConditionGroupController::class, 'update'])->middleware('role:manage_health_condition,translate_health_condition');
+    Route::delete('health-condition-group/{healthConditionGroup}', [HealthConditionGroupController::class, 'destroy'])->middleware('role:manage_health_condition');
 
     // Health Condition
-    Route::get('health-condition', [HealthConditionController::class, 'index'])
-        ->middleware('role:view_health_condition,manage_health_condition');
-
-    Route::apiResource('health-condition', HealthConditionController::class)
-        ->except(['index'])
-        ->middleware('role:manage_health_condition');
+    Route::get('health-condition', [HealthConditionController::class, 'index'])->middleware('role:view_health_condition,manage_health_condition,translate_health_condition');
+    Route::post('health-condition', [HealthConditionController::class, 'store'])->middleware('role:manage_health_condition');
+    Route::get('health-condition/{healthCondition}', [HealthConditionController::class, 'show'])->middleware('role:manage_health_condition,translate_health_condition');
+    Route::put('health-condition/{healthCondition}', [HealthConditionController::class, 'update'])->middleware('role:manage_health_condition,translate_health_condition');
+    Route::delete('health-condition/{healthCondition}', [HealthConditionController::class, 'destroy'])->middleware('role:manage_health_condition');
 
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData'])->middleware('role:view_category_tree');
