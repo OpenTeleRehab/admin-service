@@ -381,7 +381,7 @@ class ScreeningQuestionnaireController extends Controller
      */
     public function submit(SubmitScreeningQuestionnaireRequest $request, ScreeningQuestionnaire $screeningQuestionnaire)
     {
-        $result = $screeningQuestionnaire->answer()->create([
+        $result = $screeningQuestionnaire->answers()->create([
             'questionnaire_id' => $screeningQuestionnaire->id,
             'user_id' => $request->integer('user_id'),
             'answers' => $request->get('answers'),
@@ -452,6 +452,21 @@ class ScreeningQuestionnaireController extends Controller
             'success' => true,
             'message' => "success_get_interview_history_list",
             'data' => $data,
+        ]);
+    }
+
+    /**
+     * Get all published screening questionnaires.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllScreeningQuestionnaires()
+    {
+        $questionnaires = ScreeningQuestionnaire::with('answers')->where('status', 'published')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $questionnaires,
         ]);
     }
 }

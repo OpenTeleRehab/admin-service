@@ -60,10 +60,10 @@ class ScreeningQuestionnaire extends Model
     }
 
     /**
-     * Get the answer that the questionnaire belongs to.
+     * Get the answers that belong to the questionnaire.
      */
-    public function answer(): BelongsTo
+    public function answers(): HasMany
     {
-        return $this->belongsTo(ScreeningQuestionnaireAnswer::class, 'questionnaire_id');
+        return $this->hasMany(ScreeningQuestionnaireAnswer::class, 'questionnaire_id');
     }
 }
