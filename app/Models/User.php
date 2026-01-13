@@ -88,11 +88,11 @@ class User extends Authenticatable
         static::creating(function ($user) {
             $authUser = Auth::user();
 
-            if (in_array($authUser->type, [self::ADMIN_GROUP_COUNTRY_ADMIN, self::ADMIN_GROUP_REGIONAL_ADMIN])) {
+            if (in_array($authUser?->type, [self::ADMIN_GROUP_COUNTRY_ADMIN, self::ADMIN_GROUP_REGIONAL_ADMIN])) {
                 $user->country_id = $authUser->country_id;
             }
 
-            if (in_array($authUser->type, [self::ADMIN_GROUP_REGIONAL_ADMIN])) {
+            if (in_array($authUser?->type, [self::ADMIN_GROUP_REGIONAL_ADMIN])) {
                 $user->region_id = $authUser->region_id;
             }
         });

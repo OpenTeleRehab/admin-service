@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Helpers\KeycloakHelper;
 use App\Models\User;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -15,7 +15,6 @@ class SetupKeycloakPermissions extends Command
 
     public function handle()
     {
-        $groups = ['library_admin', 'regional_admin', 'phc_service_admin'];
         $roles = [
             'translate_term_condition',
             'translate_exercise',
@@ -79,6 +78,17 @@ class SetupKeycloakPermissions extends Command
             'manage_health_condition',
             'manage_patient_referral',
             'manage_patient_referral_assignment',
+            'manage_clinic',
+            'translate_guidance_page',
+            'translate_health_condition',
+            'manage_mfa_policy',
+            'view_questionnaire_list',
+            'view_category_list',
+            'delete_phc_worker',
+            'view_exercise',
+            'view_questionnaire',
+            'view_educational_material',
+            'view_country_limitation',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -95,8 +105,6 @@ class SetupKeycloakPermissions extends Command
             'get_questionnaire_category',
             'manage_profession',
             'manage_guidance_page',
-            'manage_phc_worker_guidance',
-            'translate_phc_worker_guidance',
             'manage_api_client',
             'manage_clinic',
             'translate_guidance_page',
@@ -104,35 +112,40 @@ class SetupKeycloakPermissions extends Command
         ];
         $groupRoles = [
             'super_admin' => [
-                'view_default_limited_patient',
+                'setup_educational_material',
+                'setup_questionnaire',
+                'manage_translation',
+                'setup_category',
+                'manage_language',
+                'manage_translator',
+                'manage_system_limit',
+                'manage_organization_admin',
+                'manage_organization',
+                'super_admin',
+                'setup_exercise',
+                'manage_assistive_technology',
                 'view_category_tree',
                 'manage_own_profile',
-                'manage_survey',
                 'manage_screening_questionnaire',
                 'import_exercise',
-                'import_disease',
                 'file_upload',
-                'view_audit_log',
-                'manage_download_tracker',
-                'generate_report',
-                'access_all',
                 'manage_health_condition',
                 'manage_guidance_page',
                 'manage_phc_worker_guidance',
-                'translate_phc_worker_guidance',
                 'manage_api_client',
+                'manage_mfa_policy',
             ],
             'organization_admin' => [
-                'view_organization',
-                'view_country_therapist_limit',
+                'manage_system_limit',
+                'manage_color_scheme',
+                'view_clinic_list',
+                'view_profession',
+                'manage_static_page',
+                'manage_country_admin',
+                'manage_country',
+                'manage_organization_admin',
                 'view_exercise_list',
                 'view_educational_material_list',
-                'view_default_limited_patient',
-                'view_system_limit_list',
-                'view_term_condition_list',
-                'view_term_condition',
-                'view_privacy_policy_list',
-                'view_privacy_policy',
                 'submit_survey',
                 'skip_survey',
                 'manage_own_profile',
@@ -142,7 +155,6 @@ class SetupKeycloakPermissions extends Command
                 'delete_therapist',
                 'view_therapist_list',
                 'view_transfer_list_by_therapist',
-                'view_patient_list_by_therapist_ids',
                 'view_remove_therapist_patient',
                 'view_patient_treatment_plan',
                 'manage_global_at_patient',
@@ -154,11 +166,20 @@ class SetupKeycloakPermissions extends Command
                 'view_language',
                 'view_therapist_patient_list',
                 'view_patient_treatment_plan_detail',
-                'access_all',
+                'view_phc_worker_list',
+                'delete_phc_worker',
+                'view_questionnaire_list',
+                'view_category_list',
+                'manage_term_condition',
+                'manage_privacy_policy',
+                'manage_organization',
+                'manage_mfa_policy',
+                'view_exercise',
+                'view_questionnaire',
+                'view_educational_material',
             ],
             'country_admin' => [
                 'view_organization',
-                'view_default_limited_patient',
                 'submit_survey',
                 'skip_survey',
                 'manage_own_profile',
@@ -171,27 +192,37 @@ class SetupKeycloakPermissions extends Command
                 'manage_download_tracker',
                 'generate_report',
                 'view_language',
-                'view_country_therapist_limit',
-                'view_number_of_clinic_therapist',
                 'view_exercise',
                 'manage_survey',
-                'access_all',
                 'manage_region',
                 'manage_regional_admin',
                 'manage_profession',
+                'view_therapist_list',
+                'delete_therapist',
+                'view_phc_worker_list',
+                'delete_phc_worker',
+                'view_questionnaire',
+                'view_educational_material',
+                'manage_mfa_policy',
+                'view_profession',
+                'view_country_limitation',
+                'view_therapist_patient_list',
+                'view_transfer_list_by_therapist',
+                'view_remove_therapist_patient',
+                'view_clinic_therapist_list',
             ],
             'clinic_admin' => [
                 'view_profession',
                 'view_organization',
                 'view_clinic_list',
-                'view_default_limited_patient',
                 'submit_survey',
                 'skip_survey',
                 'manage_own_profile',
                 'manage_global_patient',
                 'manage_therapist',
-                'manage_patient',
                 'manage_global_at_patient',
+                'view_patient_treatment_plan',
+                'view_patient_treatment_plan_detail',
                 'view_audit_log',
                 'view_dashboard',
                 'manage_download_tracker',
@@ -199,10 +230,14 @@ class SetupKeycloakPermissions extends Command
                 'view_number_of_clinic_therapist',
                 'view_language',
                 'view_exercise',
+                'view_educational_material',
+                'view_questionnaire',
                 'manage_survey',
-                'access_all',
                 'manage_patient_referral',
                 'manage_patient_referral_assignment',
+                'manage_mfa_policy',
+                'view_therapist_patient_list',
+                'view_remove_therapist_patient',
             ],
             'library_admin' => [
                 'get_library_category',
@@ -220,6 +255,12 @@ class SetupKeycloakPermissions extends Command
                 'get_questionnaire_category',
             ],
             'translator' => [
+                'translate_translation',
+                'translate_static_page',
+                'translate_health_condition',
+                'translate_assistive_technology',
+                'translator',
+                'translate_category',
                 'translate_exercise',
                 'translate_educational_material',
                 'translate_questionnaire',
@@ -228,20 +269,7 @@ class SetupKeycloakPermissions extends Command
                 'translate_privacy_policy',
                 'translate_guidance_page',
                 'translate_term_condition',
-                'translate_health_condition',
-                'manage_phc_worker_guidance',
-                'manage_translation',
-                'manage_assistive_technology',
-                'manage_static_page',
                 'manage_own_profile',
-                'manage_download_tracker',
-                'setup_educational_material',
-                'setup_questionnaire',
-                'setup_category',
-                'setup_exercise',
-                'view_country_therapist_limit',
-                'view_default_limited_patient',
-                'view_number_of_clinic_therapist',
                 'view_category_tree',
             ],
             'regional_admin' => [
@@ -256,7 +284,6 @@ class SetupKeycloakPermissions extends Command
                 'view_audit_log',
                 'view_dashboard',
                 'view_language',
-                'view_country_therapist_limit',
                 'view_region_list',
                 'manage_province',
                 'manage_clinic',
@@ -264,12 +291,25 @@ class SetupKeycloakPermissions extends Command
                 'manage_phc_service',
                 'manage_phc_service_admin',
                 'manage_survey',
-                'view_default_limited_patient',
+                'view_therapist_list',
+                'delete_therapist',
+                'view_phc_worker_list',
+                'delete_phc_worker',
+                'manage_download_tracker',
+                'generate_report',
+                'view_exercise',
+                'view_educational_material',
+                'view_questionnaire',
+                'manage_mfa_policy',
+                'view_profession',
+                'view_therapist_patient_list',
+                'view_transfer_list_by_therapist',
+                'view_remove_therapist_patient',
+                'view_clinic_therapist_list',
             ],
             'phc_service_admin' => [
                 'view_profession',
                 'view_organization',
-                'view_default_limited_patient',
                 'submit_survey',
                 'skip_survey',
                 'manage_own_profile',
@@ -281,27 +321,19 @@ class SetupKeycloakPermissions extends Command
                 'view_dashboard',
                 'view_language',
                 'manage_phc_worker',
-                'view_phc_worker_list',
                 'manage_survey',
                 'view_number_of_phc_service_phc_worker',
                 'manage_download_tracker',
-                'manage_patient'
+                'generate_report',
+                'view_exercise',
+                'view_educational_material',
+                'view_questionnaire',
+                'manage_mfa_policy',
+                'view_therapist_patient_list',
             ],
-
         ];
 
-        $this->line("Creating groups...");
-
-        foreach ($groups as $groupName) {
-            $created = KeycloakHelper::createGroup($groupName);
-            if ($created) {
-                $this->info(" - Group '{$groupName}': Created");
-            } else {
-                $this->warn(" - Group '{$groupName}': Already exists or failed");
-            }
-        }
-
-        $this->line("Creating roles...");
+        $this->line('Create roles...');
 
         foreach ($roles as $role) {
             $created = KeycloakHelper::createRealmRole($role, "Role: $role");
@@ -312,9 +344,24 @@ class SetupKeycloakPermissions extends Command
             }
         }
 
-        $this->line("Assigning roles to groups...");
+        $this->line('Create new groups, and assign roles to all groups...');
 
         foreach ($groupRoles as $group => $roles) {
+            $created = KeycloakHelper::createGroup($group);
+            if ($created) {
+                $this->info(" - Group '{$group}': Created");
+            } else {
+                $this->warn(" - Group '{$group}': Already exists or failed");
+                // Remove all existing roles from group first
+                try {
+                    KeycloakHelper::removeAllRealmRolesFromGroup($group);
+                    $this->info(" - Group '{$group}': Existing roles removed");
+                } catch (\Throwable $e) {
+                    $this->error(" - Group '{$group}': {$e->getMessage()}");
+                    continue;
+                }
+            }
+
             foreach ($roles as $role) {
                 try {
                     $success = KeycloakHelper::assignRealmRoleToGroup($group, $role);
@@ -368,10 +415,10 @@ class SetupKeycloakPermissions extends Command
             $response = Http::withToken($token)
                 ->withHeaders(['Content-Type' => 'application/json'])
                 ->post(KeycloakHelper::getUserUrl(), [
-                    'username'  => $user->email,
+                    'username' => $user->email,
                     'firstName' => $user->first_name,
-                    'lastName'  => $user->last_name,
-                    'enabled'   => true,
+                    'lastName' => $user->last_name,
+                    'enabled' => true,
                 ]);
 
             if ($response->successful()) {
