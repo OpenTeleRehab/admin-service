@@ -676,6 +676,7 @@
     "referral.status.invited": "Invited",
     "referral.status.accepted": "Accepted",
     "referral.status.declined": "Declined",
+    "referral.phc_request_reason": "PHC Worker Reason",
     "success_message.referral.create": "Patient referral created successfully",
     "referral.lead.and.supplementary": "Lead / Supplementary PHC Worker",
     "patient.pending_referral": "This patient has pending referral",
