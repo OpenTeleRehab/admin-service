@@ -77,10 +77,10 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::apiResource('translator', TranslatorController::class)->middleware('role:manage_translator');
 
     // Assistive Technology
-    Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'index'])->middleware('role:manage_assistive_technology');
+    Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'index'])->middleware('role:manage_assistive_technology,translate_assistive_technology');
     Route::post('assistive-technologies', [AssistiveTechnologyController::class, 'store'])->middleware('role:manage_assistive_technology');
-    Route::get('assistive-technologies/{assistiveTechnology}', [AssistiveTechnologyController::class, 'show'])->middleware('role:manage_assistive_technology');
-    Route::put('assistive-technologies/{assistiveTechnology}', [AssistiveTechnologyController::class, 'update'])->middleware('role:manage_assistive_technology');
+    Route::get('assistive-technologies/{assistiveTechnology}', [AssistiveTechnologyController::class, 'show'])->middleware('role:manage_assistive_technology,translate_assistive_technology');
+    Route::put('assistive-technologies/{assistiveTechnology}', [AssistiveTechnologyController::class, 'update'])->middleware('role:manage_assistive_technology,translate_assistive_technology');
     Route::delete('assistive-technologies/{assistiveTechnology}', [AssistiveTechnologyController::class, 'destroy'])->middleware('role:manage_assistive_technology');
     Route::get('assistive-technologies/list/get-all', [AssistiveTechnologyController::class, 'getAllAssistiveTechnology'])->middleware('role:access_all');
 
@@ -137,10 +137,10 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('library/count/by-therapist', [ExerciseController::class, 'countTherapistLibrary'])->middleware('role:access_all');
 
     // Exercise
-    Route::get('exercise', [ExerciseController::class, 'index'])->middleware('role:setup_exercise,view_exercise_list');
+    Route::get('exercise', [ExerciseController::class, 'index'])->middleware('role:setup_exercise,view_exercise_list,translate_exercise');
     Route::post('exercise', [ExerciseController::class, 'store'])->middleware('role:setup_exercise');
-    Route::get('exercise/{exercise}', [ExerciseController::class, 'show'])->middleware('role:setup_exercise,view_exercise');
-    Route::put('exercise/{exercise}', [ExerciseController::class, 'update'])->middleware('role:setup_exercise');
+    Route::get('exercise/{exercise}', [ExerciseController::class, 'show'])->middleware('role:setup_exercise,view_exercise,translate_exercise');
+    Route::put('exercise/{exercise}', [ExerciseController::class, 'update'])->middleware('role:setup_exercise,translate_exercise');
     Route::delete('exercise/{exercise}', [ExerciseController::class, 'destroy'])->middleware('role:setup_exercise');
     Route::post('exercise/suggest', [ExerciseController::class, 'suggest'])->middleware('role:access_all');
     Route::get('exercise/list/by-ids', [ExerciseController::class, 'getByIds'])->middleware('role:access_all');
@@ -153,10 +153,10 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('exercise/updateFavorite/by-therapist/{exercise}', [ExerciseController::class, 'updateFavorite'])->middleware('role:access_all');
 
     // Education Material
-    Route::get('education-material', [EducationMaterialController::class, 'index'])->middleware('role:setup_educational_material,view_educational_material_list');
+    Route::get('education-material', [EducationMaterialController::class, 'index'])->middleware('role:setup_educational_material,view_educational_material_list,translate_educational_material');
     Route::post('education-material', [EducationMaterialController::class, 'store'])->middleware('role:setup_educational_material');
-    Route::get('education-material/{educationMaterial}', [EducationMaterialController::class, 'show'])->middleware('role:setup_educational_material');
-    Route::put('education-material/{educationMaterial}', [EducationMaterialController::class, 'update'])->middleware('role:setup_educational_material');
+    Route::get('education-material/{educationMaterial}', [EducationMaterialController::class, 'show'])->middleware('role:setup_educational_material,translate_educational_material');
+    Route::put('education-material/{educationMaterial}', [EducationMaterialController::class, 'update'])->middleware('role:setup_educational_material,translate_educational_material');
     Route::delete('education-material/{educationMaterial}', [EducationMaterialController::class, 'destroy'])->middleware('role:setup_educational_material');
     Route::post('education-material/suggest', [EducationMaterialController::class, 'suggest'])->middleware('role:access_all');
     Route::get('education-material/list/by-ids', [EducationMaterialController::class, 'getByIds'])->middleware('role:access_all');
@@ -168,10 +168,10 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('education-material/updateFavorite/by-therapist/{educationMaterial}', [EducationMaterialController::class, 'updateFavorite'])->middleware('role:access_all');
 
     // Questionnaire
-    Route::get('questionnaire', [QuestionnaireController::class, 'index'])->middleware('role:setup_questionnaire,view_questionnaire_list');
+    Route::get('questionnaire', [QuestionnaireController::class, 'index'])->middleware('role:setup_questionnaire,view_questionnaire_list,translate_questionnaire');
     Route::post('questionnaire', [QuestionnaireController::class, 'store'])->middleware('role:setup_questionnaire');
-    Route::get('questionnaire/{questionnaire}', [QuestionnaireController::class, 'show'])->middleware('role:setup_questionnaire,view_questionnaire');
-    Route::put('questionnaire/{questionnaire}', [QuestionnaireController::class, 'update'])->middleware('role:setup_questionnaire');
+    Route::get('questionnaire/{questionnaire}', [QuestionnaireController::class, 'show'])->middleware('role:setup_questionnaire,view_questionnaire,translate_questionnaire');
+    Route::put('questionnaire/{questionnaire}', [QuestionnaireController::class, 'update'])->middleware('role:setup_questionnaire,translate_questionnaire');
     Route::delete('questionnaire/{questionnaire}', [QuestionnaireController::class, 'destroy'])->middleware('role:setup_questionnaire');
     Route::post('questionnaire/suggest', [QuestionnaireController::class, 'suggest'])->middleware('role:access_all');
     Route::get('questionnaire/list/by-ids', [QuestionnaireController::class, 'getByIds'])->middleware('role:access_all');
@@ -207,22 +207,22 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('system-limit', [SystemLimitController::class, 'index'])->middleware('role:manage_system_limit,view_system_limit_list');
     Route::put('system-limit/{systemLimit}', [SystemLimitController::class, 'update'])->middleware('role:manage_system_limit');
     Route::get('settings', [SettingController::class, 'index'])->middleware('role:access_all');
-    Route::get('static-page', [StaticPageController::class, 'index'])->middleware('role:manage_static_page');
+    Route::get('static-page', [StaticPageController::class, 'index'])->middleware('role:manage_static_page,translate_static_page');
     Route::post('static-page', [StaticPageController::class, 'store'])->middleware('role:manage_static_page');
-    Route::get('static-page/{staticPage}', [StaticPageController::class, 'show'])->middleware('role:manage_static_page');
-    Route::put('static-page/{staticPage}', [StaticPageController::class, 'update'])->middleware('role:manage_static_page');
-    Route::get('term-condition', [TermAndConditionController::class, 'index'])->middleware('role:manage_term_condition,view_term_condition_list');
+    Route::get('static-page/{staticPage}', [StaticPageController::class, 'show'])->middleware('role:manage_static_page,translate_static_page');
+    Route::put('static-page/{staticPage}', [StaticPageController::class, 'update'])->middleware('role:manage_static_page,translate_static_page');
+    Route::get('term-condition', [TermAndConditionController::class, 'index'])->middleware('role:manage_term_condition,view_term_condition_list,translate_term_condition');
     Route::post('term-condition', [TermAndConditionController::class, 'store'])->middleware('role:manage_term_condition');
-    Route::get('term-condition/{id}', [TermAndConditionController::class, 'show'])->middleware('role:manage_term_condition,view_term_condition');
+    Route::get('term-condition/{id}', [TermAndConditionController::class, 'show'])->middleware('role:manage_term_condition,view_term_condition,translate_term_condition');
     Route::put('term-condition/{id}', [TermAndConditionController::class, 'update'])->middleware('role:manage_term_condition,translate_term_condition');
-    Route::get('privacy-policy', [PrivacyPolicyController::class, 'index'])->middleware('role:manage_privacy_policy,view_privacy_policy_list');
+    Route::get('privacy-policy', [PrivacyPolicyController::class, 'index'])->middleware('role:manage_privacy_policy,view_privacy_policy_list,translate_privacy_policy');
     Route::post('privacy-policy', [PrivacyPolicyController::class, 'store'])->middleware('role:manage_privacy_policy');
     Route::get('privacy-policy/{id}', [PrivacyPolicyController::class, 'show'])->middleware('role:manage_privacy_policy,view_privacy_policy,translate_privacy_policy');
     Route::put('privacy-policy/{id}', [PrivacyPolicyController::class, 'update'])->middleware('role:manage_privacy_policy,translate_privacy_policy');
 
     // Survey
     Route::get('survey', [SurveyController::class, 'index'])->middleware('role:manage_survey,translate_survey');
-    Route::post('survey', [SurveyController::class, 'store'])->middleware('role:manage_survey,translate_survey');
+    Route::post('survey', [SurveyController::class, 'store'])->middleware('role:manage_survey');
     Route::get('survey/{survey}', [SurveyController::class, 'show'])->middleware('role:manage_survey,translate_survey');
     Route::put('survey/{survey}', [SurveyController::class, 'update'])->middleware('role:manage_survey,translate_survey');
     Route::post('survey/publish/{survey}', [SurveyController::class, 'publish'])->middleware('role:manage_survey');
@@ -258,11 +258,11 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Category
     Route::get('category-tree', [CategoryController::class, 'getCategoryTreeData'])->middleware('role:view_category_tree');
     Route::get('get-categories-for-open-library', [CategoryController::class, 'getCategoriesForOpenLibrary'])->middleware('role:get_library_category');
-    Route::get('category', [CategoryController::class, 'index'])->middleware('role:setup_category,view_category_list');
+    Route::get('category', [CategoryController::class, 'index'])->middleware('role:setup_category,view_category_list,translate_category');
     Route::get('get-categories', [CategoryController::class, 'getCategories'])->middleware('role:access_all');
     Route::post('category', [CategoryController::class, 'store'])->middleware('role:setup_category');
-    Route::get('category/{category}', [CategoryController::class, 'show'])->middleware('role:setup_category');
-    Route::put('category/{category}', [CategoryController::class, 'update'])->middleware('role:setup_category');
+    Route::get('category/{category}', [CategoryController::class, 'show'])->middleware('role:setup_category,translate_category');
+    Route::put('category/{category}', [CategoryController::class, 'update'])->middleware('role:setup_category,translate_category');
     Route::delete('category/{category}', [CategoryController::class, 'destroy'])->middleware('role:setup_category');
 
     Route::post('term-condition/publish/{id}', [TermAndConditionController::class, 'publish'])->middleware('role:manage_term_condition');
