@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KeycloakHelper;
 use App\Models\Region;
 use Illuminate\Http\Request;
 use App\Helpers\LimitationHelper;
+use App\Http\Resources\EntitiesByRegionResource;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\RegionResource;
+use App\Models\Forwarder;
+use App\Models\User;
+use App\Models\UserSurvey;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RegionController extends Controller
 {
@@ -334,7 +341,67 @@ class RegionController extends Controller
      */
     public function destroy(Region $region)
     {
-        $region->delete();
+        $regionId = $region->id;
+        $country = $region->country;
+
+        $adminUsers = $region->users;
+
+        $token = KeycloakHelper::getKeycloakAccessToken();
+
+        foreach ($adminUsers as $user) {
+            $response = Http::withToken($token)->get(
+                KeycloakHelper::getUserUrl(),
+                ['email' => $user->email]
+            );
+
+            if (!$response->successful()) {
+                Log::error("Failed to fetch Keycloak user for {$user->email}. Status: {$response->status()}");
+                continue;
+            }
+
+            $kcUserId = $response->json()[0]['id'] ?? null;
+
+            if (!$kcUserId) {
+                Log::warning("Keycloak user not found for email: {$user->email}");
+                continue;
+            }
+
+            if (!KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $kcUserId)) {
+                Log::error("Failed to delete Keycloak user for {$user->email}");
+                continue;
+            }
+
+            UserSurvey::where('user_id', $user->id)->delete();
+            $user->delete();
+        }
+
+        // Phone service
+        Http::post(
+            env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
+            ['clinic_ids' => $regionId->clinics->pluck('id')]
+        );
+
+        // Therapist service
+        Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
+                'entity_name' => 'region',
+                'entity_id' => $regionId,
+            ]);
+
+        // Patient service
+        Http::withHeaders([
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
+                Forwarder::PATIENT_SERVICE,
+                $country->iso_code
+            ),
+            'country' => $country->iso_code,
+        ])
+            ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
+                'entity_name' => 'region',
+                'entity_id' => $regionId,
+            ]);
+
+        $region->forceDelete();
 
         return response()->json(['message' => 'region.success_message.delete'], 200);
     }
@@ -395,5 +462,60 @@ class RegionController extends Controller
         }
 
         return response()->json(['data' => $data], 200);
+    }
+
+
+    /**
+     * Get the counts of entities related to a specific region.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEntitiesByRegionId(Region $region)
+    {
+        $region->load([
+            'users',
+            'provinces',
+            'clinics',
+            'phcServices',
+        ]);
+
+        $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
+        $therapistCountRes = Http::withToken($therapistPortalAccessToken)->get(
+            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'region',
+                'entity_id' => $region->id,
+                'user_type' => User::GROUP_THERAPIST,
+            ]
+        )->throw();
+
+        $region->therapist_count = $therapistCountRes->json('data', 0);
+
+        $phcWorkerCountRes = Http::withToken($therapistPortalAccessToken)->get(
+            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'region',
+                'entity_id' => $region->id,
+                'user_type' => User::GROUP_PHC_WORKER,
+            ]
+        )->throw();
+
+        $region->phc_worker_count = $phcWorkerCountRes->json('data', 0);
+
+        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
+            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'region',
+                'entity_id' => $region->id,
+            ]
+        )->throw();
+
+        $region->patient_count = $patientCountRes->json('data', 0);
+
+        return response()->json([
+            'data' => new EntitiesByRegionResource($region),
+        ]);
     }
 }

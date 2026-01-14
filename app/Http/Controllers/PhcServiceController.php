@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\JsonColumnHelper;
+use App\Helpers\KeycloakHelper;
 use App\Http\Resources\PhcServiceResource;
 use App\Models\PhcService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Helpers\LimitationHelper;
+use App\Http\Resources\EntitiesByPhcServiceResource;
 use App\Models\Province;
 use App\Models\Forwarder;
+use App\Models\User;
+use App\Models\UserSurvey;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PhcServiceController extends Controller
 {
@@ -231,7 +237,62 @@ class PhcServiceController extends Controller
      */
     public function destroy(PhcService $phcService)
     {
-        $phcService->delete();
+        $phcServiceId = $phcService->id;
+        $country = $phcService->province->region->country;
+
+        $adminUsers = User::where('phc_service_id', $phcServiceId)->get();
+
+        $token = KeycloakHelper::getKeycloakAccessToken();
+
+        foreach ($adminUsers as $user) {
+            $response = Http::withToken($token)->get(
+                KeycloakHelper::getUserUrl(),
+                ['email' => $user->email]
+            );
+
+            if (!$response->successful()) {
+                Log::error("Failed to fetch Keycloak user for {$user->email}. Status: {$response->status()}");
+                continue;
+            }
+
+            $kcUserId = $response->json()[0]['id'] ?? null;
+
+            if (!$kcUserId) {
+                Log::warning("Keycloak user not found for email: {$user->email}");
+                continue;
+            }
+
+            if (!KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $kcUserId)) {
+                Log::error("Failed to delete Keycloak user for {$user->email}");
+                continue;
+            }
+
+            UserSurvey::where('user_id', $user->id)->delete();
+            $user->delete();
+        }
+
+        // Therapist service
+        Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
+                'entity_name' => 'phc_service',
+                'entity_id' => $phcServiceId,
+            ]);
+
+        // Patient service
+        Http::withHeaders([
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
+                Forwarder::PATIENT_SERVICE,
+                $country->iso_code
+            ),
+            'country' => $country->iso_code,
+        ])
+            ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
+                'entity_name' => 'phc_service',
+                'entity_id' => $phcServiceId,
+            ]);
+
+        $phcService->forceDelete();
+
         return response()->json(['message' => 'phc_service.success_message.delete'], 200);
     }
 
@@ -358,5 +419,43 @@ class PhcServiceController extends Controller
         }
 
         return $phcWorkerData['data'] ?? 0;
+    }
+
+    /**
+     * Get the counts of entities related to a specific phc service.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEntitiesByPhcServiceId(PhcService $phcService)
+    {
+        $phcService->load(['users']);
+
+        $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
+        $phcWorkerCountRes = Http::withToken($therapistPortalAccessToken)->get(
+            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'phc_service',
+                'entity_id' => $phcService->id,
+                'user_type' => User::GROUP_PHC_WORKER,
+            ]
+        )->throw();
+
+        $phcService->phc_worker_count = $phcWorkerCountRes->json('data', 0);
+
+        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
+            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'phc_service',
+                'entity_id' => $phcService->id,
+            ]
+        )->throw();
+
+        $phcService->patient_count = $patientCountRes->json('data', 0);
+
+        return response()->json([
+            'data' => new EntitiesByPhcServiceResource($phcService),
+        ]);
     }
 }

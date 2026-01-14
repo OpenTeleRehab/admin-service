@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KeycloakHelper;
 use Exception;
 use App\Models\Province;
 use Illuminate\Http\Request;
 use App\Helpers\LimitationHelper;
+use App\Http\Resources\EntitiesByProvinceResource;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProvinceResource;
-use App\Models\Region;
+use App\Models\Forwarder;
+use App\Models\User;
+use App\Models\UserSurvey;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ProvinceController extends Controller
 {
@@ -269,7 +275,74 @@ class ProvinceController extends Controller
      */
     public function destroy(Province $province)
     {
-        $province->delete();
+        $provinceId = $province->id;
+        $country = $province->region->country;
+
+        $adminUsers = User::whereHas('phcService', function ($q) use ($province) {
+            $q->where('province_id', $province->id);
+        })
+        ->whereHas('clinic', function ($q) use ($province) {
+            $q->where('province_id', $province->id);
+        })
+        ->get();
+
+        $token = KeycloakHelper::getKeycloakAccessToken();
+
+        foreach ($adminUsers as $user) {
+            $response = Http::withToken($token)->get(
+                KeycloakHelper::getUserUrl(),
+                ['email' => $user->email]
+            );
+
+            if (!$response->successful()) {
+                Log::error("Failed to fetch Keycloak user for {$user->email}. Status: {$response->status()}");
+                continue;
+            }
+
+            $kcUserId = $response->json()[0]['id'] ?? null;
+
+            if (!$kcUserId) {
+                Log::warning("Keycloak user not found for email: {$user->email}");
+                continue;
+            }
+
+            if (!KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $kcUserId)) {
+                Log::error("Failed to delete Keycloak user for {$user->email}");
+                continue;
+            }
+
+            UserSurvey::where('user_id', $user->id)->delete();
+            $user->delete();
+        }
+
+
+        // Phone service
+        Http::post(
+            env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
+            ['clinic_ids' => $province->clinics->pluck('id')]
+        );
+
+        // Therapist service
+        Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
+                'entity_name' => 'province',
+                'entity_id' => $provinceId,
+            ]);
+
+        // Patient service
+        Http::withHeaders([
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
+                Forwarder::PATIENT_SERVICE,
+                $country->iso_code
+            ),
+            'country' => $country->iso_code,
+        ])
+            ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
+                'entity_name' => 'province',
+                'entity_id' => $provinceId,
+            ]);
+
+        $province->forceDelete();
 
         return response()->json(['message' => 'province.success_message.delete'], 200);
     }
@@ -326,5 +399,57 @@ class ProvinceController extends Controller
         $provinces = $authUser->country->provinces;
 
         return response()->json(['data' => $provinces]);
+    }
+
+    /**
+     * Get the counts of entities related to a specific phc service.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEntitiesByPhcServiceId(Province $province)
+    {
+        $province->load([
+            'clinics',
+            'phcServices',
+        ]);
+
+        $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
+        $therapistCountRes = Http::withToken($therapistPortalAccessToken)->get(
+            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'province',
+                'entity_id' => $province->id,
+                'user_type' => User::GROUP_THERAPIST,
+            ]
+        )->throw();
+
+        $province->therapist_count = $therapistCountRes->json('data', 0);
+
+        $phcWorkerCountRes = Http::withToken($therapistPortalAccessToken)->get(
+            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'province',
+                'entity_id' => $province->id,
+                'user_type' => User::GROUP_PHC_WORKER,
+            ]
+        )->throw();
+
+        $province->phc_worker_count = $phcWorkerCountRes->json('data', 0);
+
+        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
+            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'province',
+                'entity_id' => $province->id,
+            ]
+        )->throw();
+
+        $province->patient_count = $patientCountRes->json('data', 0);
+
+        return response()->json([
+            'data' => new EntitiesByProvinceResource($province),
+        ]);
     }
 }

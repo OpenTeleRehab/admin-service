@@ -66,4 +66,12 @@ class PhcService extends Model
     {
         return $this->belongsTo(Province::class);
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }

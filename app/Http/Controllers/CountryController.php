@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\JsonColumnHelper;
 use App\Models\User;
 use App\Models\Clinic;
 use App\Models\Country;
-use App\Models\Organization;
 use Illuminate\Http\Request;
 use App\Helpers\KeycloakHelper;
 use App\Helpers\LimitationHelper;
 use Illuminate\Support\Facades\Http;
 use App\Http\Resources\CountryResource;
+use App\Http\Resources\EntitiesByCountryResource;
+use App\Models\Forwarder;
+use App\Models\MfaSetting;
 use App\Models\PhcService;
+use App\Models\Survey;
+use App\Models\UserSurvey;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Stevebauman\Location\Facades\Location;
 
@@ -367,33 +374,70 @@ class CountryController extends Controller
      */
     public function destroy(Country $country)
     {
-        $users = User::where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)
-            ->where('country_id', $country->id)->get();
+        $countryId = $country->id;
 
-        /** @var \App\Models\User $user */
-        foreach ($users as $user) {
-            $token = KeycloakHelper::getKeycloakAccessToken();
+        $adminUsers = User::where('country_id', $countryId)->get();
 
-            $userUrl = KeycloakHelper::getUserUrl() . '?email=' . $user->email;
-            $response = Http::withToken($token)->get($userUrl);
+        $token = KeycloakHelper::getKeycloakAccessToken();
 
-            if ($response->successful()) {
-                $keyCloakUsers = $response->json();
+        foreach ($adminUsers as $user) {
+            $response = Http::withToken($token)->get(
+                KeycloakHelper::getUserUrl(),
+                ['email' => $user->email]
+            );
 
-                $isDeleted = KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id']);
-                if ($isDeleted) {
-                    $user->delete();
-                }
+            if (!$response->successful()) {
+                Log::error("Failed to fetch Keycloak user for {$user->email}. Status: {$response->status()}");
+                continue;
             }
+
+            $kcUserId = $response->json()[0]['id'] ?? null;
+
+            if (!$kcUserId) {
+                Log::warning("Keycloak user not found for email: {$user->email}");
+                continue;
+            }
+
+            if (!KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $kcUserId)) {
+                Log::error("Failed to delete Keycloak user for {$user->email}");
+                continue;
+            }
+
+            UserSurvey::where('user_id', $user->id)->delete();
+            $user->delete();
         }
 
-        $clinics = Clinic::where('country_id', $country->id)->get();
-        foreach ($clinics as $clinic) {
-            // Remove clinics and related objects of country.
-            Http::delete(env("ADMIN_SERVICE_URL") . "/clinic/$clinic->id");
-        }
+        JsonColumnHelper::removeFromJsonColumn(MfaSetting::class, 'country_ids', [$countryId]);
+        JsonColumnHelper::removeFromJsonColumn(Survey::class, 'country', [$countryId]);
+
+        // Phone service
+        Http::post(
+            env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
+            ['clinic_ids' => $country->clinics->pluck('id')]
+        );
+
+        // Therapist service
+        Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
+                'entity_name' => 'country',
+                'entity_id' => $countryId,
+            ]);
+
+        // Patient service
+        Http::withHeaders([
+            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
+                Forwarder::PATIENT_SERVICE,
+                $country->iso_code
+            ),
+            'country' => $country->iso_code,
+        ])
+            ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
+                'entity_name' => 'country',
+                'entity_id' => $countryId,
+            ]);
 
         $country->delete();
+
         return ['success' => true, 'message' => 'success_message.country_delete'];
     }
 
@@ -456,5 +500,59 @@ class CountryController extends Controller
         $countryId = $request->query('country_id');
 
         return response()->json(['data' => LimitationHelper::countryLimitation($countryId)], 200);
+    }
+
+    /**
+     * Get the counts of entities related to a specific country.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEntitiesByCountryId(Country $country)
+    {
+        $country->load([
+            'users',
+            'regions.provinces',
+            'regions.clinics',
+            'regions.phcServices',
+        ]);
+
+        $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
+        $therapistCountRes = Http::withToken($therapistPortalAccessToken)->get(
+            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'country',
+                'entity_id' => $country->id,
+                'user_type' => User::GROUP_THERAPIST,
+            ]
+        )->throw();
+
+        $country->therapist_count = $therapistCountRes->json('data', 0);
+
+        $phcWorkerCountRes = Http::withToken($therapistPortalAccessToken)->get(
+            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'country',
+                'entity_id' => $country->id,
+                'user_type' => User::GROUP_PHC_WORKER,
+            ]
+        )->throw();
+
+        $country->phc_worker_count = $phcWorkerCountRes->json('data', 0);
+
+        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
+            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'country',
+                'entity_id' => $country->id,
+            ]
+        )->throw();
+
+        $country->patient_count = $patientCountRes->json('data', 0);
+
+        return response()->json([
+            'data' => new EntitiesByCountryResource($country),
+        ]);
     }
 }

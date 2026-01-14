@@ -24,6 +24,15 @@ class Region extends Model
         'phc_worker_limit',
     ];
 
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
     /**
      * Get the country that owns the region.
      *
