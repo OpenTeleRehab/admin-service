@@ -92,7 +92,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::delete('profession/{profession}', [ProfessionController::class, 'destroy'])->middleware('role:manage_profession');
 
     // Translation
-    Route::apiResource('translation', TranslationController::class)->middleware('role:manage_translation');
+    Route::apiResource('translation', TranslationController::class)->middleware('role:manage_translation,translate_translation');
 
     // Language
     Route::get('language/by-id/{id}', [LanguageController::class, 'getById'])->middleware('role:access_all');
@@ -121,7 +121,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('country', [CountryController::class, 'store'])->middleware('role:manage_country');
     Route::put('country/{country}', [CountryController::class, 'update'])->middleware('role:manage_country');
     Route::delete('country/{country}', [CountryController::class, 'destroy'])->middleware('role:manage_country');
-    Route::get('country-limitation', [CountryController::class, 'limitation'])->middleware('role:manage_country');
+    Route::get('country-limitation', [CountryController::class, 'limitation'])->middleware('role:view_country_limitation');
     Route::get('country/{country}', [CountryController::class, 'show'])->middleware('role:manage_country');
 
     // Clinic
@@ -155,7 +155,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Education Material
     Route::get('education-material', [EducationMaterialController::class, 'index'])->middleware('role:setup_educational_material,view_educational_material_list,translate_educational_material');
     Route::post('education-material', [EducationMaterialController::class, 'store'])->middleware('role:setup_educational_material');
-    Route::get('education-material/{educationMaterial}', [EducationMaterialController::class, 'show'])->middleware('role:setup_educational_material,translate_educational_material');
+    Route::get('education-material/{educationMaterial}', [EducationMaterialController::class, 'show'])->middleware('role:setup_educational_material,translate_educational_material, view_educational_material');
     Route::put('education-material/{educationMaterial}', [EducationMaterialController::class, 'update'])->middleware('role:setup_educational_material,translate_educational_material');
     Route::delete('education-material/{educationMaterial}', [EducationMaterialController::class, 'destroy'])->middleware('role:setup_educational_material');
     Route::post('education-material/suggest', [EducationMaterialController::class, 'suggest'])->middleware('role:access_all');
@@ -230,13 +230,13 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('survey/skip', [SurveyController::class, 'skipSurvey'])->middleware('role:skip_survey');
 
     // Screening Questionnaire
-    Route::get('screening-questionnaires-list', [ScreeningQuestionnaireController::class, 'getScreeningQuestionnarieList'])->middleware('role:view_screening_questionnaire_list');
-    Route::get('screening-questionnaires-history-list', [ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnarie'])->middleware('role:view_interview_screening_questionnaire_history');
+    Route::get('screening-questionnaires-list', [ScreeningQuestionnaireController::class, 'getScreeningQuestionnarieList'])->middleware('role:access_all');
+    Route::get('screening-questionnaires-history-list', [ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnarie'])->middleware('role:access_all');
     Route::get('screening-questionnaires/all', [ScreeningQuestionnaireController::class, 'getAllScreeningQuestionnaires'])->middleware('role:access_all');
-    Route::get('screening-questionnaires', [ScreeningQuestionnaireController::class, 'index'])->middleware('role:access_all,translate_screening_questionnaire');
+    Route::get('screening-questionnaires', [ScreeningQuestionnaireController::class, 'index'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');
     Route::get('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'show'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');
     Route::put('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'update'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');
-    Route::post('screening-questionnaires/{screeningQuestionnaire}/submit', [ScreeningQuestionnaireController::class, 'submit'])->middleware('role:submit_interview_screening_questionnaire');
+    Route::post('screening-questionnaires/{screeningQuestionnaire}/submit', [ScreeningQuestionnaireController::class, 'submit'])->middleware('role:access_all');
     Route::post('screening-questionnaires', [ScreeningQuestionnaireController::class, 'store'])->middleware('role:manage_screening_questionnaire');
     Route::post('screening-questionnaires/{screeningQuestionnaire}/publish', [ScreeningQuestionnaireController::class, 'publish'])->middleware('role:manage_screening_questionnaire');
     Route::delete('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'destroy'])->middleware('role:manage_screening_questionnaire');
@@ -310,7 +310,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
         Route::put('phc-workers/{phc_worker}', [ForwarderController::class, 'update'])->middleware('role:manage_phc_worker');
         Route::post('phc-workers/updateStatus/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
         Route::post('phc-workers/resend-email/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
-        Route::post('phc-workers/delete/by-id/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
+        Route::post('phc-workers/delete/by-id/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker,delete_phc_worker');
     });
 
     // Patient Service
@@ -318,7 +318,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
         Route::get('patient', [ForwarderController::class, 'index'])->middleware('role:access_all');
         Route::get('patient/list/by-therapist-ids', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_therapist_patient_list');
         Route::get('patient/list/by-phc-worker-ids', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_therapist_patient_list');
-        Route::get('patient/list/by-therapist-id', [ForwarderController::class, 'index'])->middleware('role:manage_patient');
+        Route::get('patient/list/by-therapist-id', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_therapist_patient_list');
         Route::get('patient/list/for-therapist-remove', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_remove_therapist_patient');
         Route::get('patient-treatment-plan', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_patient_treatment_plan');
         Route::get('patient-treatment-plan/get-treatment-plan-detail', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_patient_treatment_plan_detail');
@@ -352,7 +352,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Region
     Route::apiResource('regions', RegionController::class)->middleware('role:manage_region,view_region_list');
     Route::get('region-limitation', [RegionController::class, 'getLimitation'])->middleware('role:view_region_list');
-    Route::get('region-limitations-by-user-country', [RegionController::class, 'countryRegionLimitations'])->middleware('role:view_region_list');
+    Route::get('region-limitations-by-user-country', [RegionController::class, 'countryRegionLimitations'])->middleware('role:manage_region');
 
     // Province
     Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province, view_province_list');

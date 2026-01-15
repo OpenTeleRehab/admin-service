@@ -219,7 +219,8 @@ class AdminController extends Controller
             'last_name' => 'required|string|max:255',
             'type' => 'required|in:super_admin,organization_admin,country_admin,clinic_admin,regional_admin,phc_service_admin',
             'country_id' => [
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_ORG_ADMIN),
+                'nullable',
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_ORG_ADMIN && $request->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'exists:countries,id',
             ],
             'clinic_id' => [
@@ -359,7 +360,8 @@ class AdminController extends Controller
             'last_name' => 'required|string|max:255',
             'type' => 'required|in:super_admin,organization_admin,country_admin,clinic_admin,regional_admin,phc_service_admin',
             'country_id' => [
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_ORG_ADMIN),
+                'nullable',
+                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_ORG_ADMIN && $request->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'exists:countries,id',
             ],
             'clinic_id' => [
