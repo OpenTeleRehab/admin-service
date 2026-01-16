@@ -55,6 +55,14 @@ class HealthConditionGroupController extends Controller
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     */
+    public function getHealthConditionGroups()
+    {
+        return HealthConditionGroup::with('healthConditions')->get();
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/health-condition-group",
      *     tags={"HealthConditionGroup"},

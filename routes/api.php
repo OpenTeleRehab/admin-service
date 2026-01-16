@@ -61,10 +61,10 @@ Route::get('public/privacy-policy/{id}', [PrivacyPolicyController::class, 'show'
 
 Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Admin
-    Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin, manage_phc_service_admin');
-    Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser'])->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin, manage_phc_service_admin');
+    Route::post('admin/updateStatus/{user}', [AdminController::class, 'updateStatus'])->middleware('role:manage_organization_admin,manage_country_admin,manage_regional_admin,manage_clinic_admin, manage_phc_service_admin');
+    Route::post('admin/resend-email/{user}', [AdminController::class, 'resendEmailToUser'])->middleware('role:manage_organization_admin,manage_country_admin,manage_regional_admin,manage_clinic_admin, manage_phc_service_admin');
     Route::post('library/delete/by-therapist', [AdminController::class, 'deleteLibraryByTherapist'])->middleware('role:access_all');
-    Route::apiResource('admin', AdminController::class)->middleware('role:manage_organization_admin,manage_country_admin,manage_clinic_admin,manage_regional_admin, manage_phc_service_admin');
+    Route::apiResource('admin', AdminController::class)->middleware('role:manage_organization_admin,manage_country_admin,manage_regional_admin,manage_clinic_admin, manage_phc_service_admin');
 
     // Mfa Config
     Route::get('mfa-settings', [MfaSettingController::class, 'index'])->middleware('role:manage_mfa_policy');
@@ -78,6 +78,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Assistive Technology
     Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'index'])->middleware('role:manage_assistive_technology,translate_assistive_technology');
+    Route::get('get-assistive-products', [AssistiveTechnologyController::class, 'getAssistiveProducts'])->middleware('role:access_all');
     Route::post('assistive-technologies', [AssistiveTechnologyController::class, 'store'])->middleware('role:manage_assistive_technology');
     Route::get('assistive-technologies/{assistiveTechnology}', [AssistiveTechnologyController::class, 'show'])->middleware('role:manage_assistive_technology,translate_assistive_technology');
     Route::put('assistive-technologies/{assistiveTechnology}', [AssistiveTechnologyController::class, 'update'])->middleware('role:manage_assistive_technology,translate_assistive_technology');
@@ -93,6 +94,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Translation
     Route::apiResource('translation', TranslationController::class)->middleware('role:manage_translation,translate_translation');
+    Route::get('get-translations', [TranslationController::class, 'getTranslations'])->middleware('role:access_all');
 
     // Language
     Route::get('language/by-id/{id}', [LanguageController::class, 'getById'])->middleware('role:access_all');
@@ -101,6 +103,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('language', [LanguageController::class, 'store'])->middleware('role:manage_language');
     Route::put('language/{language}', [LanguageController::class, 'update'])->middleware('role:manage_language');
     Route::delete('language/{language}', [LanguageController::class, 'destroy'])->middleware('role:manage_language');
+    Route::get('get-languages', [LanguageController::class, 'getLanguages'])->middleware('role:access_all');
 
     // Organization
     Route::get('get-organization', [OrganizationController::class, 'getOrganization'])->middleware('role:access_all');
@@ -199,6 +202,8 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('guidance-page', [GuidancePageController::class, 'store'])->middleware('role:manage_guidance_page');
     Route::put('guidance-page/{guidancePage}', [GuidancePageController::class, 'update'])->middleware('role:manage_guidance_page,translate_guidance_page');
     Route::delete('guidance-page/{guidancePage}', [GuidancePageController::class, 'destroy'])->middleware('role:manage_guidance_page');
+    Route::get('get-tutorials', [GuidancePageController::class, 'getTutorials'])->middleware('role:access_all');
+    Route::get('get-tutorial-files', [GuidancePageController::class, 'getTutorialFiles'])->middleware('role:access_all');
 
     // Settings
     Route::get('getDefaultLimitedPatient', [SettingController::class, 'getDefaultLimitedPatient'])->middleware('role:view_default_limited_patient');
@@ -243,6 +248,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Health Condition Group
     Route::get('health-condition-group', [HealthConditionGroupController::class, 'index'])->middleware('role:view_health_condition,manage_health_condition,translate_health_condition');
+    Route::get('get-health-condition-groups', [HealthConditionGroupController::class, 'getHealthConditionGroups'])->middleware('role:access_all');
     Route::post('health-condition-group', [HealthConditionGroupController::class, 'store'])->middleware('role:manage_health_condition');
     Route::get('health-condition-group/{healthConditionGroup}', [HealthConditionGroupController::class, 'show'])->middleware('role:manage_health_condition,translate_health_condition');
     Route::put('health-condition-group/{healthConditionGroup}', [HealthConditionGroupController::class, 'update'])->middleware('role:manage_health_condition,translate_health_condition');
@@ -389,6 +395,12 @@ Route::group(['prefix' => 'external', 'middleware' => ['check.api.client']], fun
     Route::get('get-question-file', [QuestionnaireController::class, 'getQuestionFile']);
     Route::get('get-question-answers', [QuestionnaireController::class, 'getQuestionAnswers']);
     Route::get('get-categories', [CategoryController::class, 'getCategories']);
+    Route::get('get-languages', [LanguageController::class, 'getLanguages']);
+    Route::get('get-translations', [TranslationController::class, 'getTranslations']);
+    Route::get('get-tutorials', [GuidancePageController::class, 'getTutorials']);
+    Route::get('get-tutorial-files', [GuidancePageController::class, 'getTutorialFiles']);
+    Route::get('get-assistive-products', [AssistiveTechnologyController::class, 'getAssistiveProducts']);
+    Route::get('get-health-condition-groups', [HealthConditionGroupController::class, 'getHealthConditionGroups']);
 });
 
 // Public Access

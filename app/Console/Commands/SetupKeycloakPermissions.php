@@ -89,6 +89,7 @@ class SetupKeycloakPermissions extends Command
             'view_questionnaire',
             'view_educational_material',
             'view_country_limitation',
+            'manage_system_limit',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',

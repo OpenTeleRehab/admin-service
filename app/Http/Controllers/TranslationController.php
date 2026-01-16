@@ -322,4 +322,12 @@ class TranslationController extends Controller
 
         return $resultArr;
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     */
+    public function getTranslations()
+    {
+        return Translation::with('localizations')->get();
+    }
 }

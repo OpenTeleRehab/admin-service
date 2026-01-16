@@ -9,6 +9,7 @@ use App\Helpers\GlobalDataSyncHelper;
 use App\Models\EducationMaterial;
 use App\Models\Questionnaire;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Facades\Activity;
 
 class SyncCategoryData extends Command
 {
@@ -37,6 +38,9 @@ class SyncCategoryData extends Command
             return;
         }
 
+        // Disable activity logging for data sync
+        Activity::disableLogging();
+
         $this->info('Starting category sync...');
 
         // Fetch categories from global
@@ -45,7 +49,7 @@ class SyncCategoryData extends Command
             $this->error('Failed to fetch categories from global.');
             return;
         }
-
+        $this->output->progressStart(count($globalCategories));
         // Collect all global category IDs for deletion check
         $globalCategoryIds = collect($globalCategories)->pluck('id')->toArray();
 
@@ -63,7 +67,6 @@ class SyncCategoryData extends Command
             ->keyBy('questionnaire_id');
 
         foreach ($globalCategories as $globalCategory) {
-
             // Upsert category
             DB::table('categories')->updateOrInsert(
                 ['global_category_id' => $globalCategory->id],
@@ -97,12 +100,16 @@ class SyncCategoryData extends Command
                 ->filter()
                 ->toArray();
             $category->questionnaires()->sync($questionnaireIds);
+
+            $this->output->progressAdvance();
         }
 
         // Delete categories that no longer exist in the global categories
         Category::whereNotNull('global_category_id')
             ->whereNotIn('global_category_id', $globalCategoryIds)
             ->delete();
+
+        $this->output->progressFinish();
 
         $this->info('Category sync completed successfully!');
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\GlobalDataSyncHelper;
+use Spatie\Activitylog\Facades\Activity;
 
 class SyncExerciseData extends Command
 {
@@ -35,12 +36,18 @@ class SyncExerciseData extends Command
     public function handle()
     {
         if (env('APP_NAME') != 'hi') {
+            // Disable activity logging for data sync
+            Activity::disableLogging();
+
+            $this->alert('Starting exercise sync...');
+
             // Sync exercise data.
             $globalExercises = GlobalDataSyncHelper::fetchData('get-exercises');
             if (!$globalExercises) {
                 $this->error('Failed to fetch exercises from global.');
                 return;
             }
+            $this->output->progressStart(count($globalExercises));
             // Remove existing global data before import.
             $exercises = Exercise::withTrashed()->where('global', true)->get();
             if ($exercises) {
@@ -49,7 +56,10 @@ class SyncExerciseData extends Command
                     $removeFileIDs = $exercise->files()->pluck('id')->toArray();
                     foreach ($removeFileIDs as $removeFileID) {
                         $removeFile = File::find($removeFileID);
-                        $removeFile->delete();
+                        if ($removeFile) {
+                            Storage::delete($removeFile->path);
+                            $removeFile->delete();
+                        }
                     }
                     // Remove exercise file in exercise file table.
                     DB::table('exercise_file')->where('exercise_id', $exercise->id)->delete();
@@ -119,7 +129,9 @@ class SyncExerciseData extends Command
                         }
                     }
                 }
+                $this->output->progressAdvance();
             }
+            $this->output->progressFinish();
         }
         $this->info('Exercise data has been sync successfully');
     }

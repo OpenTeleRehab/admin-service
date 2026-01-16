@@ -29,10 +29,15 @@ class Kernel extends ConsoleKernel
         $schedule->command('hi:sync-questionnaire-data')->dailyAt('0:30')->runInBackground();
         $schedule->command('hi:sync-category-data')->dailyAt('0:45')->runInBackground();
         $schedule->command('hi:sync-patient-data --all')->dailyAt('1:00')->runInBackground();
+        $schedule->command('hi:sync-language-data')->dailyAt('1:15')->runInBackground();
         $schedule->command('hi:sync-assistive-technology-patient-data')->dailyAt('1:30')->runInBackground();
+        $schedule->command('hi:sync-translation-data')->dailyAt('1:45')->runInBackground();
         $schedule->command('hi:sync-patient-twilio-call-data')->dailyAt('2:00')->runInBackground();
+        $schedule->command('hi:sync-health-condition-data')->dailyAt('2:15')->runInBackground();
         $schedule->command('hi:clean-up-exported-files')->dailyAt('2:30')->runInBackground();
+        $schedule->command('hi:sync-tutorial-data')->dailyAt('2:45')->runInBackground();
         $schedule->command('hi:expire-past-due-survey')->dailyAt('3:00')->runInBackground();
+        $schedule->command('hi:sync-assistive-product-data')->dailyAt('3:15')->runInBackground();
     }
 
     /**

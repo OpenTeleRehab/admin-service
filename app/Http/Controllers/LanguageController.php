@@ -306,4 +306,12 @@ class LanguageController extends Controller
     {
         return ['success' => true, 'data' => Language::find($id)];
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     */
+    public function getLanguages()
+    {
+        return Language::all();
+    }
 }
