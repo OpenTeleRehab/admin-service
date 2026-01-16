@@ -199,11 +199,25 @@ class ProvinceController extends Controller
         $provinceLimitation = LimitationHelper::provinceLimitation($province->id);
 
         if ($validatedData['therapist_limit'] > $regionLimitation['remaining_therapist_limit'] + $region->therapist_limit) {
-            abort(422, 'error.province.therapist_limit.greater_than.region.therapist_limit');
+            return response()->json([
+                'message' => 'error.province.therapist_limit.greater_than.region.therapist_limit',
+                'translate_params' => [
+                    'allocated_therapist_limit' => $regionLimitation['allocated_therapist_limit'],
+                    'remaining_therapist_limit' => $regionLimitation['remaining_therapist_limit'] + $region->therapist_limit,
+                    'therapist_limit_used' => $regionLimitation['therapist_limit_used'] - $region->therapist_limit,
+                ]
+            ], 422);
         }
 
         if ($validatedData['phc_worker_limit'] > $regionLimitation['remaining_phc_worker_limit'] + $region->phc_worker_limit) {
-            abort(422, 'error.province.phc_worker_limit.greater_than.region.phc_worker_limit');
+            return response()->json([
+                'message' => 'error.province.phc_worker_limit.greater_than.region.phc_worker_limit',
+                'translate_params' => [
+                    'allocated_phc_worker_limit' => $regionLimitation['allocated_phc_worker_limit'],
+                    'remaining_phc_worker_limit' => $regionLimitation['remaining_phc_worker_limit'] + $region->phc_worker_limit,
+                    'phc_worker_limit_used' => $regionLimitation['phc_worker_limit_used'] - $region->phc_worker_limit,
+                ]
+            ], 422);
         }
 
         if ($provinceLimitation['therapist_limit_used'] > $validatedData['therapist_limit']) {

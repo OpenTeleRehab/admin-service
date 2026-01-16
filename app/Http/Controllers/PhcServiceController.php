@@ -180,7 +180,14 @@ class PhcServiceController extends Controller
         }
 
         if ($validatedData['phc_worker_limit'] > $provinceLimitation['remaining_phc_worker_limit'] + $province->phc_worker_limit) {
-            abort(422, 'error.phc_service.phc_worker_limit.greater_than.province.phc_worker_limit');
+            return response()->json([
+                'message' => 'error.phc_service.phc_worker_limit.greater_than.province.phc_worker_limit',
+                'translate_params' => [
+                    'allocated_phc_worker_limit' => $provinceLimitation['allocated_phc_worker_limit'],
+                    'remaining_phc_worker_limit' => $provinceLimitation['remaining_phc_worker_limit'] + $province->phc_worker_limit,
+                    'phc_worker_limit_used' => $provinceLimitation['phc_worker_limit_used'] - $province->phc_worker_limit,
+                ]
+            ], 422);
         }
 
         $phcService->update($validatedData);
