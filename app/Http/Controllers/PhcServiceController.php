@@ -53,7 +53,19 @@ class PhcServiceController extends Controller
     {
         $searchValue = $request->get('search_value');
         $pageSize = $request->get('page_size');
-        $query = Auth::user()->region->phcServices();
+
+        $user = Auth::user();
+        $limitatedRegionIds = $user->adminRegions->pluck('id')->toArray();
+
+        if ($user->region_id) {
+            $limitatedRegionIds[] = $user->region_id;
+        }
+        $limitatedRegionIds = array_unique($limitatedRegionIds);
+
+        $query = PhcService::whereHas('province', function ($query) use ($limitatedRegionIds) {
+            $query->whereIn('region_id', $limitatedRegionIds);
+        });
+
         if ($searchValue) {
             $query->where('phc_services.name', 'like', '%' . $searchValue . '%');
         }

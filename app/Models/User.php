@@ -155,6 +155,16 @@ class User extends Authenticatable
         );
     }
 
+    public function adminRegions()
+    {
+        return $this->belongsToMany(
+            Region::class,
+            'region_admin',
+            'regional_admin_id',
+            'region_id'
+        );
+    }
+
     /**
      * Get the user's full name.
      *

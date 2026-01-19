@@ -48,7 +48,14 @@ class ClinicController extends Controller
      */
     public function index()
     {
-        $clinics = Auth::user()->region->clinics;
+        $user = Auth::user();
+        $limitatedRegionIds = $user->adminRegions->pluck('id')->toArray();
+        if ($user->region_id) {
+            $limitatedRegionIds[] = $user->region_id;
+        }
+        $limitatedRegionIds = array_unique($limitatedRegionIds);
+
+        $clinics = Clinic::whereIn('region_id', $limitatedRegionIds)->get();
 
         return ['success' => true, 'data' => ClinicResource::collection($clinics)];
     }
