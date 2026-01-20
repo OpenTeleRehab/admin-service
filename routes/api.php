@@ -123,6 +123,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::delete('country/{country}', [CountryController::class, 'destroy'])->middleware('role:manage_country');
     Route::get('country-limitation', [CountryController::class, 'limitation'])->middleware('role:view_country_limitation');
     Route::get('country/{country}', [CountryController::class, 'show'])->middleware('role:manage_country');
+    Route::get('country/{country}/entities', [CountryController::class, 'getEntitiesByCountryId'])->middleware('role:manage_country');
 
     // Clinic
     Route::get('clinic/therapist-limit/count/by-country', [ClinicController::class, 'countTherapistLimitByCountry'])->middleware('role:view_country_therapist_limit');
@@ -132,6 +133,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::put('clinic/{clinic}', [ClinicController::class, 'update'])->middleware('role:manage_clinic');
     Route::delete('clinic/{clinic}', [ClinicController::class, 'destroy'])->middleware('role:manage_clinic');
     Route::get('clinics-by-user-country', [ClinicController::class, 'getClinicsByUserCountry'])->middleware('role:access_all');
+    Route::get('clinic/{clinic}/entities', [ClinicController::class, 'getEntitiesByClinicId'])->middleware('role:manage_clinic');
 
     // Library
     Route::get('library/count/by-therapist', [ExerciseController::class, 'countTherapistLibrary'])->middleware('role:access_all');
@@ -350,6 +352,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('download-file', [FileController::class, 'download'])->middleware('role:access_all');
 
     // Region
+    Route::get('regions/{region}/entities', [RegionController::class, 'getEntitiesByRegionId'])->middleware('role:manage_region');
     Route::apiResource('regions', RegionController::class)->middleware('role:manage_region,view_region_list');
     Route::get('region-limitation', [RegionController::class, 'getLimitation'])->middleware('role:view_region_list');
     Route::get('region-limitations-by-user-country', [RegionController::class, 'countryRegionLimitations'])->middleware('role:manage_region');
@@ -358,6 +361,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province, view_province_list');
     Route::get('provinces-by-user-country', [ProvinceController::class, 'getProvincesByUserCountry'])->middleware('role:access_all');
     Route::get('provinces-by-user-region', [ProvinceController::class, 'getByUserRegion'])->middleware('role:manage_province');
+    Route::get('provinces/{province}/entities', [ProvinceController::class, 'getEntitiesByPhcServiceId'])->middleware('role:manage_province');
     Route::get('province-limitation/{province}', [ProvinceController::class, 'getLimitation'])->middleware('role:manage_province, view_province_list');
     Route::post('provinces', [ProvinceController::class, 'store'])->middleware('role:manage_province');
     Route::put('provinces/{province}', [ProvinceController::class, 'update'])->middleware('role:manage_province');
@@ -369,6 +373,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('phc-services-by-province', [PhcServiceController::class, 'getByProvince'])->middleware('role:manage_phc_service');
     Route::get('phc-services-by-region', [PhcServiceController::class, 'getByRegion'])->middleware('role:manage_phc_service');
     Route::get('phc-services/count-phc-worker', [PhcServiceController::class, 'countPhcWorkerByPhcService'])->middleware('role:view_number_of_phc_service_phc_worker');
+    Route::get('phc-services/{phcService}/entities', [PhcServiceController::class, 'getEntitiesByPhcServiceId'])->middleware('role:manage_phc_service');
     Route::post('phc-services', [PhcServiceController::class, 'store'])->middleware('role:manage_phc_service');
     Route::put('phc-services/{phc_service}', [PhcServiceController::class, 'update'])->middleware('role:manage_phc_service');
     Route::delete('phc-services/{phc_service}', [PhcServiceController::class, 'destroy'])->middleware('role:manage_phc_service');

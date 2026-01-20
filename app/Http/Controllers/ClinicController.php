@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Http\Resources\ClinicResource;
+use App\Http\Resources\EntitiesByClinicResource;
+use App\Models\Activity;
+use App\Models\DownloadTracker;
+use App\Models\GlobalAssistiveTechnologyPatient;
+use App\Models\GlobalPatient;
+use Illuminate\Support\Facades\Log;
 
 define("KEYCLOAK_USERS", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
 
@@ -320,42 +326,65 @@ class ClinicController extends Controller
     public function destroy(Clinic $clinic)
     {
         if (!$clinic->is_used) {
+            $clinicId = $clinic->id;
             $country = Country::where('id', $clinic->country_id)->first();
 
-            // Remove clinic admin users.
-            $users = User::where('type', User::ADMIN_GROUP_CLINIC_ADMIN)
-                ->where('clinic_id', $clinic->id)->get();
+            $users = User::where('clinic_id', $clinicId)->get();
 
-            /** @var \App\Models\User $user */
+            $token = KeycloakHelper::getKeycloakAccessToken();
+
             foreach ($users as $user) {
-                $token = KeycloakHelper::getKeycloakAccessToken();
+                $response = Http::withToken($token)->get(
+                    KeycloakHelper::getUserUrl(),
+                    ['email' => $user->email]
+                );
 
-                $userUrl = KEYCLOAK_USERS . '?email=' . $user->email;
-                $response = Http::withToken($token)->get($userUrl);
-
-                if ($response->successful()) {
-                    $keyCloakUsers = $response->json();
-
-                    $isDeleted = KeycloakHelper::deleteUser($token, KEYCLOAK_USERS . '/' . $keyCloakUsers[0]['id']);
-                    if ($isDeleted) {
-                        $user->delete();
-                    }
+                if (!$response->successful()) {
+                    Log::error("Failed to fetch Keycloak user for {$user->email}. Status: {$response->status()}");
+                    continue;
                 }
+
+                $kcUserId = $response->json()[0]['id'] ?? null;
+
+                if (!$kcUserId) {
+                    Log::warning("Keycloak user not found for email: {$user->email}");
+                    continue;
+                }
+
+                if (!KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $kcUserId)) {
+                    Log::error("Failed to delete Keycloak user for {$user->email}");
+                    continue;
+                }
+
+                DownloadTracker::where('author_id', $user->id)->delete();
+                $user->delete();
             }
 
-            // Remove therapists of clinic.
+            // Phone service
+            Http::post(
+                env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
+                ['clinic_ids' => [$clinicId]]
+            );
+
+            // Therapist service
             Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
-                ->post(env('THERAPIST_SERVICE_URL') . '/therapist/delete/by-clinic', [
-                    'clinic_id' => $clinic->id,
+                ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
+                    'entity_name' => 'rehab_service',
+                    'entity_id' => $clinicId,
                 ]);
 
-            // Remove patients of clinic.
+            // Patient service
             Http::withHeaders([
-                'Authorization' => 'Bearer ' . Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code),
+                'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
+                    Forwarder::PATIENT_SERVICE,
+                    $country->iso_code
+                ),
                 'country' => $country->iso_code,
-            ])->post(env('PATIENT_SERVICE_URL') . '/patient/delete/by-clinic', [
-                'clinic_id' => $clinic->id,
-            ]);
+            ])
+                ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
+                    'entity_name' => 'rehab_service',
+                    'entity_id' => $clinicId,
+                ]);
 
             $clinic->delete();
             return ['success' => true, 'message' => 'success_message.clinic_delete'];
@@ -502,5 +531,43 @@ class ClinicController extends Controller
         $clinics = $authUser->country->clinics;
 
         return response()->json(['data' => ClinicResource::collection($clinics)]);
+    }
+
+    /**
+     * Get the counts of entities related to a specific clinic.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEntitiesByClinicId(Clinic $clinic)
+    {
+        $clinic->load(['users']);
+
+        $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+
+        $therapistCountRes = Http::withToken($therapistPortalAccessToken)->get(
+            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'rehab_service',
+                'entity_id' => $clinic->id,
+                'user_type' => User::GROUP_THERAPIST,
+            ]
+        )->throw();
+
+        $clinic->therapist_count = $therapistCountRes->json('data', 0);
+
+        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
+            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+            [
+                'entity_name' => 'rehab_service',
+                'entity_id' => $clinic->id,
+            ]
+        )->throw();
+
+        $clinic->patient_count = $patientCountRes->json('data', 0);
+
+        return response()->json([
+            'data' => new EntitiesByClinicResource($clinic),
+        ]);
     }
 }
