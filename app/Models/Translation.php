@@ -54,4 +54,12 @@ class Translation extends Model
     {
         return $eventName === 'updated';
     }
+
+    /**
+     * Get the localizations for the translation.
+     */
+    public  function localizations()
+    {
+        return $this->hasMany(Localization::class);
+    }
 }

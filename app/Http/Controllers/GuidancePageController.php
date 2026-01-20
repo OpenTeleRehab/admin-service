@@ -265,4 +265,28 @@ class GuidancePageController extends Controller
         }
         return ['success' => true, 'message' => 'error_message.guidance.delete'];
     }
+
+    /**
+     * Get all tutorials.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getTutorials()
+    {
+        return Guidance::all();
+    }
+
+    /**
+     * Get tutorial files by IDs.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getTutorialFiles(Request $request)
+    {
+        $fileIds = $request->get('file_ids', []);
+        $files = File::whereIn('id', $fileIds)->get();
+
+        return $files;
+    }
 }

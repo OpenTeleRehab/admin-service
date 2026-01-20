@@ -74,6 +74,14 @@ class AssistiveTechnologyController extends Controller
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAssistiveProducts()
+    {
+        return AssistiveTechnology::withTrashed()->with('file')->get();
+    }
+
+    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request

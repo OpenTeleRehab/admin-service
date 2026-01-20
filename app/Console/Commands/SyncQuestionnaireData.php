@@ -11,6 +11,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Facades\Activity;
 
 class SyncQuestionnaireData extends Command
 {
@@ -35,12 +36,18 @@ class SyncQuestionnaireData extends Command
     public function handle()
     {
         if (env('APP_NAME') != 'hi') {
+            // Disable activity logging for data sync
+            Activity::disableLogging();
+
+            $this->alert('Starting questionnaire sync...');
+
             // Sync questionnaire data.
             $globalQuestionnaires = GlobalDataSyncHelper::fetchData('get-questionnaires');
             if (!$globalQuestionnaires) {
                 $this->error('Failed to fetch questionnaires from global.');
                 return;
             }
+            $this->output->progressStart(count($globalQuestionnaires));
             $questionnaires = Questionnaire::withTrashed()->where('global', true)->get();
             // Remove data before import.
             if ($questionnaires) {
@@ -51,6 +58,7 @@ class SyncQuestionnaireData extends Command
                     foreach ($removeFileIDs as $removeFileID) {
                         $removeFile = File::find($removeFileID);
                         if ($removeFile) {
+                            Storage::delete($removeFile->path);
                             $removeFile->delete();
                         }
                     }
@@ -131,7 +139,9 @@ class SyncQuestionnaireData extends Command
                         }
                     }
                 }
+                $this->output->progressAdvance();
             }
+            $this->output->progressFinish();
         }
         $this->info('Questionnaire data has been sync successfully');
     }
