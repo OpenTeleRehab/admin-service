@@ -16,7 +16,9 @@ class MfaSettingHelper
         string $currentSettingRole,
     ) {
         $roleHierarchy = [
+            User::ADMIN_GROUP_PHC_SERVICE_ADMIN,
             User::ADMIN_GROUP_CLINIC_ADMIN,
+            User::ADMIN_GROUP_REGIONAL_ADMIN,
             User::ADMIN_GROUP_COUNTRY_ADMIN,
             User::ADMIN_GROUP_ORG_ADMIN,
             User::ADMIN_GROUP_SUPER_ADMIN,
@@ -37,21 +39,23 @@ class MfaSettingHelper
                 ->where('created_by_role', $parentRole)
                 ->whereJsonContains('organizations', $hiOrganization->id);
 
-            if ($authUser?->country_id) {
-                $query->where(function ($q) use ($authUser) {
-                    $q->whereJsonContains('country_ids', (int) $authUser->country_id);
-                });
+            switch ($parentRole) {
+                case User::ADMIN_GROUP_ORG_ADMIN:
+                    $query->whereJsonContains('country_ids', $authUser->country_id);
+                    break;
+                case User::ADMIN_GROUP_COUNTRY_ADMIN:
+                    $query->whereJsonContains('region_ids', $authUser->region_id);
+                    break;
+                case User::ADMIN_GROUP_REGIONAL_ADMIN:
+                    if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+                        $query->whereJsonContains('clinic_ids', $authUser->clinic_id);
+                    } else if ($authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+                        $query->whereJsonContains('phc_service_ids', $authUser->phc_service_id);
+                    }
+                    break;
             }
 
-            if ($authUser?->clinic_id) {
-                $query->where(function ($q) use ($authUser) {
-                    $q->whereJsonContains('clinic_ids', (int) $authUser->clinic_id);
-                });
-            }
-
-            $setting = $query->first();
-
-            if ($setting) {
+            if ($setting = $query->first()) {
                 return $setting;
             }
         }
