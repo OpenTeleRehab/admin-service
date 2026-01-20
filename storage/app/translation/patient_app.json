@@ -76,6 +76,8 @@
     "common.patients": "Patients",
     "common.phc_workers": "PHC Workers",
     "common.therapists": "Therapists",
+    "common.add_participants": "Add Participants",
+    "common.web_portal": "Web Portal",
     "app.permission.setting.title": "App Permissions",
     "preferences": "Preferences",
     "tab.home": "Home",
