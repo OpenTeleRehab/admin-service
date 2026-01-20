@@ -22,8 +22,11 @@ class MfaSetting extends Model
     const ROLE_LEVEL = [
         'organization_admin' => 1,
         'country_admin' => 2,
-        'clinic_admin' => 3,
-        'therapist' => 4,
+        'regional_admin' => 3,
+        'phc_service_admin' => 4,
+        'clinic_admin' => 4,
+        'therapist' => 5,
+        'phc_worker' => 5,
     ];
 
     const ENFORCEMENT_LEVEL = [
@@ -40,6 +43,8 @@ class MfaSetting extends Model
         'organizations',
         'country_ids',
         'clinic_ids',
+        'region_ids',
+        'phc_service_ids',
         'mfa_enforcement',
         'mfa_expiration_duration',
         'skip_mfa_setup_duration',
@@ -52,6 +57,8 @@ class MfaSetting extends Model
         'organizations' => 'array',
         'country_ids' => 'array',
         'clinic_ids' => 'array',
+        'region_ids' => 'array',
+        'phc_service_ids' => 'array',
         'attributes' => 'array',
     ];
 

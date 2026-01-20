@@ -656,7 +656,7 @@ class KeycloakHelper
 
         $response = Http::withToken($token)->withHeaders([
             'Content-Type' => 'application/json'
-        ])->get(KEYCLOAK_USER_URL, [
+        ])->get(self::getUserUrl(), [
             'username' => $username,
         ]);
 
@@ -683,7 +683,7 @@ class KeycloakHelper
 
         $response = Http::withToken($token)->withHeaders([
             'Content-Type' => 'application/json'
-        ])->put(KEYCLOAK_USER_URL . '/' . $id, [
+        ])->put(self::getUserUrl() . '/' . $id, [
             'attributes' => $attributes
         ]);
 
@@ -712,7 +712,7 @@ class KeycloakHelper
             return false;
         }
 
-        $url = KEYCLOAK_USER_URL . '/' . $keycloakUser['id'];
+        $url = self::getUserUrl() . '/' . $keycloakUser['id'];
 
         $attributes = array_filter($attributes, fn($value) => $value !== null);
 
@@ -739,7 +739,7 @@ class KeycloakHelper
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
 
-        $endPoint = KEYCLOAK_USER_URL . '/' . $userId . '/credentials';
+        $endPoint = self::getUserUrl() . '/' . $userId . '/credentials';
 
         $response = Http::withToken($token)->get($endPoint);
 
@@ -781,7 +781,7 @@ class KeycloakHelper
             return false;
         }
 
-        $endpoint = KEYCLOAK_USER_URL . '/' . $userId . '/credentials/' . $credential['id'];
+        $endpoint = self::getUserUrl() . '/' . $userId . '/credentials/' . $credential['id'];
 
         $response = Http::withToken($token)->delete($endpoint);
 

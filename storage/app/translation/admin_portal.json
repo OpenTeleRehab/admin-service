@@ -1128,6 +1128,8 @@
     "mfa.skip.setup.duration.placeholder": "Please fill skip setup duration",
     "mfa.enforcement": "Multi factor authentication enforcement",
     "mfa.expiration.duration": "Multi factor authentication expiration duration (after setup)",
+    "mfa.regions": "Regions",
+    "mfa.phc_services": "PHC Services",
     "skip.mfa.setup.duration": "Skip multi factor authentication setup duration",
     "region.name": "Please fill in name",
     "region.name.error": "Please fill in name",
