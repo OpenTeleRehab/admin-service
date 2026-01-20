@@ -67,8 +67,13 @@ class RegionController extends Controller
     public function index(Request $request)
     {
         $searchValue = $request->get('search_value');
-        $pageSize = $request->get('page_size');
-        $query = Auth::user()->country->regions();
+        $pageSize = $request->get('page_size', 99999);
+        if (Auth::user()->country_id) {
+            $query = Auth::user()->country->regions();
+        } else {
+            $query = Region::query();
+        }
+
         if ($searchValue) {
             $query->where('name', 'like', '%' . $searchValue . '%');
         }
