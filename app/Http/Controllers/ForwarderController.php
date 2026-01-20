@@ -69,11 +69,19 @@ class ForwarderController extends Controller
                 'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
                 'int-phc-service-id' => $user?->phc_service_id,
                 'int-clinic-id' => $user->clinic_id,
+                'int-user-type' => $user?->type,
                 ])
                 ->post(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
         } elseif ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
-            $response = Http::withToken($access_token)
+            $response = Http::withToken($access_token)->withHeaders([
+                'int-country-id' => $user->country_id,
+                'int-region-id' => $user?->region_id,
+                'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
+                'int-phc-service-id' => $user?->phc_service_id,
+                'int-clinic-id' => $user->clinic_id,
+                'int-user-type' => $user?->type,
+                ])
                 ->post(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
 
             return response($response->body(), $response->status())

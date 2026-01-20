@@ -312,8 +312,9 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
         Route::get('therapist', [ForwarderController::class, 'index'])->middleware('role:manage_therapist,view_therapist_list');
         Route::post('therapist', [ForwarderController::class, 'store'])->middleware('role:manage_therapist');
         Route::put('therapist/{therapist}', [ForwarderController::class, 'update'])->middleware('role:manage_therapist');
-        Route::get('transfer/number/by-therapist', [ForwarderController::class, 'index'])->middleware('role:manage_therapist,view_transfer_list_by_therapist');
+        Route::get('transfer/number/by-therapist', [ForwarderController::class, 'index'])->middleware('role:manage_therapist,manage_phc_worker,view_transfer_list_by_therapist');
         Route::get('phc-workers', [ForwarderController::class, 'index'])->middleware('role:manage_phc_worker,view_phc_worker_list');
+        Route::get('phc-workers/list/by-phc-service', [ForwarderController::class, 'index'])->middleware('role:manage_phc_worker,view_phc_worker_list');
         Route::post('phc-workers', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
         Route::put('phc-workers/{phc_worker}', [ForwarderController::class, 'update'])->middleware('role:manage_phc_worker');
         Route::post('phc-workers/updateStatus/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
@@ -328,9 +329,10 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
         Route::get('patient/list/by-phc-worker-ids', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_therapist_patient_list');
         Route::get('patient/list/by-therapist-id', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_therapist_patient_list');
         Route::get('patient/list/for-therapist-remove', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_remove_therapist_patient');
+        Route::get('patient/list/for-phc-worker-remove', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_remove_phc_worker_patient');
         Route::get('patient-treatment-plan', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_patient_treatment_plan');
         Route::get('patient-treatment-plan/get-treatment-plan-detail', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_patient_treatment_plan_detail');
-        Route::post('patient/transfer-to-therapist/{id}', [ForwarderController::class, 'store'])->middleware('role:manage_patient');
+        Route::post('patient/transfer-to-therapist/{id}', [ForwarderController::class, 'store'])->middleware('role:manage_patient,manage_phc_worker,delete_phc_worker,delete_therapist');
         Route::get('patient-referrals', [ForwarderController::class, 'index'])->middleware('role:manage_patient_referral');
         Route::get('patient-referrals/count', [ForwarderController::class, 'show'])->middleware('role:manage_patient_referral');
         Route::put('patient-referrals/{id}/decline', [ForwarderController::class, 'update'])->middleware('role:manage_patient_referral');
@@ -378,7 +380,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // PHC Service
     Route::get('phc-services', [PhcServiceController::class, 'index'])->middleware('role:manage_phc_service, view_phc_service_list');
     Route::get('phc-services-by-province', [PhcServiceController::class, 'getByProvince'])->middleware('role:manage_phc_service');
-    Route::get('phc-services-by-region', [PhcServiceController::class, 'getByRegion'])->middleware('role:manage_phc_service');
+    Route::get('phc-services/option/list', [PhcServiceController::class, 'getOptionList'])->middleware('role:manage_phc_service,view_phc_service_list');
     Route::get('phc-services/count-phc-worker', [PhcServiceController::class, 'countPhcWorkerByPhcService'])->middleware('role:view_number_of_phc_service_phc_worker');
     Route::get('phc-services/{phcService}/entities', [PhcServiceController::class, 'getEntitiesByPhcServiceId'])->middleware('role:manage_phc_service');
     Route::post('phc-services', [PhcServiceController::class, 'store'])->middleware('role:manage_phc_service');

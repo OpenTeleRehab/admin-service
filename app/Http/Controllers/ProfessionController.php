@@ -51,7 +51,7 @@ class ProfessionController extends Controller
         $countryId = $request->get('country_id');
         $query = Profession::query();
 
-        if (!$countryId && $authUser) {
+        if (!$countryId && $authUser->country_id) {
             $countryId = $authUser->country_id;
             $query->where('country_id', $countryId);
         }

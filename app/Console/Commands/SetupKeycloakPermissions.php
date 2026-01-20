@@ -90,6 +90,7 @@ class SetupKeycloakPermissions extends Command
             'view_educational_material',
             'view_country_limitation',
             'manage_system_limit',
+            'view_remove_phc_worker_patient',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -178,6 +179,9 @@ class SetupKeycloakPermissions extends Command
                 'view_exercise',
                 'view_questionnaire',
                 'view_educational_material',
+                'view_region_list',
+                'view_phc_service_list',
+                'view_remove_phc_worker_patient',
             ],
             'country_admin' => [
                 'view_organization',
@@ -211,6 +215,9 @@ class SetupKeycloakPermissions extends Command
                 'view_transfer_list_by_therapist',
                 'view_remove_therapist_patient',
                 'view_clinic_therapist_list',
+                'view_region_list',
+                'view_phc_service_list',
+                'view_remove_phc_worker_patient',
             ],
             'clinic_admin' => [
                 'view_profession',
@@ -307,6 +314,7 @@ class SetupKeycloakPermissions extends Command
                 'view_transfer_list_by_therapist',
                 'view_remove_therapist_patient',
                 'view_clinic_therapist_list',
+                'view_remove_phc_worker_patient',
             ],
             'phc_service_admin' => [
                 'view_profession',
@@ -331,6 +339,7 @@ class SetupKeycloakPermissions extends Command
                 'view_questionnaire',
                 'manage_mfa_policy',
                 'view_therapist_patient_list',
+                'view_remove_phc_worker_patient',
             ],
         ];
 

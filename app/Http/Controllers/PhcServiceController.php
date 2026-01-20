@@ -364,9 +364,15 @@ class PhcServiceController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getByRegion()
+    public function getOptionList()
     {
-        $phcServices = Auth::user()->region->phcServices;
+        if (Auth::user()->country_id) {
+            $phcServices = PhcService::whereHas('province.region', function ($q) {
+                $q->where('country_id', Auth::user()->country_id);
+            })->get();
+        } else {
+            $phcServices = PhcService::all();
+        }
 
         return response()->json(['data' => $phcServices], 200);
     }
