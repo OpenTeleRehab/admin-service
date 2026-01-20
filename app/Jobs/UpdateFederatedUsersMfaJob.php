@@ -17,6 +17,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 
 class UpdateFederatedUsersMfaJob implements ShouldQueue
 {
@@ -59,7 +60,9 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                 . User::ADMIN_GROUP_SUPER_ADMIN . "', '"
                 . User::ADMIN_GROUP_ORG_ADMIN . "', '"
                 . User::ADMIN_GROUP_COUNTRY_ADMIN . "', '"
-                . User::ADMIN_GROUP_CLINIC_ADMIN . "'";
+                . User::ADMIN_GROUP_REGIONAL_ADMIN . "', '"
+                . User::ADMIN_GROUP_CLINIC_ADMIN . "', '"
+                . User::ADMIN_GROUP_PHC_SERVICE_ADMIN . "'";
 
             if ($this->authUser->type === User::ADMIN_GROUP_SUPER_ADMIN) {
                 $mfaSettings = $baseQuery
@@ -67,18 +70,28 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                     ->get();
             } else if ($this->authUser->type === User::ADMIN_GROUP_ORG_ADMIN) {
                 $mfaSettings = $baseQuery
-                    ->whereNotIn('created_by_role', [User::ADMIN_GROUP_SUPER_ADMIN, User::ADMIN_GROUP_ORG_ADMIN])
+                    ->whereNotIn('created_by_role', [User::ADMIN_GROUP_SUPER_ADMIN])
                     ->whereJsonContains('organizations', $hiOrganization->id)
                     ->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')
                     ->get();
             } else if ($this->authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
                 $mfaSettings = $baseQuery
-                    ->whereNotIn('created_by_role', [User::ADMIN_GROUP_ORG_ADMIN, User::ADMIN_GROUP_COUNTRY_ADMIN])
+                    ->whereNotIn('created_by_role', [User::ADMIN_GROUP_SUPER_ADMIN, User::ADMIN_GROUP_ORG_ADMIN])
+                    ->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')
+                    ->get();
+            } else if ($this->authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+                $mfaSettings = $baseQuery
+                    ->whereNotIn('created_by_role', [User::ADMIN_GROUP_SUPER_ADMIN, User::ADMIN_GROUP_ORG_ADMIN, User::ADMIN_GROUP_COUNTRY_ADMIN])
                     ->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')
                     ->get();
             } else if ($this->authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
                 $mfaSettings = $baseQuery
-                    ->whereNotIn('created_by_role', [User::ADMIN_GROUP_COUNTRY_ADMIN, User::ADMIN_GROUP_CLINIC_ADMIN])
+                    ->whereNotIn('created_by_role', [User::ADMIN_GROUP_SUPER_ADMIN, User::ADMIN_GROUP_ORG_ADMIN, User::ADMIN_GROUP_COUNTRY_ADMIN, User::ADMIN_GROUP_REGIONAL_ADMIN])
+                    ->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')
+                    ->get();
+            } else if ($this->authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+                $mfaSettings = $baseQuery
+                    ->whereNotIn('created_by_role', [User::ADMIN_GROUP_SUPER_ADMIN, User::ADMIN_GROUP_ORG_ADMIN, User::ADMIN_GROUP_COUNTRY_ADMIN, User::ADMIN_GROUP_REGIONAL_ADMIN])
                     ->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')
                     ->get();
             } else {
@@ -93,7 +106,7 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                 }
 
                 if (MfaSettingHelper::validateMfaEnforcement($mfaSetting, $this->mfaSetting->mfa_enforcement) && in_array($hiOrganization?->id, $mfaSetting->organizations)) {
-                    $mfaSetting->update(['mfa_enforcement' => $this->mfaSetting->mfa_enforcement]);
+                    $mfaSetting->update(['mfa_enforcement' => $mfaSetting->mfa_enforcement]);
                 }
             }
 
@@ -122,12 +135,15 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
             foreach ($freshMfaSettings as $mfaSetting) {
                 $internalUsers->where('type', $mfaSetting->role);
 
-                if ($mfaSetting->role === User::GROUP_THERAPIST) {
+                if ($mfaSetting->role === User::GROUP_THERAPIST || $mfaSetting->role === User::GROUP_PHC_WORKER) {
                     $accessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
                     $response = Http::withToken($accessToken)
                         ->post(env('THERAPIST_SERVICE_URL') . '/mfa-settings', [
                             'country_ids' => $mfaSetting->country_ids,
+                            'region_ids' => $mfaSetting->region_ids,
                             'clinic_ids' => $mfaSetting->clinic_ids,
+                            'phc_service_ids' => $mfaSetting->phc_service_ids,
+                            'role' => $mfaSetting->role,
                             'mfa_enforcement' => $mfaSetting->mfa_enforcement,
                             'mfa_expiration_duration' => $mfaSetting->mfa_expiration_duration,
                             'skip_mfa_setup_duration' => $mfaSetting->skip_mfa_setup_duration,
@@ -215,10 +231,13 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
     {
         $definedLevel = [
             User::GROUP_THERAPIST => 1,
+            User::GROUP_PHC_WORKER => 1,
+            User::ADMIN_GROUP_PHC_SERVICE_ADMIN => 2,
             User::ADMIN_GROUP_CLINIC_ADMIN => 2,
-            User::ADMIN_GROUP_COUNTRY_ADMIN => 3,
-            User::ADMIN_GROUP_ORG_ADMIN => 4,
-            User::ADMIN_GROUP_SUPER_ADMIN => 5
+            User::ADMIN_GROUP_REGIONAL_ADMIN => 3,
+            User::ADMIN_GROUP_COUNTRY_ADMIN => 4,
+            User::ADMIN_GROUP_ORG_ADMIN => 5,
+            User::ADMIN_GROUP_SUPER_ADMIN => 6
         ];
 
         return $definedLevel[$role];
@@ -228,10 +247,13 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
     {
         $definedLevel = [
             User::GROUP_THERAPIST => 1,
+            User::GROUP_PHC_WORKER => 1,
+            User::ADMIN_GROUP_PHC_SERVICE_ADMIN => 2,
             User::ADMIN_GROUP_CLINIC_ADMIN => 2,
-            User::ADMIN_GROUP_COUNTRY_ADMIN => 3,
-            User::ADMIN_GROUP_ORG_ADMIN => 4,
-            User::ADMIN_GROUP_SUPER_ADMIN => 5
+            User::ADMIN_GROUP_REGIONAL_ADMIN => 3,
+            User::ADMIN_GROUP_COUNTRY_ADMIN => 4,
+            User::ADMIN_GROUP_ORG_ADMIN => 5,
+            User::ADMIN_GROUP_SUPER_ADMIN => 6
         ];
 
         $currentLevel = $this->checkRoleLevel($role);

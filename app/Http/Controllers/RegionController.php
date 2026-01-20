@@ -426,13 +426,18 @@ class RegionController extends Controller
         if ($searchValue) {
             $query->where('name', 'like', '%' . $searchValue . '%');
         }
-        $regions = $query->paginate($pageSize);
 
-        return response()->json([
-            'data' => RegionResource::collection($regions),
-            'total' => $regions->total(),
-            'current_page' => $regions->currentPage()
-        ], 200);
+        if ($pageSize) {
+            $regions = $query->paginate($pageSize);
+
+            return response()->json([
+                'data' => RegionResource::collection($regions),
+                'total' => $regions->total(),
+                'current_page' => $regions->currentPage()
+            ], 200);
+        }
+
+        return response()->json(['data' => RegionResource::collection($query->get())]);
     }
 
     /**

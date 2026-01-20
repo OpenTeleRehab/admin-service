@@ -10,6 +10,11 @@ use App\Helpers\MfaSettingHelper;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\UpdateFederatedUsersMfaJob;
 use App\Http\Resources\MfaSettingResource;
+use App\Models\Clinic;
+use App\Models\Country;
+use App\Models\Organization;
+use App\Models\PhcService;
+use App\Models\Region;
 
 class MfaSettingController extends Controller
 {
@@ -25,6 +30,28 @@ class MfaSettingController extends Controller
         $mfaSettings = MfaSetting::where('created_by_role', $user->type)
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $allClinicIds = collect($mfaSettings)->pluck('clinic_ids')->flatten()->unique();
+        $allCountryIds = collect($mfaSettings)->pluck('country_ids')->flatten()->unique();
+        $allRegionIds = collect($mfaSettings)->pluck('region_ids')->flatten()->unique();
+        $allPhcServiceIds = collect($mfaSettings)->pluck('phc_service_ids')->flatten()->unique();
+        $allOrganizationIds = collect($mfaSettings)->pluck('organizations')->flatten()->unique();
+
+        $clinics = Clinic::whereIn('id', $allClinicIds)->pluck('name', 'id');
+        $countries = Country::whereIn('id', $allCountryIds)->pluck('name', 'id');
+        $regions = Region::whereIn('id', $allRegionIds)->pluck('name', 'id');
+        $phcServices = PhcService::whereIn('id', $allPhcServiceIds)->pluck('name', 'id');
+        $organizations = Organization::whereIn('id', $allOrganizationIds)->pluck('name', 'id');
+
+        $mfaSettings = $mfaSettings->map(function ($mfaSetting) use ($clinics, $countries, $regions, $phcServices, $organizations) {
+            $mfaSetting->countries = $mfaSetting->country_ids ? $countries->only($mfaSetting->country_ids)->values() : [];
+            $mfaSetting->regions = $mfaSetting->region_ids ? $regions->only($mfaSetting->region_ids)->values() : [];
+            $mfaSetting->clinics = $mfaSetting->clinic_ids ? $clinics->only($mfaSetting->clinic_ids)->values() : [];
+            $mfaSetting->phc_services = $mfaSetting->phc_service_ids ? $phcServices->only($mfaSetting->phc_service_ids)->values() : [];
+            $mfaSetting->organizations_name = $mfaSetting->organizations ? $organizations->only($mfaSetting->organizations)->values() : [];
+
+            return $mfaSetting;
+        });
 
         return [
             'success' => true,
@@ -52,8 +79,16 @@ class MfaSettingController extends Controller
                 Rule::requiredIf($authUser->type === User::ADMIN_GROUP_ORG_ADMIN && $role === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'array',
             ],
+            'region_ids' => [
+                Rule::requiredIf($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN && $role === User::ADMIN_GROUP_REGIONAL_ADMIN),
+                'array',
+            ],
             'clinic_ids' => [
-                Rule::requiredIf($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
+                Rule::requiredIf($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && ($role === User::ADMIN_GROUP_CLINIC_ADMIN || $role === User::GROUP_THERAPIST)),
+                'array',
+            ],
+            'phc_service_ids' => [
+                Rule::requiredIf($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && ($role === User::ADMIN_GROUP_PHC_SERVICE_ADMIN || $role === User::GROUP_PHC_WORKER)),
                 'array',
             ],
             'mfa_enforcement' => 'required|in:skip,recommend,force',
@@ -78,9 +113,16 @@ class MfaSettingController extends Controller
 
         if ($authUser->type === User::ADMIN_GROUP_SUPER_ADMIN) {
             $validatedData['country_ids'] = null;
+            $validatedData['region_ids'] = null;
             $validatedData['clinic_ids'] = null;
+            $validatedData['phc_service_ids'] = null;
         } else if ($authUser->type === User::ADMIN_GROUP_ORG_ADMIN) {
+            $validatedData['region_ids'] = null;
             $validatedData['clinic_ids'] = null;
+            $validatedData['phc_service_ids'] = null;
+        } else if ($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
+            $validatedData['clinic_ids'] = null;
+            $validatedData['phc_service_ids'] = null;
         }
 
         $newMfaSetting = MfaSetting::create($validatedData);
@@ -113,8 +155,16 @@ class MfaSettingController extends Controller
                 Rule::requiredIf($authUser->type === User::ADMIN_GROUP_ORG_ADMIN && $role === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'array',
             ],
+            'region_ids' => [
+                Rule::requiredIf($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN && $role === User::ADMIN_GROUP_REGIONAL_ADMIN),
+                'array',
+            ],
             'clinic_ids' => [
-                Rule::requiredIf($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
+                Rule::requiredIf($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && ($role === User::ADMIN_GROUP_CLINIC_ADMIN || $role === User::GROUP_THERAPIST)),
+                'array',
+            ],
+            'phc_service_ids' => [
+                Rule::requiredIf($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && ($role === User::ADMIN_GROUP_PHC_SERVICE_ADMIN || $role === User::GROUP_PHC_WORKER)),
                 'array',
             ],
             'mfa_enforcement' => 'required|in:skip,recommend,force',
@@ -149,7 +199,7 @@ class MfaSettingController extends Controller
     public function validateMfaEnforcementAgainstHigherRole(Request $request)
     {
         $validatedData = $request->validate([
-            'role' => 'required|in:therapist,clinic_admin,country_admin,organization_admin,super_admin',
+            'role' => 'required|in:phc_worker,therapist,phc_service_admin,clinic_admin,regional_admin,country_admin,organization_admin,super_admin,translator',
         ]);
 
         $authUser = Auth::user();

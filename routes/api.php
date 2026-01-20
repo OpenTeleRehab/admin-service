@@ -359,6 +359,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Region
     Route::get('regions/{region}/entities', [RegionController::class, 'getEntitiesByRegionId'])->middleware('role:manage_region');
+    Route::get('regions/by-auth-country', [RegionController::class, 'getRegionByCountry']);
     Route::apiResource('regions', RegionController::class)->middleware('role:manage_region,view_region_list');
     Route::get('region-limitation', [RegionController::class, 'getLimitation'])->middleware('role:view_region_list');
     Route::get('region-limitations-by-user-country', [RegionController::class, 'countryRegionLimitations'])->middleware('role:manage_region');
