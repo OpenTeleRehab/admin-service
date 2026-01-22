@@ -21,7 +21,6 @@ class ClinicResource extends JsonResource
             'country_id' => $this->country_id,
             'region' => $this->region ? $this->region->only(['id', 'name']) : null,
             'province' => $this->province ? $this->province->only(['id', 'name']) : null,
-            'city' => $this->city,
             'therapist_limit' => $this->therapist_limit,
             'phone' => $this->phone,
             'dial_code' => $this->dial_code,
