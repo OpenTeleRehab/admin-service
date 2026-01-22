@@ -114,6 +114,8 @@
     "common.guidance.next": "Next",
     "common.guidance.prev": "Previous",
     "common.guidance.hide": "Doesn't show guidance",
+    "common.notify_email": "Turn on notify in email",
+    "common.notify_in_app": "Turn on notify in app",
     "common.suggest_translation": "Suggest Translation",
     "common.transfer": "Transfer",
     "common.transfer_patient": "Transfer Patient",

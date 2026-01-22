@@ -42,6 +42,7 @@ use App\Http\Controllers\SystemLimitController;
 use App\Http\Controllers\TermAndConditionController;
 use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\TranslatorController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -391,6 +392,11 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::put('api-clients/{apiClient}/update-status', [ApiClientController::class, 'updateStatus'])->middleware('role:manage_api_client');
     Route::put('api-clients/{apiKey}/generate-secret-key', [ApiClientController::class, 'regenerateSecretKey'])->middleware('role:manage_api_client');
     Route::apiResource('api-clients', ApiClientController::class)->middleware('role:manage_api_client');
+
+    // Notification
+    Route::post('notifications/patient-referral', [NotificationController::class, 'patientReferral']);
+    Route::post('notifications/patient-referral-assignment', [NotificationController::class, 'patientReferralAssignment']);
+    Route::post('notifications/patient-counter-referral', [NotificationController::class, 'patientCounterReferral']);
 });
 
 Route::group(['prefix' => 'external', 'middleware' => ['check.api.client']], function () {

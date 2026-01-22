@@ -31,6 +31,7 @@ class UserResource extends JsonResource
             'region_name' => $this->region?->name,
             'region_id' => $this->region_id,
             'phc_service' => new PhcServiceResource($this->phcService),
+            'notifiable' => $this->notifiable,
             'edit_languages' => $this->translatorLanguages->map(fn($lang) => [
                 'id' => $lang->id,
                 'name' => $lang->name,

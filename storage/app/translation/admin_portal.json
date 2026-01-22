@@ -113,6 +113,7 @@
     "common.assigned_patient": "Assigned Patient",
     "common.language": "Language",
     "common.remove": "Remove",
+    "common.turn_on_notification": "Turn on notification",
     "common.global_admin.management": "Organization admins can manage Organization Admins/ Country Admins, create and upload the content (exercises and questionnaires).",
     "common.country_admin.management": "Country Admins manage therapist of a country",
     "common.clinic_admin.management": "Country Admins manage therapist of a clinic",
