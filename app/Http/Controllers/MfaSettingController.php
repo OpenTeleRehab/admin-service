@@ -121,8 +121,22 @@ class MfaSettingController extends Controller
             $validatedData['clinic_ids'] = null;
             $validatedData['phc_service_ids'] = null;
         } else if ($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
+            $validatedData['country_ids'] = [$authUser->country_id];
             $validatedData['clinic_ids'] = null;
             $validatedData['phc_service_ids'] = null;
+        } else if ($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $validatedData['country_ids'] = [$authUser->country_id];
+            $validatedData['region_ids'] = [$authUser->region_id];
+        } else if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+            $validatedData['country_ids'] = [$authUser->country_id];
+            $validatedData['region_ids'] = [$authUser->region_id];
+            $validatedData['clinic_ids'] = [$authUser->clinic_id];
+            $validatedData['phc_service_ids'] = null;
+        } else if ($authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+            $validatedData['country_ids'] = [$authUser->country_id];
+            $validatedData['region_ids'] = [$authUser->region_id];
+            $validatedData['clinic_ids'] = null;
+            $validatedData['phc_service_ids'] = [$authUser->phc_service_id];
         }
 
         $newMfaSetting = MfaSetting::create($validatedData);
@@ -185,6 +199,34 @@ class MfaSettingController extends Controller
             return response()->json([
                 'message' => 'mfa.enforcement.cannot.weaker.than.parent.role',
             ], 422);
+        }
+
+        if ($authUser->type === User::ADMIN_GROUP_SUPER_ADMIN) {
+            $validatedData['country_ids'] = null;
+            $validatedData['region_ids'] = null;
+            $validatedData['clinic_ids'] = null;
+            $validatedData['phc_service_ids'] = null;
+        } else if ($authUser->type === User::ADMIN_GROUP_ORG_ADMIN) {
+            $validatedData['region_ids'] = null;
+            $validatedData['clinic_ids'] = null;
+            $validatedData['phc_service_ids'] = null;
+        } else if ($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
+            $validatedData['country_ids'] = [$authUser->country_id];
+            $validatedData['clinic_ids'] = null;
+            $validatedData['phc_service_ids'] = null;
+        } else if ($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $validatedData['country_ids'] = [$authUser->country_id];
+            $validatedData['region_ids'] = [$authUser->region_id];
+        } else if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+            $validatedData['country_ids'] = [$authUser->country_id];
+            $validatedData['region_ids'] = [$authUser->region_id];
+            $validatedData['clinic_ids'] = [$authUser->clinic_id];
+            $validatedData['phc_service_ids'] = null;
+        } else if ($authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+            $validatedData['country_ids'] = [$authUser->country_id];
+            $validatedData['region_ids'] = [$authUser->region_id];
+            $validatedData['clinic_ids'] = null;
+            $validatedData['phc_service_ids'] = [$authUser->phc_service_id];
         }
 
         $mfaSetting->update($validatedData);
