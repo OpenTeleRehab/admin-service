@@ -54,8 +54,8 @@ class SyncHealthConditionData extends Command
                 ['id' => $globalHealthConditionGroup->id],
                 [
                     'title' => json_encode($globalHealthConditionGroup->title),
-                    'created_at' => $globalHealthConditionGroup->created_at ? Carbon::parse($globalHealthConditionGroup->created_at) : $globalHealthConditionGroup->created_at,
-                    'updated_at' => $globalHealthConditionGroup->updated_at ? Carbon::parse($globalHealthConditionGroup->updated_at) : $globalHealthConditionGroup->updated_at,
+                    'created_at' => Carbon::parse($globalHealthConditionGroup->created_at ?? now()),
+                    'updated_at' => Carbon::now(),
                 ]
             );
 
@@ -69,8 +69,8 @@ class SyncHealthConditionData extends Command
                         [
                             'title' => json_encode($globalHealthCondition->title),
                             'parent_id' => $globalHealthCondition->parent_id,
-                            'created_at' => $globalHealthCondition->created_at ? Carbon::parse($globalHealthCondition->created_at) : $globalHealthCondition->created_at,
-                            'updated_at' => $globalHealthCondition->updated_at ? Carbon::parse($globalHealthCondition->updated_at) : $globalHealthCondition->updated_at,
+                            'created_at' => Carbon::parse($globalHealthCondition->created_at ?? now()),
+                            'updated_at' => Carbon::now(),
                         ]
                     );
                 }

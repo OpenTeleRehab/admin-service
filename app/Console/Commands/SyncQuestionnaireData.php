@@ -77,7 +77,9 @@ class SyncQuestionnaireData extends Command
                         'therapist_id' => $globalQuestionnaire->therapist_id,
                         'questionnaire_id' => $globalQuestionnaire->id,
                         'global' => true,
-                        'deleted_at' => $globalQuestionnaire->deleted_at ? Carbon::parse($globalQuestionnaire->deleted_at) : $globalQuestionnaire->deleted_at,
+                        'created_at' => Carbon::parse($globalQuestionnaire->created_at ?? now()),
+                        'updated_at' => Carbon::now(),
+                        'deleted_at' => $globalQuestionnaire->deleted_at ? Carbon::parse($globalQuestionnaire->deleted_at) : null,
                     ]
                 );
                 $newQuestionnaire = Questionnaire::withTrashed()->where('questionnaire_id', $globalQuestionnaire->id)->where('global', true)->first();
@@ -117,6 +119,8 @@ class SyncQuestionnaireData extends Command
                                 'file_id' => $record ? $record->id : null,
                                 'order' => $question->order,
                                 'question_id' => $question->id,
+                                'created_at' => Carbon::parse($question->created_at ?? now()),
+                                'updated_at' => Carbon::now(),
                              ]
                         );
                         // Add answers.
@@ -133,6 +137,8 @@ class SyncQuestionnaireData extends Command
                                         'description' => json_encode($answer->description),
                                         'question_id' => $newQuestion->id,
                                         'answer_id' => $answer->id,
+                                        'created_at' => Carbon::parse($answer->created_at ?? now()),
+                                        'updated_at' => Carbon::now(),
                                     ]
                                 );
                             }
@@ -142,6 +148,9 @@ class SyncQuestionnaireData extends Command
                 $this->output->progressAdvance();
             }
             $this->output->progressFinish();
+
+            // Re-enable activity logging after data sync
+            Activity::enableLogging();
         }
         $this->info('Questionnaire data has been sync successfully');
     }

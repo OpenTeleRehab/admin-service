@@ -215,10 +215,12 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('system-limit', [SystemLimitController::class, 'index'])->middleware('role:manage_system_limit,view_system_limit_list');
     Route::put('system-limit/{systemLimit}', [SystemLimitController::class, 'update'])->middleware('role:manage_system_limit');
     Route::get('settings', [SettingController::class, 'index'])->middleware('role:access_all');
-    Route::get('static-page', [StaticPageController::class, 'index'])->middleware('role:manage_static_page,translate_static_page');
-    Route::post('static-page', [StaticPageController::class, 'store'])->middleware('role:manage_static_page');
-    Route::get('static-page/{staticPage}', [StaticPageController::class, 'show'])->middleware('role:manage_static_page,translate_static_page');
-    Route::put('static-page/{staticPage}', [StaticPageController::class, 'update'])->middleware('role:manage_static_page,translate_static_page');
+    Route::get('static-page', [StaticPageController::class, 'index'])->middleware('role:manage_faq_static_page,manage_about_us_static_page,translate_static_page');
+    Route::get('get-faq-pages', [StaticPageController::class, 'getFaqPages'])->middleware('role:access_all');
+    Route::get('get-faq-content-files', [StaticPageController::class, 'getFaqContentFiles'])->middleware('role:access_all');
+    Route::post('static-page', [StaticPageController::class, 'store'])->middleware('role:manage_faq_static_page,manage_about_us_static_page');
+    Route::get('static-page/{staticPage}', [StaticPageController::class, 'show'])->middleware('role:manage_faq_static_page,manage_about_us_static_page,translate_static_page');
+    Route::put('static-page/{staticPage}', [StaticPageController::class, 'update'])->middleware('role:manage_faq_static_page,manage_about_us_static_page,translate_static_page');
     Route::get('term-condition', [TermAndConditionController::class, 'index'])->middleware('role:manage_term_condition,view_term_condition_list,translate_term_condition');
     Route::post('term-condition', [TermAndConditionController::class, 'store'])->middleware('role:manage_term_condition');
     Route::get('term-condition/{id}', [TermAndConditionController::class, 'show'])->middleware('role:manage_term_condition,view_term_condition,translate_term_condition');
@@ -248,6 +250,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('screening-questionnaires', [ScreeningQuestionnaireController::class, 'store'])->middleware('role:manage_screening_questionnaire');
     Route::post('screening-questionnaires/{screeningQuestionnaire}/publish', [ScreeningQuestionnaireController::class, 'publish'])->middleware('role:manage_screening_questionnaire');
     Route::delete('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'destroy'])->middleware('role:manage_screening_questionnaire');
+    Route::get('get-screening-questionnaires', [ScreeningQuestionnaireController::class, 'getScreeningQuestionnaireForDataSync'])->middleware('role:access_all');
 
     // Health Condition Group
     Route::get('health-condition-group', [HealthConditionGroupController::class, 'index'])->middleware('role:view_health_condition,manage_health_condition,translate_health_condition');
@@ -415,6 +418,9 @@ Route::group(['prefix' => 'external', 'middleware' => ['check.api.client']], fun
     Route::get('get-tutorial-files', [GuidancePageController::class, 'getTutorialFiles']);
     Route::get('get-assistive-products', [AssistiveTechnologyController::class, 'getAssistiveProducts']);
     Route::get('get-health-condition-groups', [HealthConditionGroupController::class, 'getHealthConditionGroups']);
+    Route::get('get-faq-pages', [StaticPageController::class, 'getFaqPages']);
+    Route::get('get-faq-content-files', [StaticPageController::class, 'getFaqContentFiles']);
+    Route::get('get-screening-questionnaires', [ScreeningQuestionnaireController::class, 'getScreeningQuestionnaireForDataSync']);
 });
 
 // Public Access

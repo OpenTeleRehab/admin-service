@@ -18,7 +18,7 @@ class StaticPage extends Model
      *
      * @var string[]
      */
-    protected $fillable = ['title', 'private', 'content', 'url_path_segment', 'file_id', 'platform', 'background_color', 'text_color', 'auto_translated'];
+    protected $fillable = ['title', 'private', 'content', 'url_path_segment', 'file_id', 'platform', 'background_color', 'text_color', 'auto_translated', 'global_id'];
     
     /**
      * Get the options for activity logging.
