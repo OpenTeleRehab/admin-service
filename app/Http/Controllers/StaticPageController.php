@@ -38,7 +38,7 @@ class StaticPageController extends Controller
      */
     public function index()
     {
-        $staticPages = StaticPage::select('id', 'title', 'platform')->get();
+        $staticPages = StaticPage::select('id', 'title', 'platform', 'url_path_segment')->get();
 
         return ['success' => true, 'data' => StaticPageIndexResource::collection($staticPages)];
     }

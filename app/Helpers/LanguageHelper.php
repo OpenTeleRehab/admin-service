@@ -24,7 +24,7 @@ class LanguageHelper
     {
         $user = Auth::user();
 
-        if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN) {
+        if ($user->type !== User::GROUP_TRANSLATOR) {
             return true;
         }
 
