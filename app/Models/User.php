@@ -6,9 +6,9 @@ use Spatie\Activitylog\LogOptions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\Activitylog\Traits\LogsActivity;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -34,7 +34,20 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'first_name', 'last_name', 'email', 'password', 'type', 'country_id', 'clinic_id', 'gender', 'language_id', 'enabled', 'last_login', 'region_id', 'phc_service_id'
+        'first_name',
+        'last_name',
+        'email',
+        'password',
+        'type',
+        'country_id',
+        'clinic_id',
+        'gender',
+        'language_id',
+        'enabled',
+        'last_login',
+        'region_id',
+        'phc_service_id',
+        'notifiable',
     ];
 
      /**
@@ -85,15 +98,19 @@ class User extends Authenticatable
             $builder->orderBy('first_name');
         });
 
-        static::creating(function ($user) {
+        static::creating(function ($model) {
             $authUser = Auth::user();
 
             if (in_array($authUser?->type, [self::ADMIN_GROUP_COUNTRY_ADMIN, self::ADMIN_GROUP_REGIONAL_ADMIN])) {
-                $user->country_id = $authUser->country_id;
+                $model->country_id = $authUser->country_id;
             }
 
             if (in_array($authUser?->type, [self::ADMIN_GROUP_REGIONAL_ADMIN])) {
-                $user->region_id = $authUser->region_id;
+                $model->region_id = $authUser->region_id;
+            }
+
+            if (in_array($model?->type, [self::ADMIN_GROUP_CLINIC_ADMIN, self::ADMIN_GROUP_PHC_SERVICE_ADMIN])) {
+                $model->notifiable = 1;
             }
         });
     }
@@ -188,5 +205,16 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    /**
+     * Route notifications for the mail channel.
+     * @param Notification $notification
+     *
+     * @return string
+     */
+    public function routeNotificationForMail(Notification $notification): string
+    {
+        return $this->email;
     }
 }

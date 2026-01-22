@@ -194,7 +194,8 @@ class ProfileController extends Controller
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
                 'gender' => $data['gender'],
-                'language_id' => $data['language_id']
+                'language_id' => $data['language_id'],
+                'notifiable' => $data['notifiable'],
             ]);
 
             if ($data['language_code']) {
