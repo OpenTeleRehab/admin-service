@@ -18,7 +18,6 @@ class ForwarderController extends Controller
     public function index(Request $request)
     {
         $service_name = $request->route()->getName();
-        $country = $request->header('country');
         $endpoint = str_replace('api/', '/', $request->path());
         $params = $request->all();
         $user = auth()->user();
@@ -36,9 +35,9 @@ class ForwarderController extends Controller
         }
 
         if ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
-            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $user->country?->iso_code);
             $response = Http::withToken($access_token)->withHeaders([
-                'country' => $country,
+                'country' => $user->country?->iso_code,
                 'int-clinic-id' => $user->clinic_id,
             ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $params);
             return response($response->body(), $response->status())
@@ -73,8 +72,9 @@ class ForwarderController extends Controller
                 ])
                 ->post(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
         } elseif ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
-            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $user->country?->iso_code);
             $response = Http::withToken($access_token)->withHeaders([
+                'country' => $user->country?->iso_code,
                 'int-country-id' => $user->country_id,
                 'int-region-id' => $user?->region_id,
                 'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
@@ -102,14 +102,13 @@ class ForwarderController extends Controller
     public function show(Request $request)
     {
         $service_name = $request->route()->getName();
-        $country = $request->header('country');
         $endpoint = str_replace('api/', '/', $request->path());
         $user = Auth::user();
 
         if ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
-            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country);
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $user->country?->iso_code);
             return Http::withToken($access_token)->withHeaders([
-                'country' => $country,
+                'country' => $user->country?->iso_code,
                 'int-clinic-id' => $user->clinic_id,
             ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
         }
