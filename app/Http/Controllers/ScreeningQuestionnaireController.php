@@ -469,4 +469,24 @@ class ScreeningQuestionnaireController extends Controller
             'data' => $questionnaires,
         ]);
     }
+
+    /**
+     * Get screening questionnaires for data sync.
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function getScreeningQuestionnaireForDataSync()
+    {
+        $questionnaires = ScreeningQuestionnaire::with([
+            'sections.actions',
+            'sections.questions.file',
+            'sections.questions.options.file',
+            'sections.questions.logics',
+        ])
+        ->withTrashed()
+        ->where('status', 'published')
+        ->get();
+
+        return $questionnaires;
+    }
 }

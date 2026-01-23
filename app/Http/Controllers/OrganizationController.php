@@ -6,7 +6,9 @@ use App\Helpers\LimitationHelper;
 use App\Helpers\OrganizationHelper;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrganizationController extends Controller
 {
@@ -15,7 +17,11 @@ class OrganizationController extends Controller
      */
     public function index()
     {
-        $organizations = Organization::all();
+        $query = Organization::query();
+        if (Auth::user()->type === User::ADMIN_GROUP_ORG_ADMIN) {
+            $query->where('sub_domain_name', env('APP_NAME'));
+        }
+        $organizations = $query->get();
 
         return ['success' => true, 'data' => OrganizationResource::collection($organizations)];
     }

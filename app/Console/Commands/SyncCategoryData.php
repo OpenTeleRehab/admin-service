@@ -111,6 +111,9 @@ class SyncCategoryData extends Command
 
         $this->output->progressFinish();
 
+        // Re-enable activity logging after data sync
+        Activity::enableLogging();
+
         $this->info('Category sync completed successfully!');
 }
 }

@@ -34,11 +34,13 @@ class StaticPageController extends Controller
      *     },
      * )
      *
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function index()
+    public function index(Request $request)
     {
-        $staticPages = StaticPage::select('id', 'title', 'platform', 'url_path_segment')->get();
+        $url = $request->get('url');
+        $staticPages = StaticPage::select('id', 'title', 'platform', 'url_path_segment')->where('url_path_segment', $url)->get();
 
         return ['success' => true, 'data' => StaticPageIndexResource::collection($staticPages)];
     }
@@ -446,5 +448,25 @@ class StaticPageController extends Controller
             ->where('platform', $request->get('platform'))
             ->first();
         return ['success' => true, 'data' => $page ? new StaticPageResource($page) : []];
+    }
+
+    /**
+     * Get FAQ static pages
+     */
+    public function getFaqPages()
+    {
+        return StaticPage::with('file')->where('url_path_segment', 'faq')->get();
+    }
+
+    /**
+     * Get FAQ content files by IDs.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getFaqContentFiles(Request $request)
+    {
+        $fileIds = $request->get('file_ids', []);
+        return File::whereIn('id', $fileIds)->get();
     }
 }

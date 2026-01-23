@@ -93,15 +93,18 @@ class SyncAssistiveProductData extends Command
                     'description' => json_encode($globalAssistiveProduct->description),
                     'file_id' => $fileId,
                     'auto_translated' => json_encode($globalAssistiveProduct->auto_translated),
-                    'created_at' => $globalAssistiveProduct->created_at ? Carbon::parse($globalAssistiveProduct->created_at) : $globalAssistiveProduct->created_at,
-                    'updated_at' => $globalAssistiveProduct->updated_at ? Carbon::parse($globalAssistiveProduct->updated_at) : $globalAssistiveProduct->updated_at,
-                    'deleted_at' => $globalAssistiveProduct->deleted_at ? Carbon::parse($globalAssistiveProduct->deleted_at) : $globalAssistiveProduct->deleted_at,
+                    'created_at' => Carbon::parse($globalAssistiveProduct->created_at ?? now()),
+                    'updated_at' => Carbon::now(),
+                    'deleted_at' => $globalAssistiveProduct->deleted_at ? Carbon::parse($globalAssistiveProduct->deleted_at) : null,
                 ]
             );
             $this->output->progressAdvance();
         }
 
         $this->output->progressFinish();
+
+        // Re-enable activity logging after data sync
+        Activity::enableLogging();
 
         $this->info('Assistive product sync completed successfully!');
 }

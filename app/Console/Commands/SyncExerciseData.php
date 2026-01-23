@@ -82,7 +82,9 @@ class SyncExerciseData extends Command
                         'therapist_id' => $globalExercise->therapist_id,
                         'exercise_id' => $globalExercise->id,
                         'global' => true,
-                        'deleted_at' => $globalExercise->deleted_at ? Carbon::parse($globalExercise->deleted_at) : $globalExercise->deleted_at,
+                        'created_at' => Carbon::parse($globalExercise->created_at ?? now()),
+                        'updated_at' => Carbon::now(),
+                        'deleted_at' => $globalExercise->deleted_at ? Carbon::parse($globalExercise->deleted_at) : null,
                     ]
                 );
                 $newExercise = Exercise::withTrashed()->where('exercise_id', $globalExercise->id)->where('global', true)->first();
@@ -132,6 +134,9 @@ class SyncExerciseData extends Command
                 $this->output->progressAdvance();
             }
             $this->output->progressFinish();
+
+            // Re-enable activity logging after data sync
+            Activity::enableLogging();
         }
         $this->info('Exercise data has been sync successfully');
     }

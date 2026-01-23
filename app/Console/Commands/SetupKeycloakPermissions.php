@@ -91,6 +91,8 @@ class SetupKeycloakPermissions extends Command
             'view_country_limitation',
             'manage_system_limit',
             'view_remove_phc_worker_patient',
+            'manage_faq_static_page',
+            'manage_about_us_static_page',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
@@ -136,13 +138,14 @@ class SetupKeycloakPermissions extends Command
                 'manage_phc_worker_guidance',
                 'manage_api_client',
                 'manage_mfa_policy',
+                'manage_faq_static_page',
             ],
             'organization_admin' => [
                 'manage_system_limit',
                 'manage_color_scheme',
                 'view_clinic_list',
                 'view_profession',
-                'manage_static_page',
+                'manage_about_us_static_page',
                 'manage_country_admin',
                 'manage_country',
                 'manage_organization_admin',
@@ -182,6 +185,7 @@ class SetupKeycloakPermissions extends Command
                 'view_region_list',
                 'view_phc_service_list',
                 'view_remove_phc_worker_patient',
+                'file_upload',
             ],
             'country_admin' => [
                 'view_organization',

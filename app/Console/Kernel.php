@@ -38,6 +38,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('hi:sync-tutorial-data')->dailyAt('2:45')->runInBackground();
         $schedule->command('hi:expire-past-due-survey')->dailyAt('3:00')->runInBackground();
         $schedule->command('hi:sync-assistive-product-data')->dailyAt('3:15')->runInBackground();
+        $schedule->command('hi:sync-faq-data')->dailyAt('3:30')->runInBackground();
+        $schedule->command('hi:sync-screening-questionnaire-data')->dailyAt('3:45')->runInBackground();
     }
 
     /**

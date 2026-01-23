@@ -71,7 +71,9 @@ class SyncEducationMaterialData extends Command
                         'therapist_id' => $globalEducationMaterial->therapist_id,
                         'education_material_id' => $globalEducationMaterial->id,
                         'global' => true,
-                        'deleted_at' => $globalEducationMaterial->deleted_at ? Carbon::parse($globalEducationMaterial->deleted_at) : $globalEducationMaterial->deleted_at,
+                        'created_at' => Carbon::parse($globalEducationMaterial->created_at ?? now()),
+                        'updated_at' => Carbon::now(),
+                        'deleted_at' => $globalEducationMaterial->deleted_at ? Carbon::parse($globalEducationMaterial->deleted_at) : null,
                     ]
                 );
                 $filesIDs = array_values(get_object_vars($globalEducationMaterial->file_id));
@@ -118,6 +120,9 @@ class SyncEducationMaterialData extends Command
                 $this->output->progressAdvance();
             }
             $this->output->progressFinish();
+
+            // Re-enable activity logging after data sync
+            Activity::enableLogging();
         }
         $this->info('Education material data has been sync successfully');
     }
