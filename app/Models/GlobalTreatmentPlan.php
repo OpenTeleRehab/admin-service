@@ -28,6 +28,8 @@ class GlobalTreatmentPlan extends Model
         'start_date',
         'end_date',
         'status',
+        'health_condition_id',
+        'health_condition_group_id'
     ];
 
     /**

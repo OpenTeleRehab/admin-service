@@ -163,44 +163,34 @@ class AuditLogController extends Controller
      *     tags={"AuditLogs"},
      *     summary="Store audit logs of user",
      *     operationId="createAuditLog",
-     *     @OA\Parameter(
-     *         name="authDetails",
-     *         in="query",
-     *         description="auth details from Keycloak",
+     *     @OA\RequestBody(
      *         required=true,
-     *         @OA\Schema(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="array",
-     *                 @OA\Property(property="username", type="string"),
-     *         )
-     *     ),
-     *     @OA\Parameter(
-     *         name="type",
-     *         in="query",
-     *         description="Action of log such as 'create', 'update', or 'login'",
-     *         required=true,
-     *         @OA\Schema(
-     *             type="string"
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="authDetails",
+     *                 type="object",
+     *                 @OA\Property(property="username", type="string", example="user@example.com")
+     *             ),
+     *             @OA\Property(
+     *                 property="type",
+     *                 type="string",
+     *                 description="Action of log such as 'create', 'update', or 'login'",
+     *                 example="login"
+     *             )
      *         )
      *     ),
      *     @OA\Response(
-     *         response="200",
-     *         description="successful operation"
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean")
+     *         )
      *     ),
      *     @OA\Response(response=400, description="Bad request"),
-     *     @OA\Response(response=404, description="Resource Not Found"),
      *     @OA\Response(response=401, description="Authentication is required"),
-     *     security={
-     *         {
-     *             "oauth2_security": {}
-     *         }
-     *     },
+     *     @OA\Response(response=404, description="Resource Not Found"),
+     *     security={{"oauth2_security": {}}}
      * )
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return array
      */
     public function store(Request $request)
     {

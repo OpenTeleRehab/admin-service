@@ -94,13 +94,18 @@ class MfaSettingController extends Controller
             'mfa_enforcement' => 'required|in:skip,recommend,force',
             'mfa_expiration_duration' => 'nullable|integer|min:0',
             'skip_mfa_setup_duration' => 'nullable|integer|min:0',
+            'mfa_expiration_unit' => 'nullable|string',
+            'skip_mfa_setup_unit' => 'nullable|string',
         ]);
 
         if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_DISABLE) {
             $validatedData['mfa_expiration_duration'] = null;
             $validatedData['skip_mfa_setup_duration'] = null;
+            $validatedData['mfa_expiration_unit'] = null;
+            $validatedData['skip_mfa_setup_unit'] = null;
         } else if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_ENFORCE) {
             $validatedData['skip_mfa_setup_duration'] = null;
+            $validatedData['skip_mfa_setup_unit'] = null;
         }
 
         $mfaSettingAboutRole = MfaSettingHelper::getMfaSettingAboveRole($authUser, $validatedData['role']);
@@ -184,13 +189,18 @@ class MfaSettingController extends Controller
             'mfa_enforcement' => 'required|in:skip,recommend,force',
             'mfa_expiration_duration' => 'nullable|integer|min:0',
             'skip_mfa_setup_duration' => 'nullable|integer|min:0',
+            'mfa_expiration_unit' => 'nullable|string',
+            'skip_mfa_setup_unit' => 'nullable|string',
         ]);
 
         if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_DISABLE) {
             $validatedData['mfa_expiration_duration'] = null;
             $validatedData['skip_mfa_setup_duration'] = null;
+            $validatedData['mfa_expiration_unit'] = null;
+            $validatedData['skip_mfa_setup_unit'] = null;
         } else if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_ENFORCE) {
             $validatedData['skip_mfa_setup_duration'] = null;
+            $validatedData['skip_mfa_setup_unit'] = null;
         }
 
         $parentSetting = MfaSettingHelper::getMfaSettingAboveRole($authUser, $validatedData['role']);

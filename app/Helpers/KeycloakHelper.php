@@ -658,6 +658,7 @@ class KeycloakHelper
             'Content-Type' => 'application/json'
         ])->get(self::getUserUrl(), [
             'username' => $username,
+            'exact' => 'true'
         ]);
 
         if ($response->successful()) {

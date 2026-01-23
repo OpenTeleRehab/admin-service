@@ -32,6 +32,8 @@ class MfaSettingResource extends JsonResource
             'mfa_enforcement' => $this->mfa_enforcement,
             'mfa_expiration_duration' => $this->mfa_expiration_duration,
             'skip_mfa_setup_duration' => $this->skip_mfa_setup_duration,
+            'mfa_expiration_unit' => $this->mfa_expiration_unit,
+            'skip_mfa_setup_unit' => $this->skip_mfa_setup_unit,
             'job_status' => $this->jobTrackers
                 ->sortByDesc('created_at')
                 ->first(),

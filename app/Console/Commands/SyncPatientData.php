@@ -89,6 +89,8 @@ class SyncPatientData extends Command
                             'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
                             'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
                             'status' => $status,
+                            'health_condition_id' => $treatmentPlan->health_condition_id,
+                            'health_condition_group_id' => $treatmentPlan->health_condition_group_id
                         ],
                     );
                 }
@@ -150,6 +152,8 @@ class SyncPatientData extends Command
                         'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
                         'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
                         'status' => $status,
+                        'health_condition_id' => $treatmentPlan->health_condition_id,
+                        'health_condition_group_id' => $treatmentPlan->health_condition_group_id
                     ],
                 );
             }

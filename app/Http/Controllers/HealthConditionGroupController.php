@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\HealthConditionService;
 use App\Events\ApplyHealthConditionAutoTranslationEvent;
 use App\Events\ApplyHealthConditionGroupAutoTranslationEvent;
 use App\Http\Resources\HealthConditionGroupResource;
@@ -255,4 +256,19 @@ class HealthConditionGroupController extends Controller
 
         return ['success' => false, 'message' => 'error_message.health_condition_group_delete'];
     }
+
+    public function find(Request $request)
+    {
+        $ids = $request->query('ids');
+        $title = $request->query('title');
+
+        $healthConditionService = new HealthConditionService();
+        $healthConditionGroups = $healthConditionService->findHealthConditionGroups($ids, $title);
+
+        return response()->json([
+            'success' => true,
+            'data' => $healthConditionGroups,
+        ]);
+    }
+
 }

@@ -153,11 +153,11 @@ class UpdateKeycloakUserAttributes implements ShouldQueue
                         $existingAttributes['available_enforcement'] = $newEnforcement;
 
                         if (isset($attributes['mfa_expiration_duration'])) {
-                            $existingAttributes[MfaSetting::MFA_MAX_AGE] = $attributes['mfa_expiration_duration'];
+                            $existingAttributes[MfaSetting::MFA_MAX_AGE] = $attributes['mfa_expiration_duration_in_seconds'];
                         }
 
                         if (isset($attributes['skip_mfa_setup_duration'])) {
-                            $existingAttributes[MfaSetting::MFA_SKIP_MAX_AGE] = $attributes['skip_mfa_setup_duration'];
+                            $existingAttributes[MfaSetting::MFA_SKIP_MAX_AGE] = $attributes['skip_mfa_setup_duration_in_seconds'];
                         }
 
                         $oldEnforcement = isset($existingAttributes[MfaSetting::MFA_KEY_ENFORCEMENT])
