@@ -165,6 +165,7 @@ class OrganizationController extends Controller
             'data' => [
                 'max_therapist' => $org->max_number_of_therapist,
                 'max_sms_per_week' => $org->max_sms_per_week,
+                'max_phc_sms_per_week' => $org->max_phc_sms_per_week,
             ],
         ];
     }
