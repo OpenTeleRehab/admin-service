@@ -96,15 +96,6 @@ class ClinicController extends Controller
      *         )
      *     ),
      *     @OA\Parameter(
-     *         name="city",
-     *         in="query",
-     *         description="City",
-     *         required=true,
-     *         @OA\Schema(
-     *             type="string"
-     *         )
-     *     ),
-     *     @OA\Parameter(
      *         name="therapist_limit",
      *         in="query",
      *         description="Therapist limit",
@@ -201,15 +192,6 @@ class ClinicController extends Controller
      *         in="query",
      *         description="Province",
      *         required=false,
-     *         @OA\Schema(
-     *             type="string"
-     *         )
-     *     ),
-     *     @OA\Parameter(
-     *         name="city",
-     *         in="query",
-     *         description="City",
-     *         required=true,
      *         @OA\Schema(
      *             type="string"
      *         )
@@ -357,12 +339,6 @@ class ClinicController extends Controller
                 DownloadTracker::where('author_id', $user->id)->delete();
                 $user->delete();
             }
-
-            // Phone service
-            Http::post(
-                env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
-                ['clinic_ids' => [$clinicId]]
-            );
 
             // Therapist service
             Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))

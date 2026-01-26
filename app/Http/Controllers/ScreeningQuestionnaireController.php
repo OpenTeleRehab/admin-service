@@ -8,6 +8,7 @@ use App\Http\Requests\ListHistoryScreeningQuestionnaireRequest;
 use App\Http\Requests\StoreScreeningQuestionnaireRequest;
 use App\Http\Requests\SubmitScreeningQuestionnaireRequest;
 use App\Http\Requests\UpdateScreeningQuestionnaireRequest;
+use App\Http\Resources\ScreeningQuestionnaireAnswerResource;
 use App\Http\Resources\ScreeningQuestionnaireResource;
 use App\Models\File;
 use App\Models\ScreeningQuestionnaire;
@@ -95,7 +96,7 @@ class ScreeningQuestionnaireController extends Controller
                     $question = ScreeningQuestionnaireQuestion::create([
                         'question_text' => $questionItem['question_text'],
                         'question_type' => $questionItem['question_type'],
-                        'mandatory' => (bool) $questionItem['mandatory'],
+                        'mandatory' => (bool)$questionItem['mandatory'],
                         'order' => $questionIndex + 1,
                         'section_id' => $section->id,
                         'questionnaire_id' => $screeningQuestionnaire->id,
@@ -242,7 +243,7 @@ class ScreeningQuestionnaireController extends Controller
                         [
                             'question_text' => $questionItem['question_text'],
                             'question_type' => $questionItem['question_type'],
-                            'mandatory' => (bool) $questionItem['mandatory'],
+                            'mandatory' => (bool)$questionItem['mandatory'],
                             'order' => $questionIndex + 1,
                             'section_id' => $section->id,
                             'questionnaire_id' => $screeningQuestionnaire->id,
@@ -390,7 +391,7 @@ class ScreeningQuestionnaireController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'success_message.questionnaire_submit',
-            'data'=> $result
+            'data' => $result
         ]);
     }
 
@@ -429,7 +430,7 @@ class ScreeningQuestionnaireController extends Controller
         ]);
     }
 
-        /**
+    /**
      * Get Interview History List the specified resource in storage.
      *
      * @param ListHistoryScreeningQuestionnaireRequest $request
@@ -437,9 +438,10 @@ class ScreeningQuestionnaireController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function listHistoryScreeningQuestionnarie(ListHistoryScreeningQuestionnaireRequest $request)
+    public function listHistoryScreeningQuestionnaire(ListHistoryScreeningQuestionnaireRequest $request)
     {
-        $userId = $request->input('user_id');
+        $validateData = $request->validated();
+        $userId = $validateData['user_id'];
         $questionnaireId = $request->input('questionnaire_id');
 
         $data = ScreeningQuestionnaireAnswer::
@@ -452,6 +454,30 @@ class ScreeningQuestionnaireController extends Controller
             'success' => true,
             'message' => "success_get_interview_history_list",
             'data' => $data,
+        ]);
+    }
+
+    public function listHistoryScreeningQuestionnaireByPatient(Request $request)
+    {
+        $validateData = $request->validate([
+            'user_id' => 'required|integer',
+        ]);
+
+        $userId = $validateData['user_id'];
+
+        $data = ScreeningQuestionnaireAnswer::with([
+            'questionnaire.sections.questions.options.file',
+            'questionnaire.sections.questions.logics',
+            'questionnaire.sections.questions.file',
+            'questionnaire.sections.actions',
+        ])
+            ->where('user_id', $userId)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'success_get_interview_history_list_by_patient_id',
+            'data' => ScreeningQuestionnaireAnswerResource::collection($data),
         ]);
     }
 
@@ -483,9 +509,9 @@ class ScreeningQuestionnaireController extends Controller
             'sections.questions.options.file',
             'sections.questions.logics',
         ])
-        ->withTrashed()
-        ->where('status', 'published')
-        ->get();
+            ->withTrashed()
+            ->where('status', 'published')
+            ->get();
 
         return $questionnaires;
     }

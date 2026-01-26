@@ -105,10 +105,6 @@ class User extends Authenticatable
                 $model->country_id = $authUser->country_id;
             }
 
-            if (in_array($authUser?->type, [self::ADMIN_GROUP_REGIONAL_ADMIN])) {
-                $model->region_id = $authUser->region_id;
-            }
-
             if (in_array($model?->type, [self::ADMIN_GROUP_CLINIC_ADMIN, self::ADMIN_GROUP_PHC_SERVICE_ADMIN])) {
                 $model->notifiable = 1;
             }

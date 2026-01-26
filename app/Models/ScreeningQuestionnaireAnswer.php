@@ -20,6 +20,14 @@ class ScreeningQuestionnaireAnswer extends Model
     ];
 
     /**
+     * Get the questionnaire that owns the answer.
+     */
+    public function questionnaire()
+    {
+        return $this->belongsTo(ScreeningQuestionnaire::class);
+    }
+
+    /**
      * Bootstrap the model and its traits.
      *
      * @return void

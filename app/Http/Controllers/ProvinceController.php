@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\KeycloakHelper;
-use Exception;
-use App\Models\Province;
-use Illuminate\Http\Request;
 use App\Helpers\LimitationHelper;
 use App\Http\Resources\EntitiesByProvinceResource;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProvinceResource;
 use App\Models\Forwarder;
+use App\Models\Province;
 use App\Models\User;
 use App\Models\UserSurvey;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -315,12 +314,6 @@ class ProvinceController extends Controller
             $user->delete();
         }
 
-
-        // Phone service
-        Http::post(
-            env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
-            ['clinic_ids' => $province->clinics->pluck('id')]
-        );
 
         // Therapist service
         Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))

@@ -59,6 +59,8 @@
     "common.patient_detail": "Patient File",
     "common.treatment_name": "Treatment Name",
     "common.assistive_technology_history": "Assistive Technology History",
+    "common.interview_history": "Interview History",
+    "phc.interview_total_score": "Total Score ${total_score}",
     "common.provision_date": "Provision Date",
     "common.follow_up_date": "Follow Up Date",
     "common.submitted_date": "Submitted Date",
@@ -691,5 +693,6 @@
     "counter_referral.toast.title": "Counter referral",
     "counter_referral.confirmation.title": "Patient Counter Referral Confirmation",
     "counter_referral.confirmation.message": "Are you sure you want to counter refer this patient?",
-    "counter_referral.not_found": "This patient has no referrals"
+    "counter_referral.not_found": "This patient has no referrals",
+    "phc.interview_summary_information": "Summary Information"
 }
