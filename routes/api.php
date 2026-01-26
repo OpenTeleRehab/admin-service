@@ -241,7 +241,8 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Screening Questionnaire
     Route::get('screening-questionnaires-list', [ScreeningQuestionnaireController::class, 'getScreeningQuestionnarieList'])->middleware('role:access_all');
-    Route::get('screening-questionnaires-history-list', [ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnarie'])->middleware('role:access_all');
+    Route::get('screening-questionnaires-history-list', [ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnaire'])->middleware('role:access_all');
+    Route::get('screening-questionnaires-history-by-patient-list',[ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnaireByPatient'])->middleware('role:access_all');
     Route::get('screening-questionnaires/all', [ScreeningQuestionnaireController::class, 'getAllScreeningQuestionnaires'])->middleware('role:access_all');
     Route::get('screening-questionnaires', [ScreeningQuestionnaireController::class, 'index'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');
     Route::get('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'show'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');

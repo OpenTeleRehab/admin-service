@@ -547,5 +547,7 @@
     "error.message.phc.appointment.from.required": "Please select from time",
     "error.message.phc.appointment.from.validate.error": "Please select a time later than or equal to the current time",
     "error.message.phc.appointment.to.required": "Please select to time",
-    "error.message.phc.appointment.to.validate.error": "Please select a time later than from time"
+    "error.message.phc.appointment.to.validate.error": "Please select a time later than from time",
+    "phc.referral_reason": "Referral Reason",
+    "phc.referral_reason_placeholder": "Enter referral reason"
 }
