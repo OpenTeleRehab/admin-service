@@ -186,6 +186,7 @@ class SetupKeycloakPermissions extends Command
                 'view_phc_service_list',
                 'view_remove_phc_worker_patient',
                 'file_upload',
+                'view_province_list',
             ],
             'country_admin' => [
                 'view_organization',
@@ -222,6 +223,8 @@ class SetupKeycloakPermissions extends Command
                 'view_region_list',
                 'view_phc_service_list',
                 'view_remove_phc_worker_patient',
+                'view_province_list',
+                'view_clinic_list',
             ],
             'clinic_admin' => [
                 'view_profession',
@@ -277,7 +280,6 @@ class SetupKeycloakPermissions extends Command
                 'translate_educational_material',
                 'translate_questionnaire',
                 'translate_screening_questionnaire',
-                'translate_survey',
                 'translate_privacy_policy',
                 'translate_guidance_page',
                 'translate_term_condition',

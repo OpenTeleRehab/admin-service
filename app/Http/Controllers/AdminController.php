@@ -94,7 +94,7 @@ class AdminController extends Controller
         }
 
         if ($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-            $regionIds = $authUser->adminRegions()->pluck('regions.id')->toArray();
+            $regionIds = $authUser->regions()->pluck('regions.id')->toArray();
             $query->whereIn('users.region_id', $regionIds);
         } elseif ($authUser->region_id) {
             $query->where('users.region_id', $authUser->region_id);
@@ -260,7 +260,7 @@ class AdminController extends Controller
             $user = User::create($validatedData);
             // attached regional admin to admin region
             if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-                $user->adminRegions()->attach($regionIds);
+                $user->regions()->attach($regionIds);
             }
 
             if (!$user) {
@@ -410,7 +410,7 @@ class AdminController extends Controller
             $user->update($validatedData);
 
             if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-                $user->adminRegions()->sync($validatedData['edit_region_ids']);
+                $user->regions()->sync($validatedData['edit_region_ids']);
             }
 
             DB::commit();

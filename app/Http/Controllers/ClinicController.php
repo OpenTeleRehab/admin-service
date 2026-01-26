@@ -2,22 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Clinic;
-use App\Models\Country;
-use App\Models\Forwarder;
-use Illuminate\Http\Request;
 use App\Helpers\KeycloakHelper;
 use App\Helpers\LimitationHelper;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use App\Http\Resources\ClinicResource;
 use App\Http\Resources\EntitiesByClinicResource;
-use App\Models\Activity;
+use App\Models\Clinic;
+use App\Models\Country;
 use App\Models\DownloadTracker;
-use App\Models\GlobalAssistiveTechnologyPatient;
-use App\Models\GlobalPatient;
+use App\Models\Forwarder;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 define("KEYCLOAK_USERS", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
@@ -49,13 +46,13 @@ class ClinicController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $limitatedRegionIds = $user->adminRegions->pluck('id')->toArray();
-        if ($user->region_id) {
-            $limitatedRegionIds[] = $user->region_id;
+        if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
+            $clinics = $user->country->clinics;
+        } else if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $clinics = $user->regions->clinics();
+        } else {
+            $clinics = Clinic::all();
         }
-        $limitatedRegionIds = array_unique($limitatedRegionIds);
-
-        $clinics = Clinic::whereIn('region_id', $limitatedRegionIds)->get();
 
         return ['success' => true, 'data' => ClinicResource::collection($clinics)];
     }
@@ -357,9 +354,9 @@ class ClinicController extends Controller
             // Patient service
             Http::withHeaders([
                 'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
-                    Forwarder::PATIENT_SERVICE,
-                    $country->iso_code
-                ),
+                        Forwarder::PATIENT_SERVICE,
+                        $country->iso_code
+                    ),
                 'country' => $country->iso_code,
             ])
                 ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [

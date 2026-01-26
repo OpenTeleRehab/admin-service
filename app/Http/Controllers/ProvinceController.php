@@ -48,20 +48,26 @@ class ProvinceController extends Controller
      */
     public function index(Request $request)
     {
-        $searchValue = $request->get('search_value');
-        $pageSize = $request->get('page_size');
         $user = Auth::user();
-        $limitatedRegionIds = $user->adminRegions->pluck('id')->toArray();
-        if ($user->region_id) {
-            $limitatedRegionIds[] = $user->region_id;
-        }
-        $limitatedRegionIds = array_unique($limitatedRegionIds);
+        $query = Province::query();
+        $searchValue = $request->get('search_value');
+        $pageSize = $request->get('page_size', 999999);
 
-        $query = Province::whereIn('region_id', $limitatedRegionIds);
+        if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
+            $query->whereHas('region', function ($q) use ($user) {
+                $q->where('country_id', $user->country_id);
+            });
+        }
+
+        if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $regionIds = $user->regions->pluck('id')->toArray();
+            $query = Province::whereIn('region_id', $regionIds);
+        }
 
         if ($searchValue) {
             $query->where('name', 'like', '%' . $searchValue . '%');
         }
+
         $provinces = $query->paginate($pageSize);
 
         return response()->json(['success' => true, 'data' => ProvinceResource::collection($provinces), 'total' => $provinces->total(), 'current_page' => $provinces->currentPage()]);
@@ -97,7 +103,7 @@ class ProvinceController extends Controller
     public function getByUserRegion()
     {
         $user = Auth::user();
-        $limitatedRegionIds = $user->adminRegions->pluck('id')->toArray();
+        $limitatedRegionIds = $user->regions->pluck('id')->toArray();
         if ($user->region_id) {
             $limitatedRegionIds[] = $user->region_id;
         }
@@ -386,7 +392,7 @@ class ProvinceController extends Controller
     {
         $user = Auth::user();
 
-        $limitRegionIds = $user->adminRegions->pluck('id')->toArray();
+        $limitRegionIds = $user->regions->pluck('id')->toArray();
 
         if ($user->region_id) {
             $limitRegionIds[] = $user->region_id;
