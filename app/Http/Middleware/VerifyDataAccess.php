@@ -33,6 +33,26 @@ class VerifyDataAccess
             if (!empty($request->header('int-user-type'))) {
                 $user->type = $request->header('int-user-type');
             }
+
+            if (!empty($request->header('int-therapist-user-id'))) {
+                $user->therapist_user_id = (int)$request->header('int-therapist-user-id');
+            }
+
+            if (!empty($request->header('int-clinic-id'))) {
+                $user->clinic_id = (int)$request->header('int-clinic-id');
+            }
+
+            if (!empty($request->header('int-phc-service-id'))) {
+                $user->phc_service_id = (int)$request->header('int-phc-service-id');
+            }
+
+            if (!empty($request->header('int-patient-user-id'))) {
+                $user->patient_user_id = (int)$request->header('int-patient-user-id');
+            }
+
+            if (!empty($request->header('int-province-id'))) {
+                $user->province_id = (int)$request->header('int-province-id');
+            }
         }
 
         $countryHeader = $request->header('Country');

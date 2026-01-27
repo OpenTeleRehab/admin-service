@@ -25,6 +25,9 @@ class Survey extends Model
         'organization',
         'role',
         'country',
+        'region',
+        'province',
+        'phc_service',
         'gender',
         'location',
         'clinic',
@@ -53,6 +56,9 @@ class Survey extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'published_date' => 'date',
+        'region' => 'array',
+        'province' => 'array',
+        'phc_service' => 'array',
     ];
 
     /**

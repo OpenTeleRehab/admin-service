@@ -1251,5 +1251,15 @@
     "referral_assignment.already_assigned": "Referral has already been assigned to a therapist",
     "success_message.referral.decline": "Referral declined successfully",
     "error.region.therapist_limit.less_than.provinces.total.therapist_limit": "The total therapist limit assigned to provinces in this region is ${therapist_limit_used}. You cannot set the therapist limit for this region to a number lower than the total therapist limit currently allocated to those provinces.",
-    "error.region.phc_worker_limit.less_than.provinces.total.phc_worker_limit": "The total PHC worker limit assigned to provinces in this region is ${phc_worker_limit_used}.You cannot set the PHC worker limit for this region to a number lower than the total PHC worker limit currently allocated to those provinces."
+    "error.region.phc_worker_limit.less_than.provinces.total.phc_worker_limit": "The total PHC worker limit assigned to provinces in this region is ${phc_worker_limit_used}.You cannot set the PHC worker limit for this region to a number lower than the total PHC worker limit currently allocated to those provinces.",
+    "placeholder.province": "Select a province",
+    "placeholder.phc_service": "Select a PHC service",
+    "survey.service_type": "Service Type",
+    "survey.placeholder.service_type": "Please select service type",
+    "survey.service_type.rehab_service": "Rehab service",
+    "survey.service_type.phc_service": "PHC service",
+    "error.survey.region": "Please select region",
+    "error.survey.province": "Please select province",
+    "error.survey.service_type": "Please select service type",
+    "error.survey.phc_service": "Please select PHC service"
 }

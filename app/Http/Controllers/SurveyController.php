@@ -9,9 +9,11 @@ use App\Http\Resources\SurveyResource;
 use App\Models\Clinic;
 use App\Models\Country;
 use App\Models\Organization;
+use App\Models\PhcService;
 use App\Models\Survey;
 use App\Models\User;
 use App\Models\UserSurvey;
+use App\Models\Region;
 use App\Services\QuestionnaireService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,11 +21,6 @@ use Illuminate\Support\Facades\Auth;
 
 class SurveyController extends Controller
 {
-    const SUPER_ADMIN = 'super_admin';
-    const ORGANIZATION_ADMIN = 'organization_admin';
-    const COUNTRY_ADMIN = 'country_admin';
-    const CLINIC_ADMIN = 'clinic_admin';
-
     protected $questionnaireService;
 
     public function __construct(QuestionnaireService $questionnaireService)
@@ -41,19 +38,27 @@ class SurveyController extends Controller
 
         $surveys = [];
 
-        if ($user->type === self::SUPER_ADMIN || $user->type === User::GROUP_TRANSLATOR) {
+        if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN || $user->type === User::GROUP_TRANSLATOR) {
             $surveys = $this->getSurveysForSuperAdmin()->get();
         }
 
-        if ($user->type === self::ORGANIZATION_ADMIN) {
+        if ($user->type === User::ADMIN_GROUP_ORG_ADMIN) {
             $surveys = $this->getSurveysForOrganizationAdmin()->get();
         }
 
-        if ($user->type === self::COUNTRY_ADMIN) {
+        if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
             $surveys = $this->getSurveysForCountryAdmin()->get();
         }
 
-        if ($user->type === self::CLINIC_ADMIN) {
+        if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $surveys = $this->getSurveysForRegionalAdmin()->get();
+        }
+
+        if ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+            $surveys = $this->getSurveysForPHCServiceAdmin()->get();
+        }
+
+        if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
             $surveys = $this->getSurveysForClinicAdmin()->get();
         }
 
@@ -93,6 +98,9 @@ class SurveyController extends Controller
             $surveyData = [
                 'role' => $request->get('role'),
                 'country' => json_decode($request->get('country'), true),
+                'region' => json_decode($request->get('region'), true),
+                'province' => json_decode($request->get('province'), true),
+                'phc_service' => json_decode($request->get('phc_service'), true),
                 'gender' => json_decode($request->get('gender'), true),
                 'location' => json_decode($request->get('location'), true),
                 'clinic' => json_decode($request->get('clinic'), true),
@@ -105,7 +113,7 @@ class SurveyController extends Controller
                 'frequency' => $request->string('frequency'),
             ];
 
-            if ($user->type === self::SUPER_ADMIN && env('APP_NAME') == 'hi') {
+            if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN && env('APP_NAME') == 'hi') {
                 $surveyData['organization'] = json_decode($request->get('organization'), true);
                 $surveyData['global'] = true;
             } else {
@@ -113,12 +121,19 @@ class SurveyController extends Controller
                 $surveyData['global'] = false;
             }
 
-            if ($user->type === self::COUNTRY_ADMIN) {
+            if ($user->type !== User::ADMIN_GROUP_ORG_ADMIN) {
                 $surveyData['country'] = [(int)$user->country_id];
             }
 
-            if ($user->type === self::CLINIC_ADMIN) {
-                $surveyData['country'] = [(int)$user->country_id];
+            if ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+                $surveyData['region'] = [(int)$user->region_id];
+                $surveyData['province'] = [(int)$user->phcService->province_id];
+                $surveyData['phc_service'] = [(int)$user->phc_service_id];
+            }
+
+            if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+                $surveyData['region'] = [(int)$user->region_id];
+                $surveyData['province'] = [(int)$user->clinic->province_id];
                 $surveyData['clinic'] = [(int)$user->clinic_id];
             }
 
@@ -178,6 +193,9 @@ class SurveyController extends Controller
             $surveyData = [
                 'role' => $request->get('role'),
                 'country' => json_decode($request->get('country'), true),
+                'region' => json_decode($request->get('region'), true),
+                'province' => json_decode($request->get('province'), true),
+                'phc_service' => json_decode($request->get('phc_service'), true),
                 'gender' => json_decode($request->get('gender'), true),
                 'location' => json_decode($request->get('location'), true),
                 'clinic' => json_decode($request->get('clinic'), true),
@@ -188,7 +206,7 @@ class SurveyController extends Controller
                 'frequency' => $request->string('frequency'),
             ];
 
-            if ($user->type === self::SUPER_ADMIN && env('APP_NAME') == 'hi') {
+            if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN && env('APP_NAME') == 'hi') {
                 $surveyData['organization'] = json_decode($request->get('organization'), true);
                 $surveyData['global'] = true;
             } else {
@@ -196,12 +214,19 @@ class SurveyController extends Controller
                 $surveyData['global'] = false;
             }
 
-            if ($user->type === self::COUNTRY_ADMIN) {
+            if ($user->type !== User::ADMIN_GROUP_ORG_ADMIN) {
                 $surveyData['country'] = [(int)$user->country_id];
             }
 
-            if ($user->type === self::CLINIC_ADMIN) {
-                $surveyData['country'] = [(int)$user->country_id];
+            if ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+                $surveyData['region'] = [(int)$user->region_id];
+                $surveyData['province'] = [(int)$user->phcService->province_id];
+                $surveyData['phc_service'] = [(int)$user->phc_service_id];
+            }
+
+            if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+                $surveyData['region'] = [(int)$user->region_id];
+                $surveyData['province'] = [(int)$user->clinic->province_id];
                 $surveyData['clinic'] = [(int)$user->clinic_id];
             }
 
@@ -229,7 +254,7 @@ class SurveyController extends Controller
      */
     private function getSurveysForOrganizationAdmin()
     {
-        $userIds = User::where('type', self::ORGANIZATION_ADMIN)->pluck('id');
+        $userIds = User::where('type', User::ADMIN_GROUP_ORG_ADMIN)->pluck('id');
         return Survey::whereIn('author', $userIds);
     }
 
@@ -243,7 +268,23 @@ class SurveyController extends Controller
         $user = Auth::user();
         $country = Country::firstWhere('id', $user->country_id);
         $userIds = User::where('country_id', $country->id)
-            ->where('type', self::COUNTRY_ADMIN)
+            ->where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)
+            ->pluck('id');
+        return Survey::whereIn('author', $userIds);
+    }
+
+
+    /**
+     * Get surveys for Regional Admin.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function getSurveysForRegionalAdmin()
+    {
+        $user = Auth::user();
+        $region = Region::firstWhere('id', $user->region_id);
+        $userIds = User::where('region_id', $region->id)
+            ->where('type', User::ADMIN_GROUP_REGIONAL_ADMIN)
             ->pluck('id');
         return Survey::whereIn('author', $userIds);
     }
@@ -258,10 +299,26 @@ class SurveyController extends Controller
         $user = Auth::user();
         $clinic = Clinic::firstWhere('id', $user->clinic_id);
         $userIds = User::where('clinic_id', $clinic->id)
-            ->where('type', self::CLINIC_ADMIN)
+            ->where('type', User::ADMIN_GROUP_CLINIC_ADMIN)
             ->pluck('id');
         return Survey::whereIn('author', $userIds);
     }
+
+    /**
+     * Get surveys for Phc Service Admin.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function getSurveysForPhcServiceAdmin()
+    {
+        $user = Auth::user();
+        $phcService = PhcService::firstWhere('id', $user->phc_service_id);
+        $userIds = User::where('phc_service_id', $phcService->id)
+            ->where('type', User::ADMIN_GROUP_PHC_SERVICE_ADMIN)
+            ->pluck('id');
+        return Survey::whereIn('author', $userIds);
+    }
+
 
     /**
      * @param \App\Models\Survey  $survey
@@ -272,24 +329,46 @@ class SurveyController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->type === self::SUPER_ADMIN) {
+        if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN) {
             $surveys = $this->getSurveysForSuperAdmin();
         }
 
-        if ($user->type === self::ORGANIZATION_ADMIN) {
+        if ($user->type === User::ADMIN_GROUP_ORG_ADMIN) {
             $surveys = $this->getSurveysForOrganizationAdmin();
         }
 
-        if ($user->type === self::COUNTRY_ADMIN) {
+        if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
             $surveys = $this->getSurveysForCountryAdmin();
         }
 
-        if ($user->type === self::CLINIC_ADMIN) {
+        if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $surveys = $this->getSurveysForRegionalAdmin();
+        }
+
+        if ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+            $surveys = $this->getSurveysForPhcServiceAdmin();
+        }
+
+        if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
             $surveys = $this->getSurveysForClinicAdmin();
         }
-        // Update the all previous published survey to expired.
-        $surveys->where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
-            ->update(['status' => Survey::STATUS_EXPIRED]);
+
+        if ($survey->role === User::GROUP_PATIENT && !empty($survey->clinic)) {
+            // Update the all previous published survey of clinic patient to expired.
+            $surveys->where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
+                ->whereJsonLength('clinic', '>', 0)
+                ->update(['status' => Survey::STATUS_EXPIRED]);
+        } elseif ($survey->role === User::GROUP_PATIENT && !empty($survey->phc_service))  {
+             // Update the all previous published survey of phc service patient to expired.
+            $surveys->where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
+                ->whereJsonLength('phc_service', '>', 0)
+                ->update(['status' => Survey::STATUS_EXPIRED]);
+        } else {
+            // Update the all previous published survey to expired.
+            $surveys->where('status', Survey::STATUS_PUBLISHED)->where('role', $survey->role)
+                ->update(['status' => Survey::STATUS_EXPIRED]);
+        }
+
         // Set the current survey to published.
         $survey->update([
             'status' => Survey::STATUS_PUBLISHED,
@@ -304,6 +383,223 @@ class SurveyController extends Controller
      * @param  \Illuminate\Http\Request  $request
      *
      * @return array
+     */
+    public function getPublishSurveyByAuthUser(Request $request)
+    {
+        $authUser = Auth::user();
+        $type = $authUser->type;
+        $survey = null;
+        $organization = Organization::where('sub_domain_name', $request->get('organization') ?? env('APP_NAME'))->first();
+
+        switch ($type) {
+            case User::ADMIN_GROUP_ORG_ADMIN:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $authUser->id);
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->select('surveys.*')
+                    ->get();
+                break;
+            case User::ADMIN_GROUP_COUNTRY_ADMIN:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $authUser->id);
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $authUser->country_id)
+                    ->select('surveys.*')
+                    ->get();
+                break;
+            case User::ADMIN_GROUP_REGIONAL_ADMIN:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $authUser->id);
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $authUser->country_id)
+                    ->whereJsonContains('region', $authUser->region_id)
+                    ->select('surveys.*')
+                    ->get();
+                break;
+            case User::ADMIN_GROUP_CLINIC_ADMIN:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $authUser->id);
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $authUser->country_id)
+                    ->whereJsonContains('region', $authUser->region_id)
+                    ->whereJsonContains('province', $authUser->clinic->province_id)
+                    ->whereJsonContains('clinic', $authUser->clinic_id)
+                    ->select('surveys.*')
+                    ->get();
+                break;
+            case User::ADMIN_GROUP_PHC_SERVICE_ADMIN:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $authUser->id);
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $authUser->country_id)
+                    ->whereJsonContains('region', $authUser->region_id)
+                    ->whereJsonContains('province', $authUser->phcService->province_id)
+                    ->whereJsonContains('phc_service', $authUser->phc_service_id)
+                    ->select('surveys.*')
+                    ->get();
+                break;
+            case User::GROUP_THERAPIST:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $authUser->therapist_user_id);
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $authUser->country_id)
+                    ->whereJsonContains('region', $authUser->region_id)
+                    ->whereJsonContains('province', $authUser->province_id)
+                    ->whereJsonContains('clinic', $authUser->clinic_id)
+                    ->select('surveys.*')
+                    ->get();
+                break;
+            case User::GROUP_PHC_WORKER:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $authUser->therapist_user_id);
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $authUser->country_id)
+                    ->whereJsonContains('region', $authUser->region_id)
+                    ->whereJsonContains('province', $authUser->province_id)
+                    ->whereJsonContains('phc_service', $authUser->phc_service_id)
+                    ->select('surveys.*')
+                    ->get();
+                break;
+            case User::GROUP_PATIENT:
+                $treatmentSurveyQuery = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($request, $authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', $authUser->patient_user_id)
+                            ->where('user_surveys.treatment_plan_id', $request->integer('treatment_plan_id'))
+                            ->where('user_surveys.survey_phase', $request->get('survey_phase'));
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereJsonContains('location', $request->get('location'))
+                    ->whereJsonContains('gender', $request->get('gender'))
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $authUser->country_id)
+                    ->whereJsonContains('region', $authUser->region_id)
+                    ->whereJsonContains('province', $authUser->province_id)
+                    ->where(function ($query) {
+                        $query->where('surveys.include_at_the_start', 1)
+                            ->orWhere('surveys.include_at_the_end', 1);
+                    })
+                    ->select('surveys.*');
+
+                $generalSurveyQuery = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($request, $authUser) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $authUser->patient_user_id);
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->whereJsonContains('location', $request->get('location'))
+                    ->whereJsonContains('gender', $request->get('gender'))
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $authUser->country_id)
+                    ->whereJsonContains('region', $authUser->region_id)
+                    ->whereJsonContains('province', $authUser->province_id)
+                    ->select('surveys.*');
+
+                if ($authUser->clinic_id) {
+                    $treatmentSurveyQuery->whereJsonContains('clinic', $authUser->clinic_id);
+                    $generalSurveyQuery->whereJsonContains('clinic', $authUser->clinic_id);
+                } else {
+                    $treatmentSurveyQuery->whereJsonContains('phc_service', $authUser->phc_service_id);
+                    $generalSurveyQuery->whereJsonContains('phc_service', $authUser->phc_service_id);
+                }
+
+                $treatmentSurvey = $treatmentSurveyQuery->get();
+                $generalSurvey = $generalSurveyQuery->get();
+
+                $survey = $generalSurvey->merge($treatmentSurvey);
+                break;
+            default:
+                return ['success' => false, 'data' => []];
+        }
+        return ['success' => true, 'data' => SurveyResource::collection($survey)];
+    }
+
+    /**
+     *
+     * @param  \Illuminate\Http\Request  $request
+     *
+     * @return array
+     * @deprecated use getPublishSurveyByAuthUser instead
      */
     public function getPublishSurveyByUserType(Request $request)
     {
@@ -346,6 +642,25 @@ class SurveyController extends Controller
                     ->select('surveys.*')
                     ->get();
                 break;
+            case User::ADMIN_GROUP_REGIONAL_ADMIN:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($request) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $request->integer('user_id'));
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $request->integer('country_id'))
+                    ->whereJsonContains('region', $request->integer('region_id'))
+                    ->select('surveys.*')
+                    ->get();
+                break;
             case User::ADMIN_GROUP_CLINIC_ADMIN:
                 $survey = Survey::where('role', $type)
                     ->leftJoin('user_surveys', function ($join) use ($request) {
@@ -361,7 +676,30 @@ class SurveyController extends Controller
                     ->whereDate('end_date', '>=', Carbon::now())
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->whereJsonContains('country', $request->integer('country_id'))
+                    ->whereJsonContains('region', $request->integer('region_id'))
+                    ->whereJsonContains('province', $request->integer('province_id'))
                     ->whereJsonContains('clinic', $request->integer('clinic_id'))
+                    ->select('surveys.*')
+                    ->get();
+                break;
+            case User::ADMIN_GROUP_PHC_SERVICE_ADMIN:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($request) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $request->integer('user_id'));
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $request->integer('country_id'))
+                    ->whereJsonContains('region', $request->integer('region_id'))
+                    ->whereJsonContains('province', $request->integer('province_id'))
+                    ->whereJsonContains('phc_service', $request->integer('phc_service_id'))
                     ->select('surveys.*')
                     ->get();
                 break;
@@ -380,12 +718,35 @@ class SurveyController extends Controller
                     ->whereDate('end_date', '>=', Carbon::now())
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->whereJsonContains('country', $request->integer('country_id'))
+                    ->whereJsonContains('region', $request->integer('region_id'))
+                    ->whereJsonContains('province', $request->integer('province_id'))
                     ->whereJsonContains('clinic', $request->integer('clinic_id'))
                     ->select('surveys.*')
                     ->get();
                 break;
+            case User::GROUP_PHC_WORKER:
+                $survey = Survey::where('role', $type)
+                    ->leftJoin('user_surveys', function ($join) use ($request) {
+                        $join->on('surveys.id', '=', 'user_surveys.survey_id')
+                            ->where('user_surveys.user_id', '=', $request->integer('user_id'));
+                    })
+                    ->where(function ($query) {
+                        $query->whereNull('user_surveys.id')
+                            ->orWhereNull('user_surveys.answer');
+                    })
+                    ->whereJsonContains('organization', $organization?->id)
+                    ->whereDate('start_date', '<=', Carbon::now())
+                    ->whereDate('end_date', '>=', Carbon::now())
+                    ->where('surveys.status', Survey::STATUS_PUBLISHED)
+                    ->whereJsonContains('country', $request->integer('country_id'))
+                    ->whereJsonContains('region', $request->integer('region_id'))
+                    ->whereJsonContains('province', $request->integer('province_id'))
+                    ->whereJsonContains('phc_service', $request->integer('phc_service_id'))
+                    ->select('surveys.*')
+                    ->get();
+                break;
             case User::GROUP_PATIENT:
-                $treatmentSurvey = Survey::where('role', $type)
+                $treatmentSurveyQuery = Survey::where('role', $type)
                     ->leftJoin('user_surveys', function ($join) use ($request) {
                         $join->on('surveys.id', '=', 'user_surveys.survey_id')
                             ->where('user_surveys.user_id', $request->integer('user_id'))
@@ -401,15 +762,15 @@ class SurveyController extends Controller
                     ->whereJsonContains('gender', $request->get('gender'))
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->whereJsonContains('country', $request->integer('country_id'))
-                    ->whereJsonContains('clinic', $request->integer('clinic_id'))
+                    ->whereJsonContains('region', $request->integer('region_id'))
+                    ->whereJsonContains('province', $request->integer('province_id'))
                     ->where(function ($query) {
                         $query->where('surveys.include_at_the_start', 1)
                             ->orWhere('surveys.include_at_the_end', 1);
                     })
-                    ->select('surveys.*')
-                    ->get();
+                    ->select('surveys.*');
 
-                $generalSurvey = Survey::where('role', $type)
+                $generalSurveyQuery = Survey::where('role', $type)
                     ->leftJoin('user_surveys', function ($join) use ($request) {
                         $join->on('surveys.id', '=', 'user_surveys.survey_id')
                             ->where('user_surveys.user_id', '=', $request->integer('user_id'));
@@ -425,16 +786,27 @@ class SurveyController extends Controller
                     ->whereJsonContains('gender', $request->get('gender'))
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->whereJsonContains('country', $request->integer('country_id'))
-                    ->whereJsonContains('clinic', $request->integer('clinic_id'))
-                    ->select('surveys.*')
-                    ->get();
+                    ->whereJsonContains('region', $request->integer('region_id'))
+                    ->whereJsonContains('province', $request->integer('province_id'))
+                    ->select('surveys.*');
+
+                if ($request->filled('clinic_id')) {
+                    $treatmentSurveyQuery->whereJsonContains('clinic', $request->integer('clinic_id'));
+                    $generalSurveyQuery->whereJsonContains('clinic', $request->integer('clinic_id'));
+                } else {
+                    $treatmentSurveyQuery->whereJsonContains('phc_service', $request->integer('phc_service_id'));
+                    $generalSurveyQuery->whereJsonContains('phc_service', $request->integer('phc_service_id'));
+                }
+
+                $treatmentSurvey = $treatmentSurveyQuery->get();
+                $generalSurvey = $generalSurveyQuery->get();
 
                 $survey = $generalSurvey->merge($treatmentSurvey);
                 break;
             default:
                 return ['success' => false, 'data' => []];
         }
-        return ['success' => true, 'data' => SurveyListResource::collection($survey)];
+        return ['success' => true, 'data' => SurveyResource::collection($survey)];
     }
 
     /**

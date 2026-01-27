@@ -232,6 +232,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Survey
     Route::get('survey', [SurveyController::class, 'index'])->middleware('role:manage_survey,translate_survey');
+    Route::get('survey/list/publish-survey', [SurveyController::class, 'getPublishSurveyByAuthUser'])->middleware('role:access_all,submit_survey');
     Route::post('survey', [SurveyController::class, 'store'])->middleware('role:manage_survey');
     Route::get('survey/{survey}', [SurveyController::class, 'show'])->middleware('role:manage_survey,translate_survey');
     Route::put('survey/{survey}', [SurveyController::class, 'update'])->middleware('role:manage_survey,translate_survey');
@@ -364,7 +365,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::delete('download-trackers', [DownloadTrackerController::class, 'destroy'])->middleware('role:manage_download_tracker');
 
     Route::get('export', [ExportController::class, 'export'])->middleware('role:generate_report');
-    Route::get('download-file', [FileController::class, 'download'])->middleware('role:access_all');
+    Route::get('download-file', [FileController::class, 'download'])->middleware('role:access_all,download_survey');
 
     // Region
     Route::get('regions/{region}/entities', [RegionController::class, 'getEntitiesByRegionId'])->middleware('role:manage_region');
@@ -374,18 +375,18 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('region-limitations-by-user-country', [RegionController::class, 'countryRegionLimitations'])->middleware('role:manage_region');
 
     // Province
-    Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province, view_province_list');
+    Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province,view_province_list');
     Route::get('provinces-by-user-country', [ProvinceController::class, 'getProvincesByUserCountry'])->middleware('role:access_all');
     Route::get('provinces-by-user-region', [ProvinceController::class, 'getByUserRegion'])->middleware('role:manage_province');
     Route::get('provinces/{province}/entities', [ProvinceController::class, 'getEntitiesByPhcServiceId'])->middleware('role:manage_province');
-    Route::get('province-limitation/{province}', [ProvinceController::class, 'getLimitation'])->middleware('role:manage_province, view_province_list');
+    Route::get('province-limitation/{province}', [ProvinceController::class, 'getLimitation'])->middleware('role:manage_province,view_province_list');
     Route::post('provinces', [ProvinceController::class, 'store'])->middleware('role:manage_province');
     Route::put('provinces/{province}', [ProvinceController::class, 'update'])->middleware('role:manage_province');
     Route::delete('provinces/{province}', [ProvinceController::class, 'destroy'])->middleware('role:manage_province');
-    Route::get('provinces-limitation', [ProvinceController::class, 'limitation'])->middleware('role:manage_province, view_province_list');
+    Route::get('provinces-limitation', [ProvinceController::class, 'limitation'])->middleware('role:manage_province,view_province_list');
 
     // PHC Service
-    Route::get('phc-services', [PhcServiceController::class, 'index'])->middleware('role:manage_phc_service, view_phc_service_list');
+    Route::get('phc-services', [PhcServiceController::class, 'index'])->middleware('role:manage_phc_service,view_phc_service_list');
     Route::get('phc-services-by-province', [PhcServiceController::class, 'getByProvince'])->middleware('role:manage_phc_service');
     Route::get('phc-services/option/list', [PhcServiceController::class, 'getOptionList'])->middleware('role:manage_phc_service,view_phc_service_list');
     Route::get('phc-services/count-phc-worker', [PhcServiceController::class, 'countPhcWorkerByPhcService'])->middleware('role:view_number_of_phc_service_phc_worker');

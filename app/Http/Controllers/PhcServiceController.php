@@ -55,15 +55,16 @@ class PhcServiceController extends Controller
         $pageSize = $request->get('page_size');
 
         $user = Auth::user();
-        $limitatedRegionIds = $user->adminRegions->pluck('id')->toArray();
+        $limitRegionIds = $user->regions->pluck('id')->toArray();
 
         if ($user->region_id) {
-            $limitatedRegionIds[] = $user->region_id;
+            $limitRegionIds[] = $user->region_id;
         }
-        $limitatedRegionIds = array_unique($limitatedRegionIds);
 
-        $query = PhcService::whereHas('province', function ($query) use ($limitatedRegionIds) {
-            $query->whereIn('region_id', $limitatedRegionIds);
+        $limitRegionIds = array_unique($limitRegionIds);
+
+        $query = PhcService::whereHas('province', function ($query) use ($limitRegionIds) {
+            $query->whereIn('region_id', $limitRegionIds);
         });
 
         if ($searchValue) {

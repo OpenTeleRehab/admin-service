@@ -31,13 +31,14 @@ class UserResource extends JsonResource
             'region_name' => $this->region?->name,
             'region_id' => $this->region_id,
             'phc_service' => PhcServiceResource::make($this->phcService),
+            'province_id' =>$this->clinic?->province_id ?? $this->phcService?->province_id,
             'notifiable' => $this->notifiable,
             'edit_languages' => $this->translatorLanguages->map(fn($lang) => [
                 'id' => $lang->id,
                 'name' => $lang->name,
                 'code' => $lang->code,
             ]),
-            'regions' => $this->adminRegions->map(fn($region) => [
+            'regions' => $this->regions->map(fn($region) => [
                 'id' => $region->id,
                 'name' => $region->name,
             ]),
