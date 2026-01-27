@@ -6,14 +6,17 @@ use App\Helpers\SurveyHelper;
 use App\Models\Clinic;
 use App\Models\Country;
 use App\Models\Organization;
+use App\Models\Province;
 use App\Models\Question;
+use App\Models\Region;
 use App\Models\Survey;
 use App\Models\User;
 use App\Models\UserSurvey;
+use App\Models\PhcService;
 use Illuminate\Support\Carbon;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class AnswerSurveyTemplate
 {
@@ -111,8 +114,8 @@ class AnswerSurveyTemplate
                         $answerRow = $answerStartRow;
                         foreach ($answer['description'] as $index => $description) {
                             $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $sheet->setCellValue($startCol . $answerRow , $description ?? '');
-                            $sheet->setCellValue(Coordinate::stringFromColumnIndex($answerColIndex + 1) . $answerRow , $answer['value'][$index] ?? '');
+                            $sheet->setCellValue($startCol . $answerRow, $description ?? '');
+                            $sheet->setCellValue(Coordinate::stringFromColumnIndex($answerColIndex + 1) . $answerRow, $answer['value'][$index] ?? '');
                             $sheet->getRowDimension($answerRow)->setRowHeight(20);
                             $answerRow++;
                         }
@@ -143,7 +146,7 @@ class AnswerSurveyTemplate
 
                         break;
                     default:
-                        $answers = array_filter($userSurvey->answer, function($item) use ($question) {
+                        $answers = array_filter($userSurvey->answer, function ($item) use ($question) {
                             return $item['question_id'] === $question->id;
                         });
                         $answer = reset($answers);
@@ -181,7 +184,8 @@ class AnswerSurveyTemplate
      */
     private static function headerColumns(Survey $survey)
     {
-        $columns = [
+        $columns = [];
+        $baseColumns = [
             $translations['survey.created_by'] ?? 'Created By',
             $translations['common.status'] ?? 'Status',
             $translations['survey.organization'] ?? 'Organization',
@@ -189,60 +193,62 @@ class AnswerSurveyTemplate
             $translations['survey.start_date'] ?? 'Start Date',
             $translations['survey.end_date'] ?? 'End Date',
             $translations['survey.frequency'] ?? 'Frequency',
-            $translations['common.first_name'] ?? 'First Name',
-            $translations['common.last_name'] ?? 'Last Name',
             $translations['questionnaire.submitted_date'] ?? 'Submitted Date',
             $translations['questionnaire.title'] ?? 'Title',
             $translations['questionnaire.description'] ?? 'Description',
         ];
+        $labelMap = [
+            'country' => $translations['common.country'] ?? 'Country',
+            'region' => $translations['common.region'] ?? 'Region',
+            'province' => $translations['common.province'] ?? 'Province',
+            'clinic' => $translations['common.clinic'] ?? 'Rehab Service',
+            'phc_service' => $translations['common.phc_service'] ?? 'PHC Service',
+        ];
+        $roleColumns = [
+            User::ADMIN_GROUP_COUNTRY_ADMIN => ['country'],
+            User::ADMIN_GROUP_REGIONAL_ADMIN => ['country', 'region'],
+            User::ADMIN_GROUP_CLINIC_ADMIN => ['country', 'region', 'province', 'clinic'],
+            User::ADMIN_GROUP_PHC_SERVICE_ADMIN => ['country', 'region', 'province', 'phc_service'],
+            User::GROUP_THERAPIST => ['country', 'region', 'province', 'clinic'],
+            User::GROUP_PHC_WORKER => ['country', 'region', 'province', 'phc_service'],
+            User::GROUP_PATIENT => ['country', 'region', 'province'],
+        ];
 
-        if ($survey->role === User::ADMIN_GROUP_COUNTRY_ADMIN) {
-            $countryLabel = $translations['common.country'] ?? 'Country';
-
-            array_splice($columns, 4, 0, array($countryLabel));
+        if ($survey->role === User::GROUP_PATIENT && !empty($survey->clinic)) {
+            $roleColumns[User::GROUP_PATIENT][] = 'clinic';
+        } elseif ($survey->role === User::GROUP_PATIENT && !empty($survey->phc_service)) {
+            $roleColumns[User::GROUP_PATIENT][] = 'phc_service';
         }
 
-        if ($survey->role === User::ADMIN_GROUP_CLINIC_ADMIN || $survey->role === User::GROUP_THERAPIST || $survey->role === User::GROUP_PATIENT) {
-            $countryLabel = $translations['common.country'] ?? 'Country';
-            $clinicLabel = $translations['common.clinic'] ?? 'Clinic';
-
-            array_splice($columns, 4, 0, array($countryLabel, $clinicLabel));
+        foreach ($roleColumns[$survey->role] ?? [] as $key) {
+            $columns[] = $labelMap[$key];
         }
 
         if ($survey->role === User::GROUP_PATIENT) {
-            $genderLabel = $translations['gender'] ?? 'Gender';
-            $locationLabel = $translations['survey.location'] ?? 'Location';
-            $includeStartLabel = $translations['questionnaire.include_at_the_start'] ?? 'Include at the start';
-            $includeEndLabel = $translations['questionnaire.include_at_the_end'] ?? 'Include at the end';
-            $patientIdLabel = $translations['report.patient_raw_data.patient_id'] ?? 'Patient ID';
+            $columns[] = $translations['gender'] ?? 'Gender';
+            $columns[] = $translations['survey.location'] ?? 'Location';
 
-            array_splice($columns, 6, 0, array($genderLabel, $locationLabel));
-            array_splice($columns, 11, 0, array($includeStartLabel, $includeEndLabel, $patientIdLabel));
-
-            array_splice($columns, 14, 2); // Remove first name and last name.
+            $columns[] = $translations['questionnaire.include_at_the_start'] ?? 'Include at the start';
+            $columns[] = $translations['questionnaire.include_at_the_end'] ?? 'Include at the end';
+            $columns[] = $translations['report.patient_raw_data.patient_id'] ?? 'Patient ID';
         }
 
-        return $columns;
+        array_splice($baseColumns, 4, 0, $columns);
+
+        return $baseColumns;
     }
 
     /**
      * @param Survey $survey
      * @param UserSurvey $userSurvey
      * @param array $translations
-     *
      * @return array
+     * @throws \Illuminate\Http\Client\ConnectionException
      */
     private static function getRowData(Survey $survey, UserSurvey $userSurvey, array $translations)
     {
-        if ($survey->role === User::GROUP_THERAPIST) {
-            $surveyor = User::getTherapistById($userSurvey->user_id);
-        } else if ($survey->role === User::GROUP_PATIENT) {
-            $surveyor = User::getPatientById($userSurvey->user_id);
-        } else {
-            $surveyor = $userSurvey->user;
-        }
-
-        $data = [
+        $data = [];
+        $baseData = [
             $survey->createdBy->first_name . ' ' . $survey->createdBy->last_name,
             $translations["survey.status.$survey->status"] ?? 'N/A',
             Organization::findMany($survey->organization)->pluck('name')->implode(', '),
@@ -250,24 +256,35 @@ class AnswerSurveyTemplate
             $survey->start_date ? Carbon::parse($survey->start_date)->format('d/M/Y') : '',
             $survey->end_date ? Carbon::parse($survey->end_date)->format('d/M/Y') : '',
             $translations["survey.frequency.$survey->frequency"] ?? 'N/A',
-            $surveyor->first_name ?? $translations['common.unknown'] ?? '',
-            $surveyor->last_name ?? $translations['common.unknown'] ?? '',
             Carbon::parse($userSurvey->completed_at)->format('d/M/Y'),
             $survey->questionnaire->title,
             $survey->questionnaire->description,
         ];
+        $resolvers = [
+            'country' => fn() => Country::findMany((array)$survey->country)->pluck('name')->implode(', '),
+            'region' => fn() => Region::findMany((array)$survey->region)->pluck('name')->implode(', '),
+            'province' => fn() => Province::findMany((array)$survey->province)->pluck('name')->implode(', '),
+            'clinic' => fn() => Clinic::findMany((array)$survey->clinic)->pluck('name')->implode(', '),
+            'phc_service' => fn() => PhcService::findMany((array)$survey->phc_service)->pluck('name')->implode(', '),
+        ];
+        $roleFields = [
+            User::ADMIN_GROUP_COUNTRY_ADMIN => ['country'],
+            User::ADMIN_GROUP_REGIONAL_ADMIN => ['country', 'region'],
+            User::ADMIN_GROUP_CLINIC_ADMIN => ['country', 'region', 'province', 'clinic'],
+            User::ADMIN_GROUP_PHC_SERVICE_ADMIN => ['country', 'region', 'province', 'phc_service'],
+            User::GROUP_THERAPIST => ['country', 'region', 'province', 'clinic'],
+            User::GROUP_PHC_WORKER => ['country', 'region', 'province', 'phc_service'],
+            User::GROUP_PATIENT => ['country', 'region', 'province'],
+        ];
 
-        if ($survey->role === User::ADMIN_GROUP_COUNTRY_ADMIN) {
-            $countryName = Country::findMany($survey->country)->pluck('name')->implode(', ');
-
-            array_splice($data, 4, 0, array($countryName));
+        if ($survey->role === User::GROUP_PATIENT && !empty($survey->clinic)) {
+            $roleFields[User::GROUP_PATIENT][] = 'clinic';
+        } elseif ($survey->role === User::GROUP_PATIENT && !empty($survey->phc_service)) {
+            $roleFields[User::GROUP_PATIENT][] = 'phc_service';
         }
 
-        if ($survey->role === User::ADMIN_GROUP_CLINIC_ADMIN || $survey->role === User::GROUP_THERAPIST || $survey->role === User::GROUP_PATIENT) {
-            $countryName = Country::findMany($survey->country)->pluck('name')->implode(', ');
-            $clinicName = Clinic::findMany($survey->clinic)->pluck('name')->implode(', ');
-
-            array_splice($data, 4, 0, array($countryName, $clinicName));
+        foreach ($roleFields[$survey->role] ?? [] as $field) {
+            $data[] = $resolvers[$field]();
         }
 
         if ($survey->role == User::GROUP_PATIENT) {
@@ -281,18 +298,26 @@ class AnswerSurveyTemplate
                 $survey->location ?? []
             );
 
-            $genderLabel = implode(', ', array_filter($genders));
-            $locationLabel = implode(', ', array_filter($locations));
+            $data[] = implode(', ', array_filter($genders));
+            $data[] = implode(', ', array_filter($locations));
 
-            $includeStart = $survey->include_at_the_start ? $translations['common.yes'] : $translations['common.no'];
-            $includeEnd = $survey->include_at_the_end ? $translations['common.yes'] : $translations['common.no'];
+            $data[] = $survey->include_at_the_start ? $translations['common.yes'] : $translations['common.no'];
+            $data[] = $survey->include_at_the_end ? $translations['common.yes'] : $translations['common.no'];
 
-            array_splice($data, 6, 0, array($genderLabel, $locationLabel));
-            array_splice($data, 11, 0, array($includeStart, $includeEnd, $surveyor->identity ?? ''));
-            array_splice($data, 14, 2); // Remove first name and last name.
+            if ($survey->role === User::GROUP_THERAPIST || $survey->role === User::GROUP_PHC_WORKER) {
+                $surveyor = User::getTherapistById($userSurvey->user_id);
+            } else if ($survey->role === User::GROUP_PATIENT) {
+                $surveyor = User::getPatientById($userSurvey->user_id);
+            } else {
+                $surveyor = $userSurvey->user;
+            }
+
+            $data[] = $surveyor->identity ?? '';
         }
 
-        return $data;
+        array_splice($baseData, 4, 0, $data);
+
+        return $baseData;
     }
 
     /**
