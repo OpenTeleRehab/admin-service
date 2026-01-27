@@ -7,6 +7,7 @@ use App\Models\Country;
 use App\Models\Forwarder;
 use App\Models\GlobalPatient;
 use App\Models\GlobalTreatmentPlan;
+use App\Models\HealthCondition;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -110,6 +111,14 @@ class SyncPatientData extends Command
             $treatmentPlanGlobal = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global'));
         }
 
+        $healthConditionIds = collect($treatmentPlanGlobal)
+            ->pluck('health_condition_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $healthConditions = HealthCondition::whereIn('id', $healthConditionIds)->get()->keyBy('id');
+
         if ($patientGlobal) {
             foreach ($patientGlobal as $patient) {
                 GlobalPatient::updateOrCreate(
@@ -153,7 +162,7 @@ class SyncPatientData extends Command
                         'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
                         'status' => $status,
                         'health_condition_id' => $treatmentPlan->health_condition_id,
-                        'health_condition_group_id' => $treatmentPlan->health_condition_group_id
+                        'health_condition_group_id' => $healthConditions[$treatmentPlan->health_condition_id]->parent_id ?? null,
                     ],
                 );
             }
