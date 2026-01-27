@@ -365,7 +365,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::delete('download-trackers', [DownloadTrackerController::class, 'destroy'])->middleware('role:manage_download_tracker');
 
     Route::get('export', [ExportController::class, 'export'])->middleware('role:generate_report');
-    Route::get('download-file', [FileController::class, 'download'])->middleware('role:access_all,download_survey');
+    Route::get('download-file', [FileController::class, 'download'])->middleware('role:access_all,manage_download_tracker');
 
     // Region
     Route::get('regions/{region}/entities', [RegionController::class, 'getEntitiesByRegionId'])->middleware('role:manage_region');

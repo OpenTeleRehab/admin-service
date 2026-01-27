@@ -21,6 +21,9 @@ use App\Exports\Templates\PatientAssistiveTemplate;
 use App\Exports\Templates\PatientSurveyTemplate;
 use App\Exports\Templates\PatientTreatmentPlanSurveyTemplate;
 use App\Exports\Templates\PatientQuestionnaireStartEndResultTemplate;
+use App\Models\PhcService;
+use App\Models\Province;
+use App\Models\Region;
 use App\Models\Survey;
 use App\Models\User;
 
@@ -30,6 +33,14 @@ class PatientRawDataExport
      * @var string $exportDirectoryName
      */
     protected static $exportDirectoryName = 'exports/';
+
+    private static function getUniqueIds($collection, $field) {
+        return collect($collection)
+            ->pluck($field)
+            ->unique()
+            ->filter()
+            ->values();
+    }
 
     /**
      * Exports data to an XLSX file.
@@ -105,22 +116,61 @@ class PatientRawDataExport
         $patientAssistiveData = [];
         $patientSurveyData = [];
 
+        $countryIds = self::getUniqueIds($patients, 'country_id');
+        $regionIds = self::getUniqueIds($patients, 'region_id');
+        $provinceIds = self::getUniqueIds($patients, 'province_id');
+        $clinicIds = self::getUniqueIds($patients, 'clinic_id');
+        $phcServiceIds = self::getUniqueIds($patients, 'phc_service_id');
+
+        $countryNeeds = Country::whereIn('id', $countryIds)->get()->keyBy('id');
+        $regionNeeds = Region::whereIn('id', $regionIds)->get()->keyBy('id');
+        $provinceNeeds = Province::whereIn('id', $provinceIds)->get()->keyBy('id');
+        $clinicNeeds = Clinic::whereIn('id', $clinicIds)->get()->keyBy('id');
+        $phcServiceNeeds = PhcService::whereIn('id', $phcServiceIds)->get()->keyBy('id');
+        $therapistUserNeeds = collect($therapists?->data)->keyBy('id');
+
         foreach ($patients as $patient) {
-            $clinic = Clinic::find($patient->clinic_id);
-            $country = Country::find($patient->country_id);
+            $country = $countryNeeds[$patient->country_id] ?? null;
+            $region = $regionNeeds[$patient->region_id] ?? null;
+            $province = $provinceNeeds[$patient->province_id] ?? null;
+            $clinic = $clinicNeeds[$patient->clinic_id] ?? null;
+            $phcService = $phcServiceNeeds[$patient->phc_service_id] ?? null;
             $age = Carbon::parse($patient->date_of_birth)->age;
             $dob = Carbon::parse($patient->date_of_birth)->toDateString();
             $status = $patient->enabled === 1 ? $translations['common.active'] : $translations['common.inactive'];
             $location = $translations['common.' . $patient->location];
             $gender = $translations[$patient->gender];
-            $therapist = current(array_filter($therapists->data, fn($therapist) => $therapist->id === $patient->therapist_id));
-            $secondaryTherapists = array_filter($therapists->data, fn($therapist) => in_array($therapist->id, $patient->secondary_therapists));
-            $therapistName = ($therapist?->last_name ?? '') . ' ' . ($therapist?->first_name ?? '');
-            $secondaryTherapistsNames = implode(', ', array_map(fn($therapist) => $therapist->last_name . ' ' . $therapist->first_name, $secondaryTherapists));
+            $therapistName = isset($therapistUserNeeds[$patient->therapist_id])
+                ? $therapistUserNeeds[$patient->therapist_id]->first_name . ' ' . $therapistUserNeeds[$patient->therapist_id]->last_name
+                : null;
+            $secondaryTherapistsNames = collect($patient->secondary_therapists)
+                ->map(fn($id) =>
+                    isset($therapistUserNeeds[$id])
+                        ? $therapistUserNeeds[$id]->first_name . ' ' . $therapistUserNeeds[$id]->last_name
+                        : null
+                )
+                ->filter()
+                ->values()
+                ->join(', ');
+            $leadPhcWorkerName = isset($therapistUserNeeds[$patient->phc_worker_id])
+                ? $therapistUserNeeds[$patient->phc_worker_id]->first_name . ' ' . $therapistUserNeeds[$patient->phc_worker_id]->last_name
+                : null;
+            $supplementaryPhcWorkers = collect($patient->supplementary_phc_workers)
+                ->map(fn($id) =>
+                    isset($therapistUserNeeds[$id])
+                        ? $therapistUserNeeds[$id]->first_name . ' ' . $therapistUserNeeds[$id]->last_name
+                        : null
+                )
+                ->filter()
+                ->values()
+                ->join(', ');
             $patientData = [
                 $clinic?->name,
+                $phcService?->name,
                 $patient->identity,
                 $country?->name,
+                $region?->name,
+                $province?->name,
                 $gender,
                 $dob,
                 $age,
@@ -128,6 +178,8 @@ class PatientRawDataExport
                 $location,
                 $therapistName,
                 $secondaryTherapistsNames,
+                $leadPhcWorkerName,
+                $supplementaryPhcWorkers,
                 $patient->call,
             ];
 
@@ -137,6 +189,11 @@ class PatientRawDataExport
             if (count((array) $patient->treatmentPlans) > 0) {
                 foreach ($patient->treatmentPlans as $index => $treatmentPlan) {
                     $healthCondition = HealthCondition::find($treatmentPlan->health_condition_id);
+
+                    if (!$healthCondition) {
+                        continue;
+                    }
+
                     $healthConditionName = $healthCondition?->getTranslation('title', $language?->code ?? 'en');
                     $healthConditionGroup = $healthCondition->parent;
                     $healthConditionGroupName = $healthConditionGroup?->getTranslation('title', $language?->code ?? 'en');
