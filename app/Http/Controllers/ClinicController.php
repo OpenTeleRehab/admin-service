@@ -49,7 +49,10 @@ class ClinicController extends Controller
         if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
             $clinics = $user->country->clinics;
         } else if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-            $clinics = $user->regions->clinics();
+            $clinics = Clinic::whereIn(
+                'region_id',
+                $user->regions->pluck('id')
+            )->get();
         } else {
             $clinics = Clinic::all();
         }
