@@ -50,7 +50,15 @@ class ProvinceController extends Controller
     {
         $searchValue = $request->get('search_value');
         $pageSize = $request->get('page_size');
-        $query = Auth::user()->region->provinces();
+        $user = Auth::user();
+        $limitatedRegionIds = $user->adminRegions->pluck('id')->toArray();
+        if ($user->region_id) {
+            $limitatedRegionIds[] = $user->region_id;
+        }
+        $limitatedRegionIds = array_unique($limitatedRegionIds);
+
+        $query = Province::whereIn('region_id', $limitatedRegionIds);
+
         if ($searchValue) {
             $query->where('name', 'like', '%' . $searchValue . '%');
         }
@@ -88,7 +96,14 @@ class ProvinceController extends Controller
      */
     public function getByUserRegion()
     {
-        $provinces = Auth::user()->region->provinces;
+        $user = Auth::user();
+        $limitatedRegionIds = $user->adminRegions->pluck('id')->toArray();
+        if ($user->region_id) {
+            $limitatedRegionIds[] = $user->region_id;
+        }
+        $limitatedRegionIds = array_unique($limitatedRegionIds);
+
+        $provinces = Province::whereIn('region_id', $limitatedRegionIds)->get();
         return response()->json(['data' => ProvinceResource::collection($provinces)]);
     }
 
@@ -126,12 +141,20 @@ class ProvinceController extends Controller
      */
     public function store(Request $request)
     {
-        $region = Auth::user()->region;
+        $user = Auth::user();
+        $region = $user->region;
 
         if (empty($region)) {
-            abort(403, 'common.no.permission');
-        }
+            $regionId = $request->input('region_id');
 
+            if ($regionId) {
+                $region = Region::where('id', $regionId)->first();
+            }
+
+            if (empty($region)) {
+                abort(403, 'common.no.permission');
+            }
+        }
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'therapist_limit' => 'required|integer|min:1',
@@ -148,7 +171,10 @@ class ProvinceController extends Controller
             abort(422, 'error.province.phc_worker_limit.greater_than.region.phc_worker_limit');
         }
 
-        Province::create($validatedData);
+        Province::create([
+            ...$validatedData,
+            'region_id' => $region->id,
+        ]);
 
         return response()->json(['message' => 'province.success_message.add'], 201);
     }
@@ -188,16 +214,27 @@ class ProvinceController extends Controller
      */
     public function update(Request $request, Province $province)
     {
-        $region = Auth::user()->region;
+
+        $user = Auth::user();
+        $region = $user->region;
 
         if (empty($region)) {
-            abort(403, 'common.no.permission');
+            $regionId = $request->input('region_id');
+
+            if ($regionId) {
+                $region = Region::where('id', $regionId)->first();
+            }
+
+            if (empty($region)) {
+                abort(403, 'common.no.permission');
+            }
         }
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'therapist_limit' => 'required|integer|min:1',
             'phc_worker_limit' => 'required|integer|min:1',
+            'region_id' => 'required|exists:regions,id',
         ]);
 
         $regionLimitation = LimitationHelper::regionLimitation($region);
@@ -280,10 +317,10 @@ class ProvinceController extends Controller
         $adminUsers = User::whereHas('phcService', function ($q) use ($province) {
             $q->where('province_id', $province->id);
         })
-        ->whereHas('clinic', function ($q) use ($province) {
-            $q->where('province_id', $province->id);
-        })
-        ->get();
+            ->whereHas('clinic', function ($q) use ($province) {
+                $q->where('province_id', $province->id);
+            })
+            ->get();
 
         $token = KeycloakHelper::getKeycloakAccessToken();
 
@@ -325,9 +362,9 @@ class ProvinceController extends Controller
         // Patient service
         Http::withHeaders([
             'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
-                Forwarder::PATIENT_SERVICE,
-                $country->iso_code
-            ),
+                    Forwarder::PATIENT_SERVICE,
+                    $country->iso_code
+                ),
             'country' => $country->iso_code,
         ])
             ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
@@ -347,9 +384,17 @@ class ProvinceController extends Controller
      */
     public function limitation()
     {
-        $region = Auth::user()->region;
+        $user = Auth::user();
 
-        $provinces = $region->provinces;
+        $limitRegionIds = $user->adminRegions->pluck('id')->toArray();
+
+        if ($user->region_id) {
+            $limitRegionIds[] = $user->region_id;
+        }
+
+        $limitRegionIds = array_unique($limitRegionIds);
+
+        $provinces = Province::whereIn('region_id', $limitRegionIds)->get();
 
         $data = [];
 

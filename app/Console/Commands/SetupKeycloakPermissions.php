@@ -318,6 +318,7 @@ class SetupKeycloakPermissions extends Command
                 'view_transfer_list_by_therapist',
                 'view_remove_therapist_patient',
                 'view_clinic_therapist_list',
+                'view_number_of_clinic_therapist',
                 'view_remove_phc_worker_patient',
             ],
             'phc_service_admin' => [

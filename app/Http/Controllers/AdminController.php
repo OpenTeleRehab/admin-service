@@ -75,13 +75,16 @@ class AdminController extends Controller
         $query = User::select('users.*')
             ->leftJoin('countries', 'countries.id', 'users.country_id')
             ->leftJoin('clinics', 'clinics.id', 'users.clinic_id')
+            ->leftJoin('phc_services', 'phc_services.id', 'users.phc_service_id')
+            ->with(['phcService.province.region', 'clinic', 'country', 'region'])
             ->where('type', $data['admin_type'])
             ->where(function ($query) use ($data) {
                 $query->where('first_name', 'like', '%' . $data['search_value'] . '%')
                     ->orWhere('last_name', 'like', '%' . $data['search_value'] . '%')
                     ->orWhere('email', 'like', '%' . $data['search_value'] . '%')
                     ->orWhere('countries.name', 'like', '%' . $data['search_value'] . '%')
-                    ->orWhere('clinics.name', 'like', '%' . $data['search_value'] . '%');
+                    ->orWhere('clinics.name', 'like', '%' . $data['search_value'] . '%')
+                    ->orWhere('phc_services.name', 'like', '%' . $data['search_value'] . '%');
             });
 
         $authUser = Auth::user();
@@ -90,10 +93,12 @@ class AdminController extends Controller
             $query->where('users.country_id', $countryId);
         }
 
-        if ($authUser->region_id) {
+        if ($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $regionIds = $authUser->adminRegions()->pluck('regions.id')->toArray();
+            $query->whereIn('users.region_id', $regionIds);
+        } elseif ($authUser->region_id) {
             $query->where('users.region_id', $authUser->region_id);
         }
-
         if (isset($data['filters'])) {
             $filters = $request->get('filters');
             $query->where(function ($query) use ($filters) {
@@ -244,7 +249,19 @@ class AdminController extends Controller
         DB::beginTransaction();
 
         try {
+            $regionIds = $validatedData['region_id'] ?? [];
+
+            if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+                unset($validatedData['region_id']);
+            }else{
+                $validatedData['region_id'] = $regionIds;
+            }
+
             $user = User::create($validatedData);
+            // attached regional admin to admin region
+            if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+                $user->adminRegions()->attach($regionIds);
+            }
 
             if (!$user) {
                 return ['success' => false, 'message' => 'error_message.user_add'];
@@ -370,9 +387,15 @@ class AdminController extends Controller
                 'exists:clinics,id',
             ],
             'region_id' => [
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
+                Rule::requiredIf(fn() => ($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN) && $request->type !== User::ADMIN_GROUP_REGIONAL_ADMIN),
+                'nullable',
                 'exists:regions,id',
             ],
+            'edit_region_ids' => [
+                Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_REGIONAL_ADMIN),
+                'array',
+            ],
+            'edit_region_ids.*' => 'exists:regions,id',
             'phc_service_id' => [
                 'nullable',
                 Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN),
@@ -380,10 +403,19 @@ class AdminController extends Controller
             ],
         ]);
 
+        DB::beginTransaction();
+
         try {
             $user = User::findOrFail($id);
             $user->update($validatedData);
+
+            if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+                $user->adminRegions()->sync($validatedData['edit_region_ids']);
+            }
+
+            DB::commit();
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
 
