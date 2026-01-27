@@ -37,7 +37,7 @@ class UserResource extends JsonResource
                 'name' => $lang->name,
                 'code' => $lang->code,
             ]),
-            'region_admin' => $this->adminRegions->map(fn($region) => [
+            'regions' => $this->adminRegions->map(fn($region) => [
                 'id' => $region->id,
                 'name' => $region->name,
             ]),
