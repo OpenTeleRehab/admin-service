@@ -16,7 +16,7 @@ class EntitiesByClinicResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'rehab_service_admin_count' => $this->users->where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)->count(),
+            'rehab_service_admin_count' => $this->users->where('type', User::ADMIN_GROUP_CLINIC_ADMIN)->count(),
             'therapist_count' => $this->therapist_count,
             'patient_count' => $this->patient_count,
         ];

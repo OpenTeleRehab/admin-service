@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\JsonColumnHelper;
 use App\Helpers\KeycloakHelper;
 use App\Helpers\LimitationHelper;
 use App\Http\Resources\EntitiesByRegionResource;
 use App\Http\Resources\RegionResource;
 use App\Models\Forwarder;
+use App\Models\MfaSetting;
 use App\Models\Region;
+use App\Models\Survey;
 use App\Models\User;
 use App\Models\UserSurvey;
 use Illuminate\Http\Request;
@@ -380,10 +383,13 @@ class RegionController extends Controller
             $user->delete();
         }
 
+        JsonColumnHelper::removeFromJsonColumn(MfaSetting::class, 'region_ids', [$regionId]);
+        JsonColumnHelper::removeFromJsonColumn(Survey::class, 'region', [$regionId]);
+
         // Phone service
         Http::post(
             env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
-            ['clinic_ids' => $regionId->clinics->pluck('id')]
+            ['clinic_ids' => $region->clinics->pluck('id')]
         );
 
         // Therapist service
@@ -396,9 +402,9 @@ class RegionController extends Controller
         // Patient service
         Http::withHeaders([
             'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
-                    Forwarder::PATIENT_SERVICE,
-                    $country->iso_code
-                ),
+                Forwarder::PATIENT_SERVICE,
+                $country->iso_code
+            ),
             'country' => $country->iso_code,
         ])
             ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [

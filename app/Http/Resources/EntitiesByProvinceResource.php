@@ -19,7 +19,7 @@ class EntitiesByProvinceResource extends JsonResource
             'rehab_service_count' => $this->clinics->count(),
             'rehab_service_admin_count' => $this->clinics->sum(fn($clinic) => $clinic->users->count()),
             'phc_service_count' => $this->phcServices->count(),
-            'phc_service_admin_count' => $this->phcServices->sum(fn($clinic) => $clinic->users->count()),
+            'phc_service_admin_count' => $this->phcServices->sum(fn($phcService) => $phcService->users->count()),
             'therapist_count' => $this->therapist_count,
             'phc_worker_count' => $this->phc_worker_count,
             'patient_count' => $this->patient_count,

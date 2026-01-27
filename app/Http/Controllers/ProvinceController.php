@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\JsonColumnHelper;
 use App\Helpers\KeycloakHelper;
 use App\Helpers\LimitationHelper;
 use App\Http\Resources\EntitiesByProvinceResource;
@@ -9,6 +10,7 @@ use App\Http\Resources\ProvinceResource;
 use App\Models\Forwarder;
 use App\Models\Province;
 use App\Models\Region;
+use App\Models\Survey;
 use App\Models\User;
 use App\Models\UserSurvey;
 use Illuminate\Http\Request;
@@ -358,6 +360,7 @@ class ProvinceController extends Controller
             $user->delete();
         }
 
+        JsonColumnHelper::removeFromJsonColumn(Survey::class, 'province', [$provinceId]);
 
         // Therapist service
         Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
@@ -369,9 +372,9 @@ class ProvinceController extends Controller
         // Patient service
         Http::withHeaders([
             'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
-                    Forwarder::PATIENT_SERVICE,
-                    $country->iso_code
-                ),
+                Forwarder::PATIENT_SERVICE,
+                $country->iso_code
+            ),
             'country' => $country->iso_code,
         ])
             ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
