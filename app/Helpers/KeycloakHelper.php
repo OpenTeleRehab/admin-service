@@ -285,7 +285,7 @@ class KeycloakHelper
 
         if ($token) {
             try {
-                $language = Language::find(Auth::user()->language_id);
+                $language = $user->language_id ? Language::find($user->language_id) : null;
                 $languageCode = $language ? $language->code : null;
                 $attributes = [];
 
