@@ -8,6 +8,7 @@ use App\Http\Resources\EntitiesByProvinceResource;
 use App\Http\Resources\ProvinceResource;
 use App\Models\Forwarder;
 use App\Models\Province;
+use App\Models\Region;
 use App\Models\User;
 use App\Models\UserSurvey;
 use Illuminate\Http\Request;
