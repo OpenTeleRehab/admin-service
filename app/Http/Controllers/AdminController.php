@@ -217,35 +217,70 @@ class AdminController extends Controller
      */
     public function store(Request $request)
     {
-        $authUser = Auth::user();
+        $creatorRole = Auth::user()->type;
+        $targetRole = $request->type;
+        $roleCreators = [
+            User::ADMIN_GROUP_SUPER_ADMIN => [User::ADMIN_GROUP_ORG_ADMIN],
+            User::ADMIN_GROUP_ORG_ADMIN => [User::ADMIN_GROUP_ORG_ADMIN, User::ADMIN_GROUP_COUNTRY_ADMIN],
+            User::ADMIN_GROUP_COUNTRY_ADMIN => [User::ADMIN_GROUP_REGIONAL_ADMIN],
+            User::ADMIN_GROUP_REGIONAL_ADMIN => [
+                User::ADMIN_GROUP_CLINIC_ADMIN,
+                User::ADMIN_GROUP_PHC_SERVICE_ADMIN,
+            ],
+        ];
+
+        abort_if(
+            empty($roleCreators[$creatorRole]) || !in_array($targetRole, $roleCreators[$creatorRole], true),
+            403,
+            'You are not allowed to create this user type.'
+        );
+
         $validatedData = $request->validate([
             'email' => 'required|email|unique:users,email',
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'type' => 'required|in:super_admin,organization_admin,country_admin,clinic_admin,regional_admin,phc_service_admin',
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'type' => [
+                'required',
+                Rule::in([
+                    User::ADMIN_GROUP_ORG_ADMIN,
+                    User::ADMIN_GROUP_COUNTRY_ADMIN,
+                    User::ADMIN_GROUP_REGIONAL_ADMIN,
+                    User::ADMIN_GROUP_CLINIC_ADMIN,
+                    User::ADMIN_GROUP_PHC_SERVICE_ADMIN,
+                ]),
+            ],
+
             'country_id' => [
+                Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'nullable',
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_ORG_ADMIN && $request->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'exists:countries,id',
             ],
-            'clinic_id' => [
-                'nullable',
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_CLINIC_ADMIN),
-                'exists:clinics,id',
+
+            'region_ids' => [
+                Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_REGIONAL_ADMIN),
+                'array',
             ],
+            'region_ids.*' => ['exists:regions,id'],
+
             'region_id' => [
+                Rule::requiredIf(fn() => in_array(
+                    $request->type,
+                    [User::ADMIN_GROUP_CLINIC_ADMIN, User::ADMIN_GROUP_PHC_SERVICE_ADMIN],
+                    true
+                )),
                 'nullable',
-                Rule::requiredIf(in_array($authUser->type, [User::ADMIN_GROUP_COUNTRY_ADMIN, User::ADMIN_GROUP_REGIONAL_ADMIN])),
-                $authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN ? 'array' : 'integer',
-            ],
-            'region_id.*' => [
-                Rule::requiredIf(fn () => $authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
-                'integer',
                 'exists:regions,id',
             ],
-            'phc_service_id' => [
+
+            'clinic_id' => [
+                Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_CLINIC_ADMIN),
                 'nullable',
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN),
+                'exists:clinics,id',
+            ],
+
+            'phc_service_id' => [
+                Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN),
+                'nullable',
                 'exists:phc_services,id',
             ],
         ], [
@@ -255,16 +290,11 @@ class AdminController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-                $regionIds = $validatedData['region_id'] ?? [];
-                unset($validatedData['region_id']);
-            }
-
             $user = User::create($validatedData);
 
             // Attach regions to regional admin
-            if (!empty($regionIds)) {
-                $user->regions()->attach($regionIds);
+            if (!empty($validatedData['region_ids'])) {
+                $user->regions()->sync($validatedData['region_ids']);
             }
 
             if (!$user) {
@@ -376,34 +406,69 @@ class AdminController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $authUser = Auth::user();
+        $creatorRole = Auth::user()->type;
+        $targetRole = $request->type;
+        $roleCreators = [
+            User::ADMIN_GROUP_SUPER_ADMIN => [User::ADMIN_GROUP_ORG_ADMIN],
+            User::ADMIN_GROUP_ORG_ADMIN => [User::ADMIN_GROUP_ORG_ADMIN, User::ADMIN_GROUP_COUNTRY_ADMIN],
+            User::ADMIN_GROUP_COUNTRY_ADMIN => [User::ADMIN_GROUP_REGIONAL_ADMIN],
+            User::ADMIN_GROUP_REGIONAL_ADMIN => [
+                User::ADMIN_GROUP_CLINIC_ADMIN,
+                User::ADMIN_GROUP_PHC_SERVICE_ADMIN,
+            ],
+        ];
+
+        abort_if(
+            empty($roleCreators[$creatorRole]) || !in_array($targetRole, $roleCreators[$creatorRole], true),
+            403,
+            'You are not allowed to create this user type.'
+        );
+
         $validatedData = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'type' => 'required|in:super_admin,organization_admin,country_admin,clinic_admin,regional_admin,phc_service_admin',
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'type' => [
+                'required',
+                Rule::in([
+                    User::ADMIN_GROUP_ORG_ADMIN,
+                    User::ADMIN_GROUP_COUNTRY_ADMIN,
+                    User::ADMIN_GROUP_REGIONAL_ADMIN,
+                    User::ADMIN_GROUP_CLINIC_ADMIN,
+                    User::ADMIN_GROUP_PHC_SERVICE_ADMIN,
+                ]),
+            ],
+
             'country_id' => [
+                Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'nullable',
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_ORG_ADMIN && $request->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'exists:countries,id',
             ],
-            'clinic_id' => [
-                'nullable',
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_CLINIC_ADMIN),
-                'exists:clinics,id',
-            ],
-            'region_id' => [
-                Rule::requiredIf(fn() => ($authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN) && $request->type !== User::ADMIN_GROUP_REGIONAL_ADMIN),
-                'nullable',
-                'exists:regions,id',
-            ],
-            'edit_region_ids' => [
+
+            'region_ids' => [
                 Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_REGIONAL_ADMIN),
                 'array',
             ],
-            'edit_region_ids.*' => 'exists:regions,id',
-            'phc_service_id' => [
+            'region_ids.*' => ['exists:regions,id'],
+
+            'region_id' => [
+                Rule::requiredIf(fn() => in_array(
+                    $request->type,
+                    [User::ADMIN_GROUP_CLINIC_ADMIN, User::ADMIN_GROUP_PHC_SERVICE_ADMIN],
+                    true
+                )),
                 'nullable',
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $request->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN),
+                'exists:regions,id',
+            ],
+
+            'clinic_id' => [
+                Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_CLINIC_ADMIN),
+                'nullable',
+                'exists:clinics,id',
+            ],
+
+            'phc_service_id' => [
+                Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN),
+                'nullable',
                 'exists:phc_services,id',
             ],
         ]);
@@ -414,8 +479,8 @@ class AdminController extends Controller
             $user = User::findOrFail($id);
             $user->update($validatedData);
 
-            if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-                $user->regions()->sync($validatedData['edit_region_ids']);
+            if (!empty($validatedData['region_ids'])) {
+                $user->regions()->sync($validatedData['region_ids']);
             }
 
             DB::commit();
