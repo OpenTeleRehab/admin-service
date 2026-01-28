@@ -78,7 +78,7 @@ class Province extends Model
         self::creating(function ($province) {
             $user = Auth::user();
 
-            if ($user->region_id) {
+            if ($user && $user->region_id) {
                 $province->region_id = $user->region_id;
             }
         });

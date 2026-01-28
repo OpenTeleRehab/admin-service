@@ -106,7 +106,7 @@ class Region extends Model
         self::creating(function ($region) {
             $user = Auth::user();
 
-            if ($user->country_id) {
+            if ($user && $user->country_id) {
                 $region->country_id = $user->country_id;
             }
         });
