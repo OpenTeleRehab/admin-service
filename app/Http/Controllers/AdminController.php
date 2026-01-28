@@ -234,7 +234,13 @@ class AdminController extends Controller
                 'exists:clinics,id',
             ],
             'region_id' => [
-                Rule::requiredIf(fn() => $authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
+                'nullable',
+                Rule::requiredIf(in_array($authUser->type, [User::ADMIN_GROUP_COUNTRY_ADMIN, User::ADMIN_GROUP_REGIONAL_ADMIN])),
+                $authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN ? 'array' : 'integer',
+            ],
+            'region_id.*' => [
+                Rule::requiredIf(fn () => $authUser->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
+                'integer',
                 'exists:regions,id',
             ],
             'phc_service_id' => [
@@ -246,20 +252,18 @@ class AdminController extends Controller
             'email.unique' => 'error_message.email_exists',
         ]);
 
-        DB::beginTransaction();
-
         try {
-            $regionIds = $validatedData['region_id'] ?? [];
+            DB::beginTransaction();
 
             if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+                $regionIds = $validatedData['region_id'] ?? [];
                 unset($validatedData['region_id']);
-            }else{
-                $validatedData['region_id'] = $regionIds;
             }
 
             $user = User::create($validatedData);
-            // attached regional admin to admin region
-            if ($validatedData['type'] === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+
+            // Attach regions to regional admin
+            if (!empty($regionIds)) {
                 $user->regions()->attach($regionIds);
             }
 
@@ -280,8 +284,9 @@ class AdminController extends Controller
 
             if ($response->successful()) {
                 $keyCloakUsers = $response->json();
-
-                KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id']);
+                if (!empty($keyCloakUsers)) {
+                    KeycloakHelper::deleteUser($token, KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id']);
+                }
             }
 
             DB::rollBack();
