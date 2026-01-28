@@ -20,7 +20,7 @@ class ForwarderController extends Controller
         $service_name = $request->route()->getName();
         $endpoint = str_replace('api/', '/', $request->path());
         $params = $request->all();
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($service_name !== null && str_contains($service_name, Forwarder::GADMIN_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::GADMIN_SERVICE);
@@ -69,7 +69,7 @@ class ForwarderController extends Controller
                 'int-phc-service-id' => $user?->phc_service_id,
                 'int-clinic-id' => $user->clinic_id,
                 'int-user-type' => $user?->type,
-                ])
+            ])
                 ->post(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
         } elseif ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $user->country?->iso_code);
@@ -81,7 +81,7 @@ class ForwarderController extends Controller
                 'int-phc-service-id' => $user?->phc_service_id,
                 'int-clinic-id' => $user->clinic_id,
                 'int-user-type' => $user?->type,
-                ])
+            ])
                 ->post(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
 
             return response($response->body(), $response->status())
@@ -134,10 +134,11 @@ class ForwarderController extends Controller
         }
 
         if ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
-            $accessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+            $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $user->country?->iso_code);
 
-            $response = Http::withToken($accessToken)
+            $response = Http::withToken($access_token)
                 ->withHeaders([
+                    'country' => $user->country?->iso_code,
                     'Accept' => 'application/json',
                     'int-clinic-id' => $user->clinic_id,
                 ])
