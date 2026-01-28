@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\JsonColumnHelper;
 use App\Helpers\KeycloakHelper;
 use App\Helpers\LimitationHelper;
 use App\Http\Resources\ClinicResource;
@@ -10,6 +11,8 @@ use App\Models\Clinic;
 use App\Models\Country;
 use App\Models\DownloadTracker;
 use App\Models\Forwarder;
+use App\Models\MfaSetting;
+use App\Models\Survey;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -347,6 +350,9 @@ class ClinicController extends Controller
                 $user->delete();
             }
 
+            JsonColumnHelper::removeFromJsonColumn(MfaSetting::class, 'clinic_ids', [$clinicId]);
+            JsonColumnHelper::removeFromJsonColumn(Survey::class, 'clinic', [$clinicId]);
+
             // Therapist service
             Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
                 ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
@@ -357,9 +363,9 @@ class ClinicController extends Controller
             // Patient service
             Http::withHeaders([
                 'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
-                        Forwarder::PATIENT_SERVICE,
-                        $country->iso_code
-                    ),
+                    Forwarder::PATIENT_SERVICE,
+                    $country->iso_code
+                ),
                 'country' => $country->iso_code,
             ])
                 ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [

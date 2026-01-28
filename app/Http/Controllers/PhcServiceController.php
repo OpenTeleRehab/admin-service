@@ -12,6 +12,8 @@ use App\Helpers\LimitationHelper;
 use App\Http\Resources\EntitiesByPhcServiceResource;
 use App\Models\Province;
 use App\Models\Forwarder;
+use App\Models\MfaSetting;
+use App\Models\Survey;
 use App\Models\User;
 use App\Models\UserSurvey;
 use Illuminate\Support\Facades\Http;
@@ -283,6 +285,9 @@ class PhcServiceController extends Controller
             UserSurvey::where('user_id', $user->id)->delete();
             $user->delete();
         }
+
+        JsonColumnHelper::removeFromJsonColumn(MfaSetting::class, 'phc_service_ids', [$phcServiceId]);
+        JsonColumnHelper::removeFromJsonColumn(Survey::class, 'phc_service', [$phcServiceId]);
 
         // Therapist service
         Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
