@@ -2,6 +2,9 @@
 
 namespace App\Notifications;
 
+use App\Models\EmailTemplate;
+use App\Models\Language;
+use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -9,15 +12,38 @@ class PatientReferralAssignment extends Notification
 {
     // use Queueable;
 
-    private string $status;
+    private string $subject;
+    private string $content;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $status)
+    public function __construct(User $user, object $therapist, string $status)
     {
-        $this->subject = 'OpenTeleRehab – Patient Referral Notification';
-        $this->status = $status;
+        $prefix = '';
+
+        // Define prefix based on status.
+        switch ($status) {
+            case 'accepted':
+                $prefix = 'therapist-accepts-the-assigned-patient-referral-request-for-rehab-service-admin';
+                break;
+            case 'declined':
+                $prefix = 'therapist-declines-the-assigned-patient-referral-request-for-rehab-service-admin';
+                break;
+        }
+
+        // Find user current language.
+        $language = Language::find($user->language_id);
+
+        // Find email template by prefix.
+        $emailTemplate = EmailTemplate::where('prefix', $prefix)->firstOrFail();
+
+        $this->subject = config('mail.from.name') . ' - ' . $emailTemplate->getTranslation('title', $language->code);
+        $this->content = $emailTemplate->getTranslation('content', $language->code);
+
+        // Replace email content.
+        $this->content = str_replace('#user_name#', $user->last_name . ' ' . $user->first_name, $this->content);
+        $this->content = str_replace('#therapist_name#', $therapist['last_name'] . ' ' . $therapist['first_name'], $this->content);
     }
 
     /**
@@ -37,8 +63,8 @@ class PatientReferralAssignment extends Notification
     {
         return (new MailMessage)
             ->subject($this->subject)
-            ->greeting("Dear $notifiable->first_name,")
-            ->lineIf($this->status === 'accepted', 'Please be informed that a therapist, [Therapist Name], has accepted your assigned patient referral request. Kindly log in to the portal for more information.')
-            ->lineIf($this->status === 'declined', 'Please be informed that a therapist, [Therapist Name], has declined your assigned patient referral request. Kindly log in to the portal for more information.');
+            ->view('emails.patient-referral', [
+                'content' => $this->content,
+            ]);
     }
 }
