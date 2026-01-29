@@ -43,6 +43,7 @@ use App\Http\Controllers\SystemLimitController;
 use App\Http\Controllers\TermAndConditionController;
 use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\TranslatorController;
+use App\Http\Controllers\EmailTemplateController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -404,6 +405,10 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('notifications/patient-referral', [NotificationController::class, 'patientReferral']);
     Route::post('notifications/patient-referral-assignment', [NotificationController::class, 'patientReferralAssignment']);
     Route::post('notifications/patient-counter-referral', [NotificationController::class, 'patientCounterReferral']);
+
+    // Email template
+    Route::apiResource('email-templates', EmailTemplateController::class)->middleware('role:manage_email_template,translate_email_template');
+    Route::get('email-templates/{prefix}/get-by-prefix', [EmailTemplateController::class, 'getByPrefix']);
 });
 
 Route::group(['prefix' => 'external', 'middleware' => ['check.api.client']], function () {

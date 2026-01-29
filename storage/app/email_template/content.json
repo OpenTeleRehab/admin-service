@@ -1,0 +1,52 @@
+[
+  {
+    "content_type": "New patient referral request from a healthcare worker",
+    "title": "Patient Referral Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a healthcare worker, <strong>#healthcare_worker_name#</strong> has sent a patient referral request to your rehab service. Kindly login to the <a href=\"https://admin.opentelerehab.com/\" target=\"_blank\">portal</a> and take the appropriate action.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "Therapist accepts the assigned patient referral request for rehab service admin",
+    "title": "Patient Referral Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a therapist, <strong>#therapist_name#</strong> has accepted your assigned patient referral request. Kindly log in to the <a href=\"https://admin.opentelerehab.com/\" target=\"_blank\">portal</a> for more information.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "Therapist declines the assigned patient referral request for rehab service admin",
+    "title": "Patient Referral Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a therapist, <strong>#therapist_name#</strong> has declined your assigned patient referral request. Kindly log in to the <a href=\"https://admin.opentelerehab.com/\" target=\"_blank\">portal</a> for more information.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "Therapist counter-refers a patient for service admin",
+    "title": "Counter-refer Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a therapist, <strong>#therapist_name#</strong> has counter-referred a patient to your PHC service. Kindly log in to the <a href=\"https://admin.opentelerehab.com/\" target=\"_blank\">portal</a> for more information.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "Rehab service admin assigns the patient referral request",
+    "title": "Patient Referral Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a rehab service admin, <strong>#rehab_service_admin_name#</strong> has assigned your patient referral request to a therapist. Kindly log in to the <a href=\"https://therapist.opentelerehab.com/\" target=\"_blank\">portal</a> for more information.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "Rehab service admin declines the patient referral request",
+    "title": "Patient Referral Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a rehab service admin, <strong>#rehab_service_admin_name#</strong> has declined your patient referral request. Kindly log in to the <a href=\"https://therapist.opentelerehab.com/\" target=\"_blank\">portal</a> for more information.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "Therapist accepts the assigned patient referral request for healthcare worker",
+    "title": "Patient Referral Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a therapist, <strong>#therapist_name#</strong> has accepted your patient referral request. Kindly log in to the <a href=\"https://therapist.opentelerehab.com/\" target=\"_blank\">portal</a> for more information.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "Therapist declines the assigned patient referral request for healthcare worker",
+    "title": "Patient Referral Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a therapist, <strong>#therapist_name#</strong> has declined your patient referral request. Kindly log in to the <a href=\"https://therapist.opentelerehab.com/\" target=\"_blank\">portal</a> for more information.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "Therapist counter-refers a patient for healthcare worker",
+    "title": "Counter-refer Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a therapist, <strong>#therapist_name#</strong> has counter-referred a patient to you. Kindly log in to the <a href=\"https://therapist.opentelerehab.com/\" target=\"_blank\">portal</a> for more information.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  },
+  {
+    "content_type": "New assigned patient referral request from a rehab service admin",
+    "title": "Patient Referral Notification",
+    "content": "<p>Dear #user_name#,</p><p>Please be informed that a rehab service admin, <strong>#rehab_service_admin_name#</strong> has assigned a patient referral request to you. Kindly log in to the <a href=\"https://therapist.opentelerehab.com/\" target=\"_blank\">portal</a> and take the appropriate action.</p><p>Best regards, <br />OpenTeleRehab Team</p>"
+  }
+]

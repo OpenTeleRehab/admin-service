@@ -112,8 +112,10 @@ class SetupKeycloakPermissions extends Command
             'manage_guidance_page',
             'manage_api_client',
             'manage_clinic',
+            'manage_email_template',
             'translate_guidance_page',
             'translate_health_condition',
+            'translate_email_template',
         ];
         $groupRoles = [
             'super_admin' => [
@@ -140,6 +142,7 @@ class SetupKeycloakPermissions extends Command
                 'manage_api_client',
                 'manage_mfa_policy',
                 'manage_faq_static_page',
+                'manage_email_template'
             ],
             'organization_admin' => [
                 'manage_system_limit',
@@ -287,6 +290,7 @@ class SetupKeycloakPermissions extends Command
                 'translate_privacy_policy',
                 'translate_guidance_page',
                 'translate_term_condition',
+                'translate_email_template',
                 'manage_own_profile',
                 'view_category_tree',
             ],

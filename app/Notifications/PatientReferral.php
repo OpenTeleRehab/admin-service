@@ -2,6 +2,9 @@
 
 namespace App\Notifications;
 
+use App\Models\EmailTemplate;
+use App\Models\Language;
+use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -9,12 +12,26 @@ class PatientReferral extends Notification
 {
     // use Queueable;
 
+    private string $subject;
+    private string $content;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(User $user, string $name)
     {
-        $this->subject = 'OpenTeleRehab – Patient Referral Notification';
+        // Find user current language.
+        $language = Language::find($user->language_id);
+
+        // Find email template by prefix.
+        $emailTemplate = EmailTemplate::where('prefix', 'new-patient-referral-request-from-a-healthcare-worker')->firstOrFail();
+
+        $this->subject = config('mail.from.name') . ' - ' . $emailTemplate->getTranslation('title', $language->code);
+        $this->content = $emailTemplate->getTranslation('content', $language->code);
+
+        // Replace email content.
+        $this->content = str_replace('#user_name#', $user->first_name, $this->content);
+        $this->content = str_replace('#healthcare_worker_name#', $name, $this->content);
     }
 
     /**
@@ -34,7 +51,8 @@ class PatientReferral extends Notification
     {
         return (new MailMessage)
             ->subject($this->subject)
-            ->greeting("Dear $notifiable->first_name,")
-            ->line('Please be informed that a rehab service admin, [Rehab Service Admin Name], has assigned a patient referral request to you. Kindly log in to the portal and take the appropriate action.');
+            ->view('emails.patient-referral', [
+                'content' => $this->content,
+            ]);
     }
 }
