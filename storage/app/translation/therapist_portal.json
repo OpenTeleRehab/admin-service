@@ -602,6 +602,8 @@
     "error_message.appointment.therapist.required": "Please choose a therapist",
     "error_message.appointment_date": "Please select date",
     "error_message.appointment_from": "Please select time",
+    "error_message.appointment_from_less_than_now": "Please select a time that is not in the past",
+    "error_message.appointment_to.less_than_from": "To time must be after from time",
     "error_message.appointment_to": "Please select time",
     "error_message.phone_exists": "Phone number already exists",
     "error_message.chat_nonactivated": "This account is not activated.",
