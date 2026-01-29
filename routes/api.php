@@ -25,6 +25,7 @@ use App\Http\Controllers\InternationalClassificationDiseaseController;
 use App\Http\Controllers\JobTrackerController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\MfaSettingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PhcServiceController;
 use App\Http\Controllers\PrivacyPolicyController;
@@ -32,8 +33,8 @@ use App\Http\Controllers\ProfessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\QuestionnaireController;
-use App\Http\Controllers\ScreeningQuestionnaireController;
 use App\Http\Controllers\RegionController;
+use App\Http\Controllers\ScreeningQuestionnaireController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StaticPageController;
 use App\Http\Controllers\SupersetController;
@@ -42,7 +43,6 @@ use App\Http\Controllers\SystemLimitController;
 use App\Http\Controllers\TermAndConditionController;
 use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\TranslatorController;
-use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -243,7 +243,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Screening Questionnaire
     Route::get('screening-questionnaires-list', [ScreeningQuestionnaireController::class, 'getScreeningQuestionnarieList'])->middleware('role:access_all');
     Route::get('screening-questionnaires-history-list', [ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnaire'])->middleware('role:access_all');
-    Route::get('screening-questionnaires-history-by-patient-list',[ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnaireByPatient'])->middleware('role:access_all');
+    Route::get('screening-questionnaires-history-by-patient-list', [ScreeningQuestionnaireController::class, 'listHistoryScreeningQuestionnaireByPatient'])->middleware('role:access_all');
     Route::get('screening-questionnaires/all', [ScreeningQuestionnaireController::class, 'getAllScreeningQuestionnaires'])->middleware('role:access_all');
     Route::get('screening-questionnaires', [ScreeningQuestionnaireController::class, 'index'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');
     Route::get('screening-questionnaires/{screeningQuestionnaire}', [ScreeningQuestionnaireController::class, 'show'])->middleware('role:manage_screening_questionnaire,translate_screening_questionnaire');
