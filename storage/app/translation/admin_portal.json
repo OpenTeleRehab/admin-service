@@ -100,6 +100,7 @@
     "questionnaire.update_used_questionnaire_confirmation_message": "Attention, any update will apply to questionnaires currently and previously shared with patients. Are you still want to update ?",
     "therapist.delete_confirmation_title": "Therapist deletion",
     "therapist.transfer_confirmation_title": "Patient transfer",
+    "phc.interview_summary_information": "Summary Information",
     "common.no_data": "No Data",
     "common.paginate.show_number_of_records": "Show ${recordStart} to ${recordEnd} of ${totalCount} items",
     "common.paginate.per_page": "per page",
