@@ -26,8 +26,13 @@ class PatientReferral extends Notification
         // Find email template by prefix.
         $emailTemplate = EmailTemplate::where('prefix', 'new-patient-referral-request-from-a-healthcare-worker')->firstOrFail();
 
-        $this->subject = config('mail.from.name') . ' - ' . $emailTemplate->getTranslation('title', $language->code);
-        $this->content = $emailTemplate->getTranslation('content', $language->code);
+        if ($language) {
+            $this->subject = config('mail.from.name') . ' - ' . $emailTemplate->getTranslation('title', $language->code);
+            $this->content = $emailTemplate->getTranslation('content', $language->code);
+        } else {
+            $this->subject = config('mail.from.name') . ' - ' . $emailTemplate->title;
+            $this->content = $emailTemplate->content;
+        }
 
         // Replace email content.
         $this->content = str_replace('#user_name#', $user->first_name, $this->content);
