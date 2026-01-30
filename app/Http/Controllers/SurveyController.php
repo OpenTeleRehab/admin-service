@@ -282,8 +282,7 @@ class SurveyController extends Controller
     private function getSurveysForRegionalAdmin()
     {
         $user = Auth::user();
-        $region = Region::firstWhere('id', $user->region_id);
-        $userIds = User::where('region_id', $region->id)
+        $userIds = User::whereIn('region_id', $user->regions->pluck('id'))
             ->where('type', User::ADMIN_GROUP_REGIONAL_ADMIN)
             ->pluck('id');
         return Survey::whereIn('author', $userIds);
