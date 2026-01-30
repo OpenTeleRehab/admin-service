@@ -116,6 +116,7 @@ class SetupKeycloakPermissions extends Command
             'translate_guidance_page',
             'translate_health_condition',
             'translate_email_template',
+            'view_interview_screening_questionnaire_history',
         ];
         $groupRoles = [
             'super_admin' => [
@@ -260,6 +261,7 @@ class SetupKeycloakPermissions extends Command
                 'manage_mfa_policy',
                 'view_therapist_patient_list',
                 'view_remove_therapist_patient',
+                'view_interview_screening_questionnaire_history',
             ],
             'library_admin' => [
                 'get_library_category',
