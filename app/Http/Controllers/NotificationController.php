@@ -16,10 +16,12 @@ class NotificationController extends Controller
     {
         $request->validate([
             'clinic_id' => 'required|exists:clinics,id',
+            'region_id' => 'required|exists:regions,id',
             'phc_worker_id' => 'required|integer',
         ]);
 
         $clinicId = $request->integer('clinic_id');
+        $regionId = $request->integer('region_id');
 
         // Fetch healthcare worker information.
         $healthcareWorker = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))->get(env('THERAPIST_SERVICE_URL') . '/therapist/by-id', [
@@ -31,7 +33,9 @@ class NotificationController extends Controller
             $name = $healthcareWorker['last_name'] . ' ' . $healthcareWorker['first_name'];
 
             User::where('clinic_id', $clinicId)
+                ->where('region_id', $regionId)
                 ->where('notifiable', 1)
+                ->where('enabled', 1)
                 ->get()
                 ->map(function (User $user) use ($name) {
                     $user->notify(new PatientReferral($user, $name));
