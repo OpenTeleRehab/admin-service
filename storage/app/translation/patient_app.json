@@ -537,6 +537,7 @@
     "phc.transfer.decline_confirm_message": "Are you sure to decline this transfer",
     "phc.transfer.message.decline_success": "Transfer patient has been declined successfully",
     "phc.transfer_by": "Transferred by ${therapist_lastName} ${therapist_firstName}",
+    "phc.phc.supplementary_by": "Supplementary by ${therapist_lastName} ${therapist_firstName}",
     "phc.patient.list_no_data": "No list of patient data",
     "phc.patient.not_match_filter": "No match of the filter",
     "error.message.phc.appointment.recipient_type.required": "Please choose recipient",
