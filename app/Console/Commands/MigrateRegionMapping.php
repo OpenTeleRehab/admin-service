@@ -194,7 +194,7 @@ class MigrateRegionMapping extends Command
                 );
 
                 // Attach Region to Admins
-                $regionalAdmin->adminRegions()->syncWithoutDetaching($region->id);
+                $regionalAdmin->regions()->syncWithoutDetaching($region->id);
                 $this->info("Region {$regionName} ensured for Admin {$regionalAdmin->email}");
 
                 // Only run this if the user was newly created
