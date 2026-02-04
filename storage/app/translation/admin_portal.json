@@ -80,7 +80,7 @@
     "common.confirm": "Confirm",
     "common.interview_history": "Interview History",
     "common.view_history": "View History",
-    "phc.interview_total_score": "Total Score ${total_score}",
+    "common.interview_total_score_of_max_score": "Total Score ${total_score} Of ${max_score}",
     "toast_title.translation.approve": "Approve Translation",
     "toast_title.translation.reject": "Reject Translation",
     "success_message.translation.approve": "Translation approved successfully",
