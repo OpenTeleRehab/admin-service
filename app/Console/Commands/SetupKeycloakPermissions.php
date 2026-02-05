@@ -94,6 +94,8 @@ class SetupKeycloakPermissions extends Command
             'view_remove_phc_worker_patient',
             'manage_faq_static_page',
             'manage_about_us_static_page',
+            'manage_phc_worker_guidance',
+            'access_all',
             // Role for hi-library
             'get_library_category',
             'get_educational_material',
