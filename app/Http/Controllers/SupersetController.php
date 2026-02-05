@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -67,20 +68,31 @@ class SupersetController extends Controller
 
         if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN || $user->type === User::ADMIN_GROUP_ORG_ADMIN) {
             $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_GLOBAL_ADMIN');
-        }
-
-        if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
+        } else if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
             $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_COUNTRY_ADMIN');
             $guestTokenPayload['rls'] = [
                 ['clause' => "country_id = $user->country_id"]
             ];
-        }
-
-        if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+        } else if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_REGIONAL_ADMIN');
+            $guestTokenPayload['rls'] = [
+                ['clause' => "region_id = $user->region_id"]
+            ];
+        } else if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
             $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_CLINIC_ADMIN');
             $guestTokenPayload['rls'] = [
-                ['clause' => "country_id = $user->country_id AND clinic_id = $user->clinic_id"]
+                ['clause' => "clinic_id = $user->clinic_id"]
             ];
+        } else if ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_PHC_SERVICE_ADMIN');
+            $guestTokenPayload['rls'] = [
+                ['clause' => "phc_service_id = $user->clinic_id"]
+            ];
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No dashboard configured for this user role'
+            ], 403);
         }
 
         // Step 3: Request Guest Token from Superset, sending CSRF token and cookies.
@@ -89,9 +101,9 @@ class SupersetController extends Controller
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
         ])
-        ->withToken($accessToken)
-        ->withCookies($cookies, parse_url($supersetUrl, PHP_URL_HOST)) // Attach session cookies.
-        ->post("$supersetUrl/api/v1/security/guest_token", $guestTokenPayload);
+            ->withToken($accessToken)
+            ->withCookies($cookies, parse_url($supersetUrl, PHP_URL_HOST)) // Attach session cookies.
+            ->post("$supersetUrl/api/v1/security/guest_token", $guestTokenPayload);
 
         if (!$guestResponse->successful()) {
             return response()->json([
@@ -120,9 +132,8 @@ class SupersetController extends Controller
             'success' => true,
             'data' => [
                 'guest_token' => $guestToken,
-                'expiration_time' => $expirationTime,
+                'expiration_time' => $expirationTime
             ],
         ]);
     }
 }
-
