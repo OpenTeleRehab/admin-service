@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Helpers\FileHelper;
 use App\Models\File;
 use Illuminate\Console\Command;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Spatie\Activitylog\Facades\Activity;
 
 class GenerateThumbnails extends Command
 {
@@ -36,6 +36,8 @@ class GenerateThumbnails extends Command
      */
     public function handle()
     {
+        // Disable activity logging for thumbnail generation
+        Activity::disableLogging();
 
         $files = File::where('content_type', 'LIKE', 'image%')
             ->where('content_type', '<>', 'image/svg')
@@ -66,6 +68,9 @@ class GenerateThumbnails extends Command
         }
 
         $this->output->progressFinish();
+
+        // Re-enable activity logging after thumbnail generation
+        Activity::enableLogging();
 
         return true;
     }

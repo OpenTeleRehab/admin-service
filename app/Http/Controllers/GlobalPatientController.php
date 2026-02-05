@@ -207,9 +207,11 @@ class GlobalPatientController extends Controller
             'therapist_id' => $patient->therapist_id,
             'hard_delete' => true,
             'user_id' => $user->id,
-            'group' => $user->type,
-            'user_name' => $user->last_name . ' ' . $user->first_name,
+            'user_type' => $user->type,
+            'region_id' => $user->region_id,
+            'province_id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
             'clinic_id' => $user->clinic_id,
+            'phc_service_id' => $user->phc_service_id,
             'country_id' => $user->country_id,
         ]);
 

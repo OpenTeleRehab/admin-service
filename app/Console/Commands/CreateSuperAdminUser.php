@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Helpers\KeycloakHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Facades\Activity;
 
 class CreateSuperAdminUser extends Command
 {
@@ -29,6 +30,9 @@ class CreateSuperAdminUser extends Command
      */
     public function handle()
     {
+        // Disable activity logging for super admin user creation
+        Activity::disableLogging();
+
         DB::beginTransaction();
 
         $email = $this->argument('email');
@@ -66,6 +70,10 @@ class CreateSuperAdminUser extends Command
         }
 
         DB::commit();
+
+        // Re-enable activity logging after super admin user creation
+        Activity::enableLogging();
+
         $this->info('User has been created successfully');
 
         return true;

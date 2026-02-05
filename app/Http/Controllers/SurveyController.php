@@ -433,6 +433,7 @@ class SurveyController extends Controller
                     ->get();
                 break;
             case User::ADMIN_GROUP_REGIONAL_ADMIN:
+                $userRegionIds = $authUser->regions->pluck('id');
                 $survey = Survey::where('role', $type)
                     ->leftJoin('user_surveys', function ($join) use ($authUser) {
                         $join->on('surveys.id', '=', 'user_surveys.survey_id')
@@ -447,7 +448,7 @@ class SurveyController extends Controller
                     ->whereDate('end_date', '>=', Carbon::now())
                     ->where('surveys.status', Survey::STATUS_PUBLISHED)
                     ->whereJsonContains('country', $authUser->country_id)
-                    ->whereJsonContains('region', $authUser->region_id)
+                    ->whereRaw('JSON_OVERLAPS(region, ?)', [json_encode($userRegionIds)])
                     ->select('surveys.*')
                     ->get();
                 break;

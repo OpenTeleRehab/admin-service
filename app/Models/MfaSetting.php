@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class MfaSetting extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     const MFA_ENFORCE = 'force';
     const MFA_RECOMMEND = 'recommend';
@@ -71,6 +73,20 @@ class MfaSetting extends Model
         'phc_service_ids' => 'array',
         'attributes' => 'array',
     ];
+
+    /**
+     * Get the options for activity logging.
+     *
+     * @return \Spatie\Activitylog\LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->logExcept(['created_at', 'updated_at']);
+    }
 
     /**
      * Perform any actions required after the model boots.

@@ -7,6 +7,7 @@ use App\Helpers\KeycloakHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Spatie\Activitylog\Facades\Activity;
 
 class CreateOrganizationAdminUser extends Command
 {
@@ -30,6 +31,9 @@ class CreateOrganizationAdminUser extends Command
      */
     public function handle()
     {
+        // Disable activity logging for organization admin user creation
+        Activity::disableLogging();
+
         DB::beginTransaction();
 
         $email = $this->argument('email');
@@ -64,6 +68,10 @@ class CreateOrganizationAdminUser extends Command
         }
 
         DB::commit();
+
+        // Re-enable activity logging after organization admin user creation
+        Activity::enableLogging();
+
         $this->info('User has been created successfully');
         return true;
     }

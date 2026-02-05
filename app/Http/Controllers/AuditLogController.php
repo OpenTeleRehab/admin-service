@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\UserHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\AuditLogResource;
 use App\Models\ExtendActivity;
-use Illuminate\Support\Facades\Schema;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
+use App\Models\Forwarder;
 
 class AuditLogController extends Controller
 {
-    const COUNTRY_ADMIN = 'country_admin';
-    const CLINIC_ADMIN = 'clinic_admin';
-    const SUPER_ADMIN = 'super_admin';
-    const ORGANIZATION_ADMIN = 'organization_admin';
     const KEYCLOAK_EVENT_TYPE_LOGIN = 'access.LOGIN';
 
     /**
@@ -50,24 +48,25 @@ class AuditLogController extends Controller
 
         if (!empty($data['search_value'])) {
             $searchValue = $data['search_value'];
-            $auditLogs->where(function ($query) use ($searchValue) {
-                $columns = Schema::getColumnListing('activity_log');
+            $therapistByName = Http::withToken(
+                Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE)
+            )->get(env('THERAPIST_SERVICE_URL') . '/internal/user/by-name', ['name' => $searchValue])
+            ->json('data', []);
 
-                foreach ($columns as $column) {
-                    $query->orWhere($column, 'LIKE', "{$searchValue}%");
+            $therapistIds = collect($therapistByName)->pluck('id')->toArray();
+            $auditLogs->where(function ($query) use ($searchValue, $therapistIds) {
+                $query->whereHas('user', function ($q) use ($searchValue) {
+                    $q->where(function ($q) use ($searchValue) {
+                        $q->where('first_name', 'like', '%' . $searchValue . '%')
+                        ->orWhere('last_name', 'like', '%' . $searchValue . '%');
+                    });
+                });
+                if (!empty($therapistIds)) {
+                    $query->orWhere(function ($q) use ($therapistIds) {
+                        $q->where('log_name', ExtendActivity::THERAPIST_SERVICE)
+                        ->whereIn('causer_id', $therapistIds);
+                    });
                 }
-
-                $query->orWhereHas('user', function ($subQuery) use ($searchValue) {
-                    $subQuery->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["{$searchValue}%"]);
-                });
-
-                $query->orWhereHas('user.clinic', function ($subQuery) use ($searchValue) {
-                    $subQuery->where('name', 'LIKE', "{$searchValue}%");
-                });
-
-                $query->orWhereHas('user.country', function ($subQuery) use ($searchValue) {
-                    $subQuery->where('name', 'LIKE', "{$searchValue}%");
-                });
             });
         }
 
@@ -78,20 +77,71 @@ class AuditLogController extends Controller
                     $filterObj = json_decode($filter);
 
                     if ($filterObj->columnName === 'type_of_changes') {
-                        $query->where('description', 'LIKE', "%{$filterObj->value}%");
+                        $query->where('description', $filterObj->value);
                     } elseif ($filterObj->columnName === 'who') {
-                        $query->where(function ($subQuery) use ($filterObj) {
-                            $subQuery->whereHas('user', function ($subQuery) use ($filterObj) {
-                                $subQuery->whereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$filterObj->value}%"]);
-                            })
-                                ->orWhere('full_name', 'LIKE', "%{$filterObj->value}%");
+                        $therapistByName = Http::withToken(
+                            Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE)
+                        )->get(env('THERAPIST_SERVICE_URL') . '/internal/user/by-name', ['name' => $filterObj->value])
+                        ->json('data', []);
+                        $therapistIds = collect($therapistByName)->pluck('id')->toArray();
+
+                        $query->where(function ($query) use ($filterObj, $therapistIds) {
+                            $query->whereHas('user', function ($q) use ($filterObj) {
+                                $q->where(function ($q) use ($filterObj) {
+                                    $q->where('first_name', 'like', '%' . $filterObj->value . '%')
+                                    ->orWhere('last_name', 'like', '%' . $filterObj->value . '%');
+                                });
+                            });
+                            if (!empty($therapistIds)) {
+                                $query->orWhere(function ($q) use ($therapistIds) {
+                                    $q->where('log_name', ExtendActivity::THERAPIST_SERVICE)
+                                    ->whereIn('causer_id', $therapistIds);
+                                });
+                            }
                         });
                     } elseif ($filterObj->columnName === 'user_group') {
-                        $query->where(function ($subQuery) use ($filterObj) {
+                        $therapistByGroup = Http::withToken(
+                            Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE)
+                        )->get(env('THERAPIST_SERVICE_URL') . '/internal/user/by-type', ['type' => $filterObj->value])
+                        ->json('data', []);
+                        $therapistIds = collect($therapistByGroup)->pluck('id')->toArray();
+                        $query->where(function ($subQuery) use ($filterObj, $therapistIds) {
                             $subQuery->whereHas('user', function ($subQuery) use ($filterObj) {
                                 $subQuery->where('type', $filterObj->value);
+                            });
+                            if (!empty($therapistIds)) {
+                                $subQuery->orWhere(function ($q) use ($therapistIds) {
+                                    $q->where('log_name', ExtendActivity::THERAPIST_SERVICE)
+                                    ->whereIn('causer_id', $therapistIds);
+                                });
+                            }
+                        });
+                    } elseif ($filterObj->columnName === 'country') {
+                        $query->where(function ($subQuery) use ($filterObj) {
+                            $subQuery->orWhereHas('user.country', function ($subQuery) use ($filterObj) {
+                                $subQuery->where('id', $filterObj->value);
                             })
-                                ->orWhere('group', $filterObj->value);
+                                ->orWhere('country_id', $filterObj->value);
+                        });
+                    } elseif ($filterObj->columnName === 'region') {
+                        $query->where(function ($subQuery) use ($filterObj) {
+                            $subQuery->orWhereHas('user.region', function ($subQuery) use ($filterObj) {
+                                $subQuery->where('id', $filterObj->value);
+                            })
+                            ->orWhereHas('user.regions', function ($subQuery) use ($filterObj) {
+                                $subQuery->where('id', $filterObj->value);
+                            })
+                            ->orWhere('region_id', $filterObj->value);
+                        });
+                    } elseif ($filterObj->columnName === 'province') {
+                        $query->where(function ($q) use ($filterObj) {
+                            $q->orWhereHas('user.clinic.province', function ($q) use ($filterObj) {
+                                $q->where('id', $filterObj->value);
+                            });
+                            $q->orWhereHas('user.phcService.province', function ($q) use ($filterObj) {
+                                $q->where('id', $filterObj->value);
+                            });
+                            $q->orWhere('province_id', $filterObj->value);
                         });
                     } elseif ($filterObj->columnName === 'clinic') {
                         $query->where(function ($subQuery) use ($filterObj) {
@@ -100,12 +150,12 @@ class AuditLogController extends Controller
                             })
                                 ->orWhere('clinic_id', $filterObj->value);
                         });
-                    } elseif ($filterObj->columnName === 'country') {
+                    } elseif ($filterObj->columnName === 'phc_service') {
                         $query->where(function ($subQuery) use ($filterObj) {
-                            $subQuery->orWhereHas('user.country', function ($subQuery) use ($filterObj) {
+                            $subQuery->orWhereHas('user.phcService', function ($subQuery) use ($filterObj) {
                                 $subQuery->where('id', $filterObj->value);
                             })
-                                ->orWhere('country_id', $filterObj->value);
+                            ->orWhere('phc_service_id', $filterObj->value);
                         });
                     } elseif ($filterObj->columnName === 'date_time') {
                         $dates = explode(' - ', $filterObj->value);
@@ -119,6 +169,8 @@ class AuditLogController extends Controller
                         $query->whereRaw("JSON_SEARCH(properties->'$.old', 'one', ?) IS NOT NULL", ["%{$filterObj->value}%"]);
                     } elseif ($filterObj->columnName === 'after_changed') {
                         $query->whereRaw("JSON_SEARCH(properties->'$.attributes', 'one', ?) IS NOT NULL", ["%{$filterObj->value}%"]);
+                    } elseif ($filterObj->columnName === 'subject_type') {
+                        $query->whereRaw("SUBSTRING_INDEX(subject_type, '\\\\', -1) LIKE ?", ["%{$filterObj->value}%"]);
                     } else {
                         $query->where($filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
                     }
@@ -126,26 +178,42 @@ class AuditLogController extends Controller
             });
         }
 
-        if ($user->type === self::ORGANIZATION_ADMIN) {
-            $auditLogs->where(function ($subQuery) use ($user) {
-                $subQuery->orWhereHas('user', function ($subQuery) use ($user) {
-                    $subQuery->where('type', '<>', self::SUPER_ADMIN);
+        if ($user->type === User::ADMIN_GROUP_ORG_ADMIN) {
+            $auditLogs->where(function ($subQuery) {
+                $subQuery->orWhereHas('user', function ($subQuery) {
+                    $subQuery->where('type', '<>', User::ADMIN_GROUP_SUPER_ADMIN);
                 })
-                    ->orWhere('group', '<>', self::SUPER_ADMIN);
+                ->orWhereNotNull('country_id');
             });
-        } else if ($user->type === self::COUNTRY_ADMIN) {
+        } else if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
             $auditLogs->where(function ($subQuery) use ($user) {
                 $subQuery->orWhereHas('user.country', function ($subQuery) use ($user) {
                     $subQuery->where('id', $user->country_id);
                 })
-                    ->orWhere('country_id', $user->country_id);
+                ->orWhere('country_id', $user->country_id);
             });
-        } elseif ($user->type === self::CLINIC_ADMIN) {
+        } elseif ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $userRegionIds = $user->regions->pluck('id');
+            $auditLogs->where(function ($subQuery) use ($userRegionIds) {
+                $subQuery->orWhereHas('user', function ($query) use ($userRegionIds) {
+                    $query->whereHas('regions', fn($q) => $q->whereIn('id', $userRegionIds))
+                    ->orWhereHas('region', fn($q) => $q->whereIn('id', $userRegionIds));
+                })
+                ->orWhereIn('region_id', $userRegionIds);
+            });
+        } elseif ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
             $auditLogs->where(function ($subQuery) use ($user) {
                 $subQuery->orWhereHas('user.clinic', function ($subQuery) use ($user) {
                     $subQuery->where('id', $user->clinic_id);
                 })
                     ->orWhere('clinic_id', $user->clinic_id);
+            });
+        } elseif ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+            $auditLogs->where(function ($subQuery) use ($user) {
+                $subQuery->orWhereHas('user.phcService', function ($subQuery) use ($user) {
+                    $subQuery->where('id', $user->phc_service_id);
+                })
+                    ->orWhere('phc_service_id', $user->phc_service_id);
             });
         }
 
@@ -154,7 +222,50 @@ class AuditLogController extends Controller
             'current_page' => $auditLogs->currentPage(),
             'total_count' => $auditLogs->total()
         ];
-        return ['success' => true, 'data' => AuditLogResource::collection($auditLogs), 'info' => $info];
+
+        $therapistIds = $auditLogs
+            ->whereIn('log_name', [ExtendActivity::THERAPIST_SERVICE, ExtendActivity::PATIENT_SERVICE])
+            ->pluck('causer_id')
+            ->unique()
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $patientIds = $auditLogs
+            ->where('log_name', ExtendActivity::PATIENT_SERVICE)
+            ->pluck('causer_id')
+            ->unique()
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $therapistResponse = Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+            ->get(env('THERAPIST_SERVICE_URL') . '/internal/user/by-ids', ['ids' => $therapistIds])
+            ->json('data', []);
+        $patientResponse = Http::withToken(Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE))
+            ->get(env('PATIENT_SERVICE_URL') . '/patient/list/by-ids', ['patient_ids' => $patientIds])
+            ->json('data', []);
+        $therapists = collect($therapistResponse)->keyBy('id');
+        $patients = collect($patientResponse)->keyBy('id');
+        $auditLogCollection = collect($auditLogs->items());
+        $mappedAuditLogs = collect($auditLogCollection)->map(function ($log) use ($therapists, $patients, $user) {
+            if ($log->group && $log->full_name) {
+                $log->causer_group = $log->group;
+                $log->causer_name = $log->full_name;
+            } elseif ($log->log_name === ExtendActivity::THERAPIST_SERVICE) {
+                $therapist  = $therapists[$log->causer_id] ?? null;
+                $log->causer_name = UserHelper::getFullName($therapist['last_name'] ?? null, $therapist['first_name'] ?? null, $user->langauge_id) ?? null;
+                $log->causer_group = $therapist['type'] ?? null;
+            } elseif ($log->log_name === ExtendActivity::PATIENT_SERVICE) {
+                $patient = $patients[$log->causer_id] ?? null;
+                $log->causer_name = $patient['identity'] ?? null;
+                $log->causer_group = User::GROUP_PATIENT;
+            }
+
+            return $log;
+        });
+
+        return ['success' => true, 'data' => AuditLogResource::collection($mappedAuditLogs), 'info' => $info];
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Organization;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Activitylog\Facades\Activity;
 
 class CreateOrganization extends Command
 {
@@ -29,6 +30,9 @@ class CreateOrganization extends Command
      */
     public function handle()
     {
+        // Disable activity logging for organization creation
+        Activity::disableLogging();
+
         $adminEmail = $this->argument('admin_email');
         $orgName = $this->argument('org_name');
         $validator = Validator::make([
@@ -62,6 +66,9 @@ class CreateOrganization extends Command
             'max_phc_sms_per_week' => 2,
             'status' => Organization::SUCCESS_ORG_STATUS,
         ]);
+
+        // Re-enable activity logging after organization creation
+        Activity::enableLogging();
 
         $this->info('Organization has been created successfully');
         return true;

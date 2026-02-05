@@ -32,7 +32,17 @@ class ForwarderController extends Controller
             $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
             $params['country_id'] ??= $user->country_id;
             $params['clinic_id'] ??= $user->clinic_id;
-            return Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . $endpoint, $params);
+            return Http::withToken($access_token)->withHeaders([
+                'int-user-type' => $user?->type,
+                'int-country-id' => $user->country_id,
+                'int-region-id' => $user?->region_id,
+                'int-region-ids' => $user ? json_encode($user->regions()->pluck('id')) : null,
+                'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
+                'int-phc-service-id' => $user?->phc_service_id,
+                'int-clinic-id' => $user->clinic_id,
+                'int-admin-user-id' => $user?->id,
+            ])
+            ->get(env('THERAPIST_SERVICE_URL') . $endpoint, $params);
         }
 
         if ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
@@ -40,6 +50,13 @@ class ForwarderController extends Controller
             $response = Http::withToken($access_token)->withHeaders([
                 'country' => $countryCode,
                 'int-clinic-id' => $user->clinic_id,
+                'int-user-type' => $user?->type,
+                'int-country-id' => $user->country_id,
+                'int-region-id' => $user?->region_id,
+                'int-region-ids' => $user ? json_encode($user->regions()->pluck('id')) : null,
+                'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
+                'int-phc-service-id' => $user?->phc_service_id,
+                'int-admin-user-id' => $user?->id,
             ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $params);
             return response($response->body(), $response->status())
                 ->withHeaders([
@@ -71,6 +88,7 @@ class ForwarderController extends Controller
                 'int-phc-service-id' => $user?->phc_service_id,
                 'int-clinic-id' => $user->clinic_id,
                 'int-user-type' => $user?->type,
+                'int-admin-user-id' => $user?->id,
             ])
                 ->post(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
         } elseif ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
@@ -83,6 +101,7 @@ class ForwarderController extends Controller
                 'int-phc-service-id' => $user?->phc_service_id,
                 'int-clinic-id' => $user->clinic_id,
                 'int-user-type' => $user?->type,
+                'int-admin-user-id' => $user?->id,
             ])
                 ->post(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
 
@@ -133,7 +152,15 @@ class ForwarderController extends Controller
 
         if ($service_name !== null && str_contains($service_name, Forwarder::THERAPIST_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-            $response = Http::withToken($access_token)
+            $response = Http::withToken($access_token)->withHeaders([
+                'int-country-id' => $user->country_id,
+                'int-region-id' => $user?->region_id,
+                'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
+                'int-phc-service-id' => $user?->phc_service_id,
+                'int-clinic-id' => $user->clinic_id,
+                'int-user-type' => $user?->type,
+                'int-admin-user-id' => $user?->id,
+            ])
                 ->put(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
         }
 
@@ -146,6 +173,11 @@ class ForwarderController extends Controller
                     'Accept' => 'application/json',
                     'int-clinic-id' => $user->clinic_id,
                     'int-admin-user-id' => $user->id,
+                    'int-country-id' => $user->country_id,
+                    'int-region-id' => $user?->region_id,
+                    'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
+                    'int-phc-service-id' => $user?->phc_service_id,
+                    'int-user-type' => $user?->type,
                 ])
                 ->put(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
         }
