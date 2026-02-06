@@ -143,6 +143,9 @@ class KeycloakHelper
     public static function getTherapistKeycloakAccessToken()
     {
         $access_token = Cache::get(self::THERAPIST_ACCESS_TOKEN);
+        $therapistKeycloakClientId = env('THERAPIST_KEYCLOAK_BACKEND_CLIENT');
+        $therapistKeycloakUsername = env('THERAPIST_KEYCLOAK_BACKEND_USERNAME');
+        $therapistKeycloakPassword = env('THERAPIST_KEYCLOAK_BACKEND_PASSWORD');
 
         if ($access_token) {
             $token_arr = explode('.', $access_token);
@@ -151,13 +154,13 @@ class KeycloakHelper
             $current_timestamp = Carbon::now()->subMinute()->timestamp;
 
             if ($current_timestamp > $token_exp_at) {
-                return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN);
+                return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN, $therapistKeycloakClientId, $therapistKeycloakUsername, $therapistKeycloakPassword);
             }
 
             return $access_token;
         }
 
-        return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN);
+        return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN, $therapistKeycloakClientId, $therapistKeycloakUsername, $therapistKeycloakPassword);
     }
 
     /**
@@ -370,14 +373,14 @@ class KeycloakHelper
      *
      * @return void
      */
-    private static function generateKeycloakToken($url, $client_secret, $cache_key)
+    private static function generateKeycloakToken($url, $client_secret, $cache_key, $clientId = null, $username = null, $password = null)
     {
         $response = Http::asForm()->post($url, [
             'grant_type' => 'password',
-            'client_id' => env('KEYCLOAK_BACKEND_CLIENT'),
+            'client_id' => $clientId ?? env('KEYCLOAK_BACKEND_CLIENT'),
             'client_secret' => $client_secret,
-            'username' => env('KEYCLOAK_BACKEND_USERNAME'),
-            'password' => env('KEYCLOAK_BACKEND_PASSWORD'),
+            'username' => $username ?? env('KEYCLOAK_BACKEND_USERNAME'),
+            'password' => $password ?? env('KEYCLOAK_BACKEND_PASSWORD'),
             'scope' => 'openid profile email'
         ]);
 

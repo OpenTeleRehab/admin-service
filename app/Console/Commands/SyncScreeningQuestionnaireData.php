@@ -47,7 +47,7 @@ class SyncScreeningQuestionnaireData extends Command
 
         // Fetch screening questionnaires from global
         $globalScreeningQuestionnaires = GlobalDataSyncHelper::fetchData('get-screening-questionnaires');
-        if (!$globalScreeningQuestionnaires) {
+        if (is_null($globalScreeningQuestionnaires)) {
             $this->error('Failed to fetch screening questionnaires from global.');
             return;
         }

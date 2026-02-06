@@ -282,9 +282,11 @@ class SurveyController extends Controller
     private function getSurveysForRegionalAdmin()
     {
         $user = Auth::user();
-        $userIds = User::whereIn('region_id', $user->regions->pluck('id'))
-            ->where('type', User::ADMIN_GROUP_REGIONAL_ADMIN)
-            ->pluck('id');
+        $userIds = User::whereHas('regions', function ($query) use ($user) {
+            $query->whereIn('regions.id', $user->regions->pluck('id'));
+        })
+        ->pluck('id');
+
         return Survey::whereIn('author', $userIds);
     }
 
@@ -574,12 +576,12 @@ class SurveyController extends Controller
                     ->whereJsonContains('province', $authUser->province_id)
                     ->select('surveys.*');
 
-                if ($authUser->clinic_id) {
-                    $treatmentSurveyQuery->whereJsonContains('clinic', $authUser->clinic_id);
-                    $generalSurveyQuery->whereJsonContains('clinic', $authUser->clinic_id);
-                } else {
+                if ($authUser->phc_service_id) {
                     $treatmentSurveyQuery->whereJsonContains('phc_service', $authUser->phc_service_id);
                     $generalSurveyQuery->whereJsonContains('phc_service', $authUser->phc_service_id);
+                } else {
+                    $treatmentSurveyQuery->whereJsonContains('clinic', $authUser->clinic_id);
+                    $generalSurveyQuery->whereJsonContains('clinic', $authUser->clinic_id);
                 }
 
                 $treatmentSurvey = $treatmentSurveyQuery->get();

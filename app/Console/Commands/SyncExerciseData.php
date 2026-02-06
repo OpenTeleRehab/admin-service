@@ -131,6 +131,25 @@ class SyncExerciseData extends Command
                         }
                     }
                 }
+                // Add additional fields.
+                if ($globalExercise->additional_fields) {
+                    foreach ($globalExercise->additional_fields as $additionalField) {
+                        DB::table('additional_fields')->updateOrInsert(
+                            [
+                                'exercise_id' => $newExercise->id,
+                            ],
+                            [
+                                'field' => json_encode($additionalField->field),
+                                'value' => json_encode($additionalField->value),
+                                'auto_translated' => json_encode($additionalField->auto_translated),
+                                'parent_id' => $additionalField->parent_id,
+                                'suggested_lang' => $additionalField->suggested_lang,
+                                'created_at' => Carbon::parse($additionalField->created_at ?? now()),
+                                'updated_at' => Carbon::now(),
+                            ]
+                        );
+                    }
+                }
                 $this->output->progressAdvance();
             }
             $this->output->progressFinish();
