@@ -26,6 +26,7 @@ class AdditionalField extends Model
         'auto_translated',
         'parent_id',
         'suggested_lang',
+        'global_additional_field_id',
     ];
 
     /**
@@ -46,7 +47,7 @@ class AdditionalField extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->logExcept(['id', 'auto_translated', 'parent_id', 'suggested_lang', 'created_at', 'updated_at']);
+            ->logExcept(['id', 'auto_translated', 'parent_id', 'suggested_lang', 'created_at', 'updated_at', 'global_additional_field_id']);
     }
 
     /**

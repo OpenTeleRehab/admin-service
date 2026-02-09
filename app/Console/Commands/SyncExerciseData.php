@@ -131,12 +131,14 @@ class SyncExerciseData extends Command
                         }
                     }
                 }
+
                 // Add additional fields.
-                if ($globalExercise->additional_fields) {
+                if (isset($globalExercise->additional_fields)) {
                     foreach ($globalExercise->additional_fields as $additionalField) {
                         DB::table('additional_fields')->updateOrInsert(
                             [
                                 'exercise_id' => $newExercise->id,
+                                'global_additional_field_id' => $additionalField->id,
                             ],
                             [
                                 'field' => json_encode($additionalField->field),
