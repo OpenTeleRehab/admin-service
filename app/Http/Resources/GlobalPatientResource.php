@@ -63,6 +63,7 @@ class GlobalPatientResource extends JsonResource
             'country_id' => $this->country_id,
             'country_name' => $this->country->name,
             'phc_service_name' => $this->phcService?->name,
+            'region_name' => $this->phcService?->province?->region?->name ?? $this->clinic?->region?->name,
             'date_of_birth' => $this->date_of_birth,
             'enabled' => $this->enabled,
             'patient_id' => $this->patient_id,

@@ -975,6 +975,7 @@
     "survey.error.start_date": "Please select start date",
     "survey.error.end_date": "Please select end date",
     "survey.error.thereshold_value": "Value must be between ${minValue} and ${threshold}",
+    "survey.error.include": "Please select include at the start or end of treatment plan",
     "survey.end_date": "End date",
     "survey.start_date": "Start date",
     "survey.role": "Role",
