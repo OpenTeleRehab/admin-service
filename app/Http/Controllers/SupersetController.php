@@ -68,16 +68,17 @@ class SupersetController extends Controller
 
         if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN || $user->type === User::ADMIN_GROUP_ORG_ADMIN) {
             $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_GLOBAL_ADMIN');
-        } else if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
-            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_COUNTRY_ADMIN');
-            $guestTokenPayload['rls'] = [
-                ['clause' => "country_id = $user->country_id"]
-            ];
-        } else if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_REGIONAL_ADMIN');
-            $guestTokenPayload['rls'] = [
-                ['clause' => "region_id = $user->region_id"]
-            ];
+        } else if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN || $user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_COUNTRY_AND_REGION_ADMIN');
+            if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
+                $guestTokenPayload['rls'] = [
+                    ['clause' => "country_id = {$user->country_id}"]
+                ];
+            } else {
+                $guestTokenPayload['rls'] = [
+                    ['clause' => "region_id = {$user->region_id}"]
+                ];
+            }
         } else if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
             $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_CLINIC_ADMIN');
             $guestTokenPayload['rls'] = [
@@ -86,7 +87,7 @@ class SupersetController extends Controller
         } else if ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
             $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_PHC_SERVICE_ADMIN');
             $guestTokenPayload['rls'] = [
-                ['clause' => "phc_service_id = $user->clinic_id"]
+                ['clause' => "phc_service_id = $user->phc_service_id"]
             ];
         } else {
             return response()->json([
