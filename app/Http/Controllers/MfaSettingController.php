@@ -98,6 +98,18 @@ class MfaSettingController extends Controller
             'skip_mfa_setup_unit' => 'nullable|string',
         ]);
 
+        if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN && MfaSetting::whereJsonContains('clinic_ids', $authUser->clinic_id)->count()) {
+            return response()->json([
+                'message' => 'mfa.mfa_setting.therapist.already_exist',
+            ], 422);
+        }
+
+        if ($authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN && MfaSetting::whereJsonContains('phc_service_ids', $authUser->phc_service_id)->count()) {
+            return response()->json([
+                'message' => 'mfa.mfa_setting.phc_worker.already_exist',
+            ], 422);
+        }
+
         if ($validatedData['mfa_enforcement'] === MfaSetting::MFA_DISABLE) {
             $validatedData['mfa_expiration_duration'] = null;
             $validatedData['skip_mfa_setup_duration'] = null;

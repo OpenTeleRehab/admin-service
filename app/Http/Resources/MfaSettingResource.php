@@ -2,11 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Clinic;
-use App\Models\Country;
-use App\Models\Organization;
-use App\Models\PhcService;
-use App\Models\Region;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class MfaSettingResource extends JsonResource
