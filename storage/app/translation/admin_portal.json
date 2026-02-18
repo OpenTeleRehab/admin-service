@@ -1018,6 +1018,8 @@
     "report.patient_raw_data.phc_service": "PHC Service",
     "report.patient_raw_data.lead_phc_worker": "Lead healthcare worker",
     "report.patient_raw_data.supplementary_phc_worker": "Supplementary healthcare worker",
+    "report.patient_raw_data.health_condition_group": "Health Condition Group",
+    "report.patient_raw_data.health_condition": "Health Condition",
     "report.patient_raw_data.organization": "Organization",
     "report.patient_raw_data.patient_id": "Patient ID",
     "report.patient_raw_data.location": "Location",

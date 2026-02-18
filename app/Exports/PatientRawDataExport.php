@@ -34,7 +34,8 @@ class PatientRawDataExport
      */
     protected static $exportDirectoryName = 'exports/';
 
-    private static function getUniqueIds($collection, $field) {
+    private static function getUniqueIds($collection, $field)
+    {
         return collect($collection)
             ->pluck($field)
             ->unique()
@@ -102,13 +103,6 @@ class PatientRawDataExport
             ...array_map(fn($patient) => $patient->secondary_therapists, $patients)
         )));
         $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-        $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/patient/therapist-by-ids', [
-            'ids' => json_encode($uniqueTherapistIds),
-        ]);
-
-        if (!empty($response) && $response->successful()) {
-            $therapists = json_decode($response);
-        }
 
         $patientTreatmentPlanData = [];
         $patientTreatmentPlanSurveyData = [];
@@ -121,13 +115,38 @@ class PatientRawDataExport
         $provinceIds = self::getUniqueIds($patients, 'province_id');
         $clinicIds = self::getUniqueIds($patients, 'clinic_id');
         $phcServiceIds = self::getUniqueIds($patients, 'phc_service_id');
+        $allTherapistUserIds = [];
+
+        foreach ($patients as $patient) {
+            $allTherapistUserIds[] = $patient->therapist_id;
+
+            if (is_array($patient->secondary_therapists)) {
+                $allTherapistUserIds = array_merge($allTherapistUserIds, $patient->secondary_therapists);
+            }
+
+            $allTherapistUserIds[] = $patient->phc_worker_id;
+
+            if (is_array($patient->supplementary_phc_workers)) {
+                $allTherapistUserIds = array_merge($allTherapistUserIds, $patient->supplementary_phc_workers);
+            }
+        }
+
+        $uniqueTherapistUserIds = array_values(array_unique($allTherapistUserIds));
+
+        $therapistByIdsRes = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/patient/therapist-by-ids', [
+            'ids' => json_encode($uniqueTherapistUserIds),
+        ]);
+
+        if (!empty($therapistByIdsRes) && $therapistByIdsRes->successful()) {
+            $therapistNeedsResult = json_decode($therapistByIdsRes);
+        }
 
         $countryNeeds = Country::whereIn('id', $countryIds)->get()->keyBy('id');
         $regionNeeds = Region::whereIn('id', $regionIds)->get()->keyBy('id');
         $provinceNeeds = Province::whereIn('id', $provinceIds)->get()->keyBy('id');
         $clinicNeeds = Clinic::whereIn('id', $clinicIds)->get()->keyBy('id');
         $phcServiceNeeds = PhcService::whereIn('id', $phcServiceIds)->get()->keyBy('id');
-        $therapistUserNeeds = collect($therapists?->data)->keyBy('id');
+        $therapistUserNeeds = collect($therapistNeedsResult?->data)->keyBy('id');
 
         foreach ($patients as $patient) {
             $country = $countryNeeds[$patient->country_id] ?? null;
@@ -164,6 +183,7 @@ class PatientRawDataExport
                 ->filter()
                 ->values()
                 ->join(', ');
+
             $patientData = [
                 $clinic?->name,
                 $phcService?->name,
@@ -225,7 +245,7 @@ class PatientRawDataExport
                     // Get treatment survey data
                     $patientTreatmentSurveys = self::getPatientTreatmentSurveys($treatmentPlan->id, $patient->id);
                     if (count($patientTreatmentSurveys) > 0) {
-                        foreach($patientTreatmentSurveys as $patientTreatmentSurvey) {
+                        foreach ($patientTreatmentSurveys as $patientTreatmentSurvey) {
                             $treatmentInitialSurvey = UserSurvey::where('user_id', $patient->id)
                                 ->where('survey_id', $patientTreatmentSurvey->id)
                                 ->where('treatment_plan_id', $treatmentPlan->id)
@@ -252,7 +272,6 @@ class PatientRawDataExport
                                 $finalResult
                             ]);
                         }
-
                     } else {
                         $patientTreatmentPlanSurveyData[] = array_merge($patientData, [
                             $treatmentPlan->name,
@@ -442,7 +461,7 @@ class PatientRawDataExport
             ->select('surveys.*', 'user_surveys.answer')
             ->get();
         if (count($patientSurveys) > 0) {
-            foreach($patientSurveys as $patientSurvey) {
+            foreach ($patientSurveys as $patientSurvey) {
                 $surveyTitle = $patientSurvey->questionnaire->getTranslation('title', $language?->code ?? 'en');
                 $result = self::getSurveyResult(json_decode($patientSurvey->answer, true));
                 $data[] = array_merge($patientData, [
@@ -466,7 +485,7 @@ class PatientRawDataExport
                     ->orWhere('surveys.include_at_the_end', 1);
             })
             ->where('surveys.status', '<>', Survey::STATUS_DRAFT)
-            ->where('user_surveys.treatment_plan_id',$treatmentPlanId)
+            ->where('user_surveys.treatment_plan_id', $treatmentPlanId)
             ->where('user_surveys.user_id', $patientId)
             ->select('surveys.*')
             ->distinct('user_surveys.survey_id')
