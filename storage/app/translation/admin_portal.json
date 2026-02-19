@@ -1284,5 +1284,6 @@
     "error.survey.region": "Please select region",
     "error.survey.province": "Please select province",
     "error.survey.service_type": "Please select service type",
-    "error.survey.phc_service": "Please select PHC service"
+    "error.survey.phc_service": "Please select PHC service",
+    "back_to.login.page": "Back to login page"
 }
