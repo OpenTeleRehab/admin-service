@@ -544,6 +544,11 @@ class AdminController extends Controller
 
             $response = Http::withToken($token)->get($userUrl);
             $keyCloakUsers = $response->json();
+
+            if (!$keyCloakUsers) {
+                return ['success' => false, 'message' => 'error_message.user_update'];
+            }
+
             $url = KeycloakHelper::getUserUrl() . '/' . $keyCloakUsers[0]['id'];
 
             $userUpdated = Http::withToken($token)

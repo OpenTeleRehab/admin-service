@@ -143,7 +143,7 @@ class MfaSettingController extends Controller
             $validatedData['phc_service_ids'] = null;
         } else if ($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
             $validatedData['country_ids'] = [$authUser->country_id];
-            $validatedData['region_ids'] = [$authUser->region_id];
+            $validatedData['region_ids'] = $authUser->regions->pluck('id');
         } else if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
             $validatedData['country_ids'] = [$authUser->country_id];
             $validatedData['region_ids'] = [$authUser->region_id];
