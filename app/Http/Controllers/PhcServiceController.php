@@ -80,6 +80,10 @@ class PhcServiceController extends Controller
                     $filterObj = json_decode($filter);
                     if ($filterObj->columnName === 'province') {
                         $query->where('province_id', $filterObj->value);
+                    } elseif ($filterObj->columnName === 'region') {
+                        $query->whereHas('province.region', function ($q) use ($filterObj) {
+                            $q->where('id', $filterObj->value);
+                        });
                     } else {
                         $query->where('phc_services.' . $filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
                     }
@@ -418,9 +422,9 @@ class PhcServiceController extends Controller
      * @param Request $request
      * @return array
      */
-    public function countPhcWorkerByPhcService()
+    public function countPhcWorkerByPhcService(Request $request)
     {
-        $phcServiceId = Auth::user()->phc_service_id;
+        $phcServiceId = Auth::user()->phc_service_id ?? $request->get('phc_service_id');
 
         $phcWorkerData = $this->countPhcWorker($phcServiceId);
 
