@@ -390,7 +390,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('phc-services', [PhcServiceController::class, 'index'])->middleware('role:manage_phc_service,view_phc_service_list');
     Route::get('phc-services-by-province', [PhcServiceController::class, 'getByProvince'])->middleware('role:manage_phc_service');
     Route::get('phc-services/option/list', [PhcServiceController::class, 'getOptionList'])->middleware('role:manage_phc_service,view_phc_service_list');
-    Route::get('phc-services/count-phc-worker', [PhcServiceController::class, 'countPhcWorkerByPhcService'])->middleware('role:view_number_of_phc_service_phc_worker');
+    Route::get('phc-services/count-phc-worker', [PhcServiceController::class, 'countPhcWorkerByPhcService'])->middleware('role:view_number_of_phc_service_phc_worker,manage_phc_service');
     Route::get('phc-services/{phcService}/entities', [PhcServiceController::class, 'getEntitiesByPhcServiceId'])->middleware('role:manage_phc_service');
     Route::post('phc-services', [PhcServiceController::class, 'store'])->middleware('role:manage_phc_service');
     Route::put('phc-services/{phc_service}', [PhcServiceController::class, 'update'])->middleware('role:manage_phc_service');

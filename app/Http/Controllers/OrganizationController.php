@@ -45,7 +45,7 @@ class OrganizationController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|unique:organizations,name',
-            'admin_email' => 'required|email|unique:users,email',
+            'admin_email' => 'required|email|unique:organizations,admin_email',
             'sub_domain_name' => 'required|string',
             'max_number_of_therapist' => 'required|integer|min:0',
             'max_number_of_phc_worker' => 'required|integer|min:0',

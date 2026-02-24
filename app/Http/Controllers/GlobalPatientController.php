@@ -46,6 +46,17 @@ class GlobalPatientController extends Controller
                 case User::ADMIN_GROUP_COUNTRY_ADMIN:
                     $query->where('country_id', $authUser->country_id);
                     break;
+                case User::ADMIN_GROUP_REGIONAL_ADMIN:
+                    $userRegionIds = $authUser->regions->pluck('id')->toArray();
+                    $query->where(function ($subQuery) use ($userRegionIds) {
+                        $subQuery->whereHas('clinic', fn($q) =>
+                            $q->whereIn('region_id', $userRegionIds)
+                        )
+                        ->orWhereHas('phcService.province', fn($q) =>
+                            $q->whereIn('region_id', $userRegionIds)
+                        );
+                    });
+                    break;
                 case User::ADMIN_GROUP_CLINIC_ADMIN:
                     $query->where('clinic_id', $authUser->clinic_id);
                     break;
@@ -80,8 +91,19 @@ class GlobalPatientController extends Controller
                         if ($filterObj->columnName === 'date_of_birth') {
                             $dateOfBirth = date_create_from_format('d/m/Y', $filterObj->value);
                             $query->where('date_of_birth', date_format($dateOfBirth, config('settings.defaultTimestampFormat')));
-                        } elseif (($filterObj->columnName === 'region' || $filterObj->columnName === 'clinic') && $filterObj->value !== '') {
+                        } elseif ($filterObj->columnName === 'clinic' && $filterObj->value !== '') {
                             $query->where('clinic_id', $filterObj->value);
+                        } elseif ($filterObj->columnName === 'phc_service' && $filterObj->value !== '') {
+                            $query->where('phc_service_id', $filterObj->value);
+                        } elseif ($filterObj->columnName === 'region' && $filterObj->value !== '') {
+                            $query->where(function ($subQuery) use ($filterObj) {
+                                $subQuery->whereHas('clinic', fn($q) =>
+                                    $q->where('region_id', $filterObj->value)
+                                )
+                                ->orWhereHas('phcService.province', fn($q) =>
+                                    $q->where('region_id', $filterObj->value)
+                                );
+                            });
                         } elseif ($filterObj->columnName === 'country' && $filterObj->value !== '') {
                             $query->where('country_id', $filterObj->value);
                         } elseif ($filterObj->columnName === 'treatment_status') {

@@ -121,7 +121,12 @@ class AdminController extends Controller
                     } elseif ($filterObj->columnName === 'phc_service') {
                         $query->where('phc_service_id', $filterObj->value);
                     } elseif ($filterObj->columnName === 'region') {
-                        $query->where('users.region_id', $filterObj->value);
+                        $query->where(function ($query) use ($filterObj) {
+                            $query->where('users.region_id', $filterObj->value)
+                                ->orWhereHas('regions', function ($q) use ($filterObj) {
+                                    $q->where('id', $filterObj->value);
+                                });
+                        });
                     } else {
                         $query->where($filterObj->columnName, 'like', '%' . $filterObj->value . '%');
                     }
