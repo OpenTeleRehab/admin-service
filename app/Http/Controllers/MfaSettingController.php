@@ -28,6 +28,7 @@ class MfaSettingController extends Controller
         $user = Auth::user();
 
         $mfaSettings = MfaSetting::where('created_by_role', $user->type)
+            ->whereJsonContains('country_ids', $user->country_id)
             ->orderBy('created_at', 'desc')
             ->get();
 

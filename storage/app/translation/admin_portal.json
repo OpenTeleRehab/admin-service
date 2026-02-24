@@ -1135,7 +1135,7 @@
     "mfa.edit": "Edit MFA Setting",
     "success_message.mfa.update": "MFA setting updated successfully",
     "error_message.mfa.update": "Multi factor authentication setting cannot be updated",
-    "toast_title.edit_mfa_setting": "Edit Multi factor authentication setting",
+    "toast_title.edit_mfa_setting": "Edit MFA Setting",
     "mfa.configs": "Configurations",
     "mfa.services": "Services/Clinics",
     "mfa.countries": "Countries",
