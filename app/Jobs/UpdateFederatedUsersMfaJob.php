@@ -158,7 +158,9 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
 
                     case User::ADMIN_GROUP_REGIONAL_ADMIN:
                         if (!empty($mfaSetting->region_ids)) {
-                            $internalUsersQuery->whereIn('region_id', $mfaSetting->region_ids);
+                            $internalUsersQuery->whereHas('regions', function ($query) use ($mfaSetting) {
+                                $query->whereIn('id', $mfaSetting->region_ids);
+                            });
                         }
                         break;
 

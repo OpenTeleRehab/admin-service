@@ -27,10 +27,13 @@ class MfaSettingController extends Controller
     {
         $user = Auth::user();
 
-        $mfaSettings = MfaSetting::where('created_by_role', $user->type)
-            ->whereJsonContains('country_ids', $user->country_id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = MfaSetting::where('created_by_role', $user->type);
+
+        if (!in_array($user->type, [User::ADMIN_GROUP_SUPER_ADMIN, User::ADMIN_GROUP_ORG_ADMIN])) {
+            $query->whereJsonContains('country_ids', $user->country_id);
+        }
+
+        $mfaSettings = $query->orderBy('created_at', 'desc')->get();
 
         $allClinicIds = collect($mfaSettings)->pluck('clinic_ids')->flatten()->unique();
         $allCountryIds = collect($mfaSettings)->pluck('country_ids')->flatten()->unique();
@@ -239,7 +242,7 @@ class MfaSettingController extends Controller
             $validatedData['phc_service_ids'] = null;
         } else if ($authUser->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
             $validatedData['country_ids'] = [$authUser->country_id];
-            $validatedData['region_ids'] = [$authUser->region_id];
+            $validatedData['region_ids'] = $authUser->regions->pluck('id');
         } else if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
             $validatedData['country_ids'] = [$authUser->country_id];
             $validatedData['region_ids'] = [$authUser->region_id];
