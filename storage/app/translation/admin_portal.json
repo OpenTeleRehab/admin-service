@@ -1194,6 +1194,7 @@
     "error.region.phc_worker_limit.greater_than.country.phc_worker_limit": "The total healthcare worker limit allocated for this country is ${allocated_phc_worker_limit}. ${phc_worker_limit_used} have been used, leaving ${remaining_phc_worker_limit} remaining. You can only assign up to the remaining number.",
     "error.region.phc_worker_limit.less_than_equal_to.zero": "The healthcare worker limit must be greater than 0",
     "error.region.therapist_limit.less_than_equal_to.zero": "The therapist limit must be greater than 0",
+    "error.region": "Please select region",
     "province.new": "New Province",
     "province.edit": "Edit Province",
     "province.toast_title.edit": "Edit Province",
