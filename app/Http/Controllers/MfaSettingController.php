@@ -48,11 +48,17 @@ class MfaSettingController extends Controller
         $organizations = Organization::whereIn('id', $allOrganizationIds)->pluck('name', 'id');
 
         $mfaSettings = $mfaSettings->map(function ($mfaSetting) use ($clinics, $countries, $regions, $phcServices, $organizations) {
-            $mfaSetting->countries = $mfaSetting->country_ids ? $countries->only($mfaSetting->country_ids)->values() : [];
-            $mfaSetting->regions = $mfaSetting->region_ids ? $regions->only($mfaSetting->region_ids)->values() : [];
-            $mfaSetting->clinics = $mfaSetting->clinic_ids ? $clinics->only($mfaSetting->clinic_ids)->values() : [];
-            $mfaSetting->phc_services = $mfaSetting->phc_service_ids ? $phcServices->only($mfaSetting->phc_service_ids)->values() : [];
-            $mfaSetting->organizations_name = $mfaSetting->organizations ? $organizations->only($mfaSetting->organizations)->values() : [];
+            $countryIds = collect($mfaSetting->country_ids ?? [])->filter(fn($id) => is_int($id) || is_string($id))->all();
+            $regionIds = collect($mfaSetting->region_ids ?? [])->filter(fn($id) => is_int($id) || is_string($id))->all();
+            $clinicIds = collect($mfaSetting->clinic_ids ?? [])->filter(fn($id) => is_int($id) || is_string($id))->all();
+            $phcServiceIds = collect($mfaSetting->phc_service_ids ?? [])->filter(fn($id) => is_int($id) || is_string($id))->all();
+            $organizationIds = collect($mfaSetting->organizations ?? [])->filter(fn($id) => is_int($id) || is_string($id))->all();
+
+            $mfaSetting->countries = $countries->only($countryIds)->values();
+            $mfaSetting->regions = $regions->only($regionIds)->values();
+            $mfaSetting->clinics = $clinics->only($clinicIds)->values();
+            $mfaSetting->phc_services = $phcServices->only($phcServiceIds)->values();
+            $mfaSetting->organizations_name = $organizations->only($organizationIds)->values();
 
             return $mfaSetting;
         });
