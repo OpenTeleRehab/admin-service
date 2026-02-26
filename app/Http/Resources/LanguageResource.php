@@ -17,7 +17,7 @@ class LanguageResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'code' => strtolower($this->code),
+            'code' => $this->code,
             'rtl' => $this->rtl,
             'fallback' => config('app.fallback_locale'),
             'is_used' => $this->isUsed(),

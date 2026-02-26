@@ -6,7 +6,6 @@ use App\Models\HealthCondition;
 use App\Models\HealthConditionGroup;
 use App\Http\Resources\HealthConditionResource;
 use App\Http\Resources\HealthConditionGroupResource;
-use Illuminate\Support\Facades\Log;
 
 class HealthConditionService
 {
@@ -17,7 +16,6 @@ class HealthConditionService
      */
     public function findHealthConditions($ids = null, $title = null)
     {
-        Log::info($ids);
         $query = HealthCondition::query();
 
         // If IDs are provided
@@ -32,7 +30,6 @@ class HealthConditionService
         }
 
         $healthConditions = $query->get();
-        Log::info($healthConditions);
 
         return HealthConditionResource::collection($healthConditions);
     }
