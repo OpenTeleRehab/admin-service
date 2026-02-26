@@ -126,10 +126,9 @@ class KeycloakHelper
         if ($access_token) {
             $token_arr = explode('.', $access_token);
             $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
-            $token_exp_at = $token_obj['exp'];
-            $current_timestamp = Carbon::now()->subMinute()->timestamp;
+            $expiresAt = Carbon::createFromTimestamp((int) $token_obj['exp'])->subMinute();
 
-            if ($current_timestamp < $token_exp_at) {
+            if (now()->lessThan($expiresAt)) {
                 return $access_token;
             }
         }
@@ -150,14 +149,11 @@ class KeycloakHelper
         if ($access_token) {
             $token_arr = explode('.', $access_token);
             $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
-            $token_exp_at = $token_obj['exp'];
-            $current_timestamp = Carbon::now()->subMinute()->timestamp;
+            $expiresAt = Carbon::createFromTimestamp((int) $token_obj['exp'])->subMinute();
 
-            if ($current_timestamp > $token_exp_at) {
-                return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN, $therapistKeycloakClientId, $therapistKeycloakUsername, $therapistKeycloakPassword);
+            if (now()->lessThan($expiresAt)) {
+                return $access_token;
             }
-
-            return $access_token;
         }
 
         return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN, $therapistKeycloakClientId, $therapistKeycloakUsername, $therapistKeycloakPassword);
@@ -176,10 +172,9 @@ class KeycloakHelper
         if ($access_token) {
             $token_arr = explode('.', $access_token);
             $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
-            $token_exp_at = (int) $token_obj['exp'];
-            $current_timestamp = Carbon::now()->subMinute()->timestamp;
+            $expiresAt = Carbon::createFromTimestamp((int) $token_obj['exp'])->subMinute();
 
-            if ($current_timestamp < $token_exp_at) {
+            if (now()->lessThan($expiresAt)) {
                 return $access_token;
             }
         }
