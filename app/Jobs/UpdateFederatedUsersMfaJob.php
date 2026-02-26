@@ -17,6 +17,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 
 class UpdateFederatedUsersMfaJob implements ShouldQueue
 {
@@ -111,6 +112,61 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                 ->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')
                 ->get();
 
+            $countryIdsFromMfaSettings = $freshMfaSettings->pluck('country_ids')->flatten()->filter()->unique()->values()->all();
+            $regionIdsFromMfaSettings = $freshMfaSettings->pluck('region_ids')->flatten()->filter()->unique()->values()->all();
+            $clinicIdsFromMfaSettings = $freshMfaSettings->pluck('clinic_ids')->flatten()->filter()->unique()->values()->all();
+            $phcServiceIdsFromMfaSettings = $freshMfaSettings->pluck('phc_service_ids')->flatten()->filter()->unique()->values()->all();
+
+            $internalUsersQuery = User::query()
+                ->where(function ($query) use ($federatedDomains) {
+                    foreach ($federatedDomains as $domain) {
+                        $query->whereRaw('LOWER(email) NOT LIKE ?', ['%' . $domain]);
+                    }
+                });
+
+            $countryAdminsToRemoveMfa = (clone $internalUsersQuery)->where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)
+                ->whereNotIn('country_id', $countryIdsFromMfaSettings)
+                ->get();
+            $regionalAdminsToRemoveMfa = (clone $internalUsersQuery)->where('type', User::ADMIN_GROUP_REGIONAL_ADMIN)
+                ->whereHas('regions', function ($query) use ($regionIdsFromMfaSettings) {
+                    $query->whereNotIn('id', $regionIdsFromMfaSettings);
+                })
+                ->get();
+            $clinicAdminsToRemoveMfa = (clone $internalUsersQuery)->where('type', User::ADMIN_GROUP_CLINIC_ADMIN)
+                ->whereNotIn('clinic_id', $clinicIdsFromMfaSettings)
+                ->get();
+            $phcServiceAdminsToRemoveMfa = (clone $internalUsersQuery)->where('type', User::ADMIN_GROUP_PHC_SERVICE_ADMIN)
+                ->whereNotIn('phc_service_id', $phcServiceIdsFromMfaSettings)
+                ->get();
+
+            $usersToRemoveMfa = array_merge($countryAdminsToRemoveMfa->toArray(), $regionalAdminsToRemoveMfa->toArray(), $clinicAdminsToRemoveMfa->toArray(), $phcServiceAdminsToRemoveMfa->toArray());
+
+            foreach ($usersToRemoveMfa as $user) {
+                $keycloakUser = KeycloakHelper::getKeycloakUserByUsername($user['email']);
+
+                if (!$keycloakUser) {
+                    Log::warning("Keycloak user not found for email: {$user['email']}");
+                    continue;
+                }
+
+                KeycloakHelper::deleteUserCredentialByType($user['email'], 'otp');
+
+                $existingAttributes = $keycloakUser['attributes'] ?? [];
+
+                $payload = [
+                    'mfaEnforcement' => '',
+                    'trustedDeviceMaxAge' => '',
+                    'skipMfaMaxAge' => '',
+                ];
+
+                $payload = array_merge($existingAttributes, $payload);
+
+                KeycloakHelper::setUserAttributes(
+                    $user['email'],
+                    $payload,
+                );
+            }
+
             foreach ($freshMfaSettings as $mfaSetting) {
                 if (in_array($mfaSetting->role, [User::GROUP_THERAPIST, User::GROUP_PHC_WORKER])) {
                     $accessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
@@ -180,11 +236,16 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                 $users = $internalUsersQuery->get();
 
                 foreach ($users as $user) {
+                    $keycloakUser = KeycloakHelper::getKeycloakUserByUsername($user->email);
+
+                    if (!$keycloakUser) {
+                        Log::warning("Keycloak user not found for email: {$user->email}");
+                        continue;
+                    }
+
                     if ($mfaSetting->mfa_enforcement === MfaSetting::MFA_DISABLE) {
                         KeycloakHelper::deleteUserCredentialByType($user->email, 'otp');
                     }
-
-                    $keycloakUser = KeycloakHelper::getKeycloakUserByUsername($user->email);
 
                     $existingAttributes = $keycloakUser['attributes'] ?? [];
 
@@ -222,6 +283,8 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                 'status' => JobTracker::FAILED,
                 'message' => $e->getMessage(),
             ]);
+
+            Log::error("Error in UpdateFederatedUsersMfaJob: " . $e->getMessage(), ['exception' => $e]);
 
             throw $e;
         }
