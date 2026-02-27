@@ -100,20 +100,7 @@ class KeycloakHelper
      */
     public static function getKeycloakAccessToken()
     {
-        $access_token = Cache::get(self::ADMIN_ACCESS_TOKEN);
-
-        if ($access_token) {
-            $token_arr = explode('.', $access_token);
-            $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
-            $token_exp_at = $token_obj['exp'];
-            $current_timestamp = Carbon::now()->timestamp;
-
-            if ($current_timestamp < $token_exp_at) {
-                return $access_token;
-            }
-        }
-
-        return self::generateKeycloakToken(self::getTokenUrl(), env('KEYCLOAK_BACKEND_SECRET'), self::ADMIN_ACCESS_TOKEN);
+        return Cache::get(self::ADMIN_ACCESS_TOKEN) ?? self::generateKeycloakToken(self::getTokenUrl(), env('KEYCLOAK_BACKEND_SECRET'), self::ADMIN_ACCESS_TOKEN);
     }
 
     /**
@@ -121,19 +108,7 @@ class KeycloakHelper
      */
     public static function getGAdminKeycloakAccessToken()
     {
-        $access_token = Cache::get(self::GADMIN_ACCESS_TOKEN);
-
-        if ($access_token) {
-            $token_arr = explode('.', $access_token);
-            $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
-            $expiresAt = Carbon::createFromTimestamp((int) $token_obj['exp'])->subMinute();
-
-            if (now()->lessThan($expiresAt)) {
-                return $access_token;
-            }
-        }
-
-        return self::generateKeycloakToken(self::getGAdminTokenUrl(), env('GADMIN_KEYCLOAK_BACKEND_SECRET'), self::GADMIN_ACCESS_TOKEN);
+        return Cache::get(self::GADMIN_ACCESS_TOKEN) ?? self::generateKeycloakToken(self::getGAdminTokenUrl(), env('GADMIN_KEYCLOAK_BACKEND_SECRET'), self::GADMIN_ACCESS_TOKEN);
     }
 
     /**
@@ -141,22 +116,11 @@ class KeycloakHelper
      */
     public static function getTherapistKeycloakAccessToken()
     {
-        $access_token = Cache::get(self::THERAPIST_ACCESS_TOKEN);
         $therapistKeycloakClientId = env('THERAPIST_KEYCLOAK_BACKEND_CLIENT');
         $therapistKeycloakUsername = env('THERAPIST_KEYCLOAK_BACKEND_USERNAME');
         $therapistKeycloakPassword = env('THERAPIST_KEYCLOAK_BACKEND_PASSWORD');
 
-        if ($access_token) {
-            $token_arr = explode('.', $access_token);
-            $token_obj = json_decode(JWT::urlsafeB64Decode($token_arr[1]), true);
-            $expiresAt = Carbon::createFromTimestamp((int) $token_obj['exp'])->subMinute();
-
-            if (now()->lessThan($expiresAt)) {
-                return $access_token;
-            }
-        }
-
-        return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN, $therapistKeycloakClientId, $therapistKeycloakUsername, $therapistKeycloakPassword);
+        return Cache::get(self::THERAPIST_ACCESS_TOKEN) ?? self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN, $therapistKeycloakClientId, $therapistKeycloakUsername, $therapistKeycloakPassword);
     }
 
     /**
@@ -382,7 +346,7 @@ class KeycloakHelper
         if ($response->successful()) {
             $result = $response->json();
 
-            Cache::forever($cache_key, $result['access_token']);
+            Cache::put($cache_key, $result['access_token'], now()->addSeconds($result['expires_in'] - 60));
 
             return $result['access_token'];
         }
