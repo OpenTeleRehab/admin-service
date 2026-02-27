@@ -731,6 +731,7 @@
     "error_message.language_not_exists": "Language already not exist!",
     "toast_title.new_language": "New language",
     "toast_title.edit_language": "Edit language",
+    "toast_title.delete_language": "Delete language",
     "error.language.name": "Please fill in name",
     "error.language.code": "Please fill in code",
     "error.language.code.format": "Code must be in 2 digits",

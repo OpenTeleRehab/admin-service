@@ -67,4 +67,20 @@ class GlobalTreatmentPlan extends Model
         'start_date' => 'datetime:d/m/Y',
         'end_date' => 'datetime:d/m/Y',
     ];
+
+    /**
+     * Get the health condition group associated with the global treatment plan.
+     */
+    public function healthConditionGroup()
+    {
+        return $this->belongsTo(HealthConditionGroup::class, 'health_condition_group_id');
+    }
+
+    /**
+     * Get the health condition associated with the global treatment plan.
+     */
+    public function healthCondition()
+    {
+        return $this->belongsTo(HealthCondition::class, 'health_condition_id');
+    }
 }
