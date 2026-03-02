@@ -6,7 +6,6 @@ use App\Models\User;
 use Firebase\JWT\JWT as JWT;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class SupersetController extends Controller
 {
@@ -132,9 +131,23 @@ class SupersetController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+                'dashboard_id' => $this->getDashboardId($user->type),
                 'guest_token' => $guestToken,
                 'expiration_time' => $expirationTime
             ],
         ]);
+    }
+
+    private function getDashboardId($userType)
+    {
+        $dashboardIds = [
+            User::ADMIN_GROUP_ORG_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_GLOBAL_ADMIN'),
+            User::ADMIN_GROUP_COUNTRY_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_COUNTRY_AND_REGION_ADMIN'),
+            User::ADMIN_GROUP_REGIONAL_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_COUNTRY_AND_REGION_ADMIN'),
+            User::ADMIN_GROUP_CLINIC_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_CLINIC_ADMIN'),
+            User::ADMIN_GROUP_PHC_SERVICE_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_PHC_SERVICE_ADMIN'),
+        ];
+
+        return $dashboardIds[$userType] ?? null;
     }
 }
