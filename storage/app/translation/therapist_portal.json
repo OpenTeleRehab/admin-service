@@ -533,6 +533,7 @@
     "common.paste": "Paste",
     "common.health_condition_group": "Health Condition Group",
     "common.health_condition": "Health Condition",
+    "common.reason": "Reason",
     "activity.copy_all_content_and_paste_to": "Copy All Content And Paste To",
     "activity.copy.day.error": "Please select day",
     "activity.copy.week.error": "Please select week",
