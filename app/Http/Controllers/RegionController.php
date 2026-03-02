@@ -71,8 +71,11 @@ class RegionController extends Controller
     {
         $searchValue = $request->get('search_value');
         $pageSize = $request->get('page_size', 99999);
-        if (Auth::user()->country_id) {
-            $query = Auth::user()->country->regions();
+        $user = Auth::user();
+        if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $query = $user->regions();
+        } elseif ($user->country_id) {
+            $query = $user->country->regions();
         } else {
             $query = Region::query();
         }

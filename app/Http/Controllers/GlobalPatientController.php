@@ -6,8 +6,6 @@ use App\Http\Resources\GlobalPatientResource;
 use App\Models\Country;
 use App\Models\Forwarder;
 use App\Models\GlobalPatient;
-use App\Models\HealthCondition;
-use App\Models\HealthConditionGroup;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -155,20 +153,19 @@ class GlobalPatientController extends Controller
                                 });
                             }
                         } elseif ($filterObj->columnName === 'health_condition_groups' && $filterObj->value !== '') {
-                            // Fetch ID from AdminService
-                            $group = HealthConditionGroup::where('title', 'like', '%' . $filterObj->value . '%')->first();
-                            if ($group) {
-                                $query->whereHas('treatmentPlans', function (Builder $q) use ($group) {
-                                    $q->where('health_condition_group_id', $group->id);
-                                });
-                            }
+                            $query->whereHas('treatmentPlans.healthConditionGroup', function (Builder $q) use ($filterObj) {
+                                $q->whereRaw(
+                                    "json_unquote(json_extract(title, '$.\"en\"')) like ?",
+                                    ["%{$filterObj->value}%"]
+                                );
+                            });
                         } elseif ($filterObj->columnName === 'health_conditions' && $filterObj->value !== '') {
-                            $condition = HealthCondition::where('title', 'like', '%' . $filterObj->value . '%')->first();
-                            if ($condition) {
-                                $query->whereHas('treatmentPlans', function (Builder $q) use ($condition) {
-                                    $q->where('health_condition_id', $condition->id);
-                                });
-                            }
+                            $query->whereHas('treatmentPlans.healthCondition', function (Builder $q) use ($filterObj) {
+                                $q->whereRaw(
+                                    "json_unquote(json_extract(title, '$.\"en\"')) like ?",
+                                    ["%{$filterObj->value}%"]
+                                );
+                            });
                         } else {
                             $query->where($filterObj->columnName, 'like', '%' . $filterObj->value . '%');
                         }

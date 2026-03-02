@@ -48,18 +48,26 @@ class ProfessionController extends Controller
     public function index(Request $request)
     {
         $authUser = Auth::user();
-        $countryId = $request->get('country_id');
+        $countryId = $request->get('country_id') ?? $authUser->country_id;
+        $type = $request->get('type');
+        $typeFilter = null;
+
+        if (in_array($authUser->type, [User::ADMIN_GROUP_CLINIC_ADMIN, User::GROUP_THERAPIST])) {
+            $typeFilter = Profession::TYPE_THERAPIST;
+        } elseif (in_array($authUser->type, [User::ADMIN_GROUP_PHC_SERVICE_ADMIN, User::GROUP_PHC_WORKER])) {
+            $typeFilter = Profession::TYPE_PHC_WORKER;
+        } elseif ($type) {
+            $typeFilter = $type;
+        }
+
         $query = Profession::query();
 
-        if (!$countryId && $authUser->country_id) {
-            $countryId = $authUser->country_id;
+        if ($countryId) {
             $query->where('country_id', $countryId);
         }
 
-        if ($authUser->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
-            $query->where('type', Profession::TYPE_THERAPIST);
-        } else if ($authUser->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN || $authUser->type === User::GROUP_PHC_WORKER) {
-            $query->where('type', Profession::TYPE_PHC_WORKER);
+        if ($typeFilter) {
+            $query->where('type', $typeFilter);
         }
 
         $professions = $query->get();

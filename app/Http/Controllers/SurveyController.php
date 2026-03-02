@@ -13,7 +13,6 @@ use App\Models\PhcService;
 use App\Models\Survey;
 use App\Models\User;
 use App\Models\UserSurvey;
-use App\Models\Region;
 use App\Services\QuestionnaireService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -228,6 +227,11 @@ class SurveyController extends Controller
                 $surveyData['region'] = [(int)$user->region_id];
                 $surveyData['province'] = [(int)$user->clinic->province_id];
                 $surveyData['clinic'] = [(int)$user->clinic_id];
+            }
+
+            if ($request->filled('service_type')) {
+                $surveyData['clinic'] = $request->get('service_type') === Survey::PHC_SERVICE ? [] : $surveyData['clinic'];
+                $surveyData['phc_service'] = $request->get('service_type') === Survey::REHAB_SERVICE ? [] : $surveyData['phc_service'];
             }
 
             $survey->update($surveyData);

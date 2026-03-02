@@ -15,6 +15,8 @@ class Survey extends Model
     const STATUS_DRAFT = 'draft';
     const STATUS_PUBLISHED = 'published';
     const STATUS_EXPIRED = 'expired';
+    const REHAB_SERVICE = 'rehab_service';
+    const PHC_SERVICE = 'phc_service';
 
     /**
      * The attributes that are mass assignable.
