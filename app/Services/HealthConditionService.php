@@ -14,8 +14,9 @@ class HealthConditionService
      * @param string|null $title Title to search
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findHealthConditions($ids = null, $title = null)
+    public function findHealthConditions($ids = null, $title = null, $languageCode = null)
     {
+        $languageCode ??= config('app.fallback_locale');
         $query = HealthCondition::query();
 
         // If IDs are provided
@@ -26,7 +27,10 @@ class HealthConditionService
 
         // If title is provided
         if ($title) {
-            $query->where('title', 'like', '%' . $title . '%');
+            $query->whereRaw(
+                "LOWER(json_unquote(json_extract(title, '$.\"$languageCode\"'))) LIKE ?",
+                ['%' . strtolower($title) . '%']
+            );;
         }
 
         $healthConditions = $query->get();
@@ -39,8 +43,9 @@ class HealthConditionService
      * @param string|null $title Title to search
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findHealthConditionGroups($ids = null, $title = null)
+    public function findHealthConditionGroups($ids = null, $title = null, $languageCode = null)
     {
+        $languageCode ??= config('app.fallback_locale');
         $query = HealthConditionGroup::query();
 
         // If IDs are provided
@@ -51,7 +56,10 @@ class HealthConditionService
 
         // If title is provided
         if ($title) {
-            $query->where('title', 'like', '%' . $title . '%');
+            $query->whereRaw(
+                "LOWER(json_unquote(json_extract(title, '$.\"$languageCode\"'))) LIKE ?",
+                ['%' . strtolower($title) . '%']
+            );
         }
 
         $healthConditionGroups = $query->get();

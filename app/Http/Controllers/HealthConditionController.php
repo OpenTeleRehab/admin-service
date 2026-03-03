@@ -7,6 +7,7 @@ use App\Events\ApplyHealthConditionAutoTranslationEvent;
 use App\Http\Resources\HealthConditionResource;
 use App\Models\HealthCondition;
 use App\Models\HealthConditionGroup;
+use App\Models\Language;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -247,9 +248,10 @@ class HealthConditionController extends Controller
     {
         $ids = $request->query('ids');
         $title = $request->query('title');
+        $languageCode = Language::find($request->get('language_id'))?->code ?? config('app.fallback_locale');
 
         $healthConditionService = new HealthConditionService();
-        $healthConditions = $healthConditionService->findHealthConditions($ids, $title);
+        $healthConditions = $healthConditionService->findHealthConditions($ids, $title, $languageCode);
 
         return response()->json([
             'success' => true,

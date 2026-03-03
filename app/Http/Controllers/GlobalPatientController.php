@@ -7,6 +7,7 @@ use App\Models\Country;
 use App\Models\Forwarder;
 use App\Models\GlobalPatient;
 use App\Models\User;
+use App\Models\Language;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -83,7 +84,8 @@ class GlobalPatientController extends Controller
             if (isset($data['filters'])) {
                 $filters = $request->get('filters');
                 $therapist_id = $data['therapist_id'] ?? '';
-                $query->where(function ($query) use ($filters, $therapist_id) {
+                $languageCode = Language::find($authUser->language_id)?->code ?? config('app.fallback_locale');
+                $query->where(function ($query) use ($filters, $therapist_id, $languageCode) {
                     foreach ($filters as $filter) {
                         $filterObj = json_decode($filter);
                         if ($filterObj->columnName === 'date_of_birth') {
@@ -153,17 +155,17 @@ class GlobalPatientController extends Controller
                                 });
                             }
                         } elseif ($filterObj->columnName === 'health_condition_groups' && $filterObj->value !== '') {
-                            $query->whereHas('treatmentPlans.healthConditionGroup', function (Builder $q) use ($filterObj) {
+                            $query->whereHas('treatmentPlans.healthConditionGroup', function (Builder $q) use ($filterObj, $languageCode) {
                                 $q->whereRaw(
-                                    "json_unquote(json_extract(title, '$.\"en\"')) like ?",
-                                    ["%{$filterObj->value}%"]
+                                    "LOWER(json_unquote(json_extract(title, '$.\"$languageCode\"'))) LIKE ?",
+                                    ['%' . strtolower($filterObj->value) . '%']
                                 );
                             });
                         } elseif ($filterObj->columnName === 'health_conditions' && $filterObj->value !== '') {
-                            $query->whereHas('treatmentPlans.healthCondition', function (Builder $q) use ($filterObj) {
+                            $query->whereHas('treatmentPlans.healthCondition', function (Builder $q) use ($filterObj, $languageCode) {
                                 $q->whereRaw(
-                                    "json_unquote(json_extract(title, '$.\"en\"')) like ?",
-                                    ["%{$filterObj->value}%"]
+                                    "LOWER(json_unquote(json_extract(title, '$.\"$languageCode\"'))) LIKE ?",
+                                    ['%' . strtolower($filterObj->value) . '%']
                                 );
                             });
                         } else {
