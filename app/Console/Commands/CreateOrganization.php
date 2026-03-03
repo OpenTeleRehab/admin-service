@@ -3,9 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Organization;
-use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 
 class CreateOrganization extends Command
 {
@@ -14,7 +12,7 @@ class CreateOrganization extends Command
      *
      * @var string
      */
-    protected $signature = 'hi:create-organization';
+    protected $signature = 'hi:create-organization {org_name} {admin_email}';
 
     /**
      * The console command description.
@@ -30,26 +28,23 @@ class CreateOrganization extends Command
      */
     public function handle()
     {
-        $system_limit = json_decode(Storage::get('system_limit/settings.json'));
-        $user = User::where('type', User::ADMIN_GROUP_ORG_ADMIN)->first();
+        $adminEmail = $this->argument('admin_email');
+        $orgName = $this->argument('org_name');
+        Organization::create([
+            'name' => $orgName,
+            'type' => Organization::NON_HI_TYPE,
+            'admin_email' => $adminEmail,
+            'sub_domain_name' => env('APP_NAME'),
+            'max_number_of_therapist' => 10000,
+            'max_number_of_phc_worker' => 10000,
+            'max_ongoing_treatment_plan' => 35,
+            'max_phc_ongoing_treatment_plan' => 35,
+            'max_sms_per_week' => 2,
+            'max_phc_sms_per_week' => 2,
+            'status' => Organization::SUCCESS_ORG_STATUS,
+        ]);
 
-        if ($user) {
-            Organization::create([
-                'name' => 'hi',
-                'type' => Organization::HI_TYPE,
-                'admin_email' => $user->email,
-                'sub_domain_name' => 'hi',
-                'max_number_of_therapist' => $system_limit->therapist_content_limit,
-                'max_ongoing_treatment_plan' => $system_limit->number_of_ongoing_treatment_per_therapist,
-                'status' => Organization::SUCCESS_ORG_STATUS,
-                'created_by' => 0,
-            ]);
-
-            $this->info('Organization has been created successfully');
-            return true;
-        }
-
-        $this->error('There is no Organization Admin user found');
-        return false;
+        $this->info('Organization has been created successfully');
+        return true;
     }
 }

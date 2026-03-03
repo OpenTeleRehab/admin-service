@@ -22,7 +22,7 @@ class OrganizationHelper
     {
         $organization = Organization::where('admin_email', $email)->first();
 
-        if ($organization->created_by === 0) {
+        if ($organization->created_by === null) {
             return back();
         }
 
