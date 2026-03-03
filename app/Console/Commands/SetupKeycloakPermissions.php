@@ -119,6 +119,7 @@ class SetupKeycloakPermissions extends Command
             'translate_health_condition',
             'translate_email_template',
             'view_interview_screening_questionnaire_history',
+            'manage_configuration',
         ];
         $groupRoles = [
             'super_admin' => [
@@ -195,6 +196,7 @@ class SetupKeycloakPermissions extends Command
                 'view_remove_phc_worker_patient',
                 'file_upload',
                 'view_province_list',
+                'manage_configuration',
             ],
             'country_admin' => [
                 'view_organization',
