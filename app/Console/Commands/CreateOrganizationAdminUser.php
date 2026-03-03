@@ -15,7 +15,7 @@ class CreateOrganizationAdminUser extends Command
      *
      * @var string
      */
-    protected $signature = 'hi:create-organization-admin-user {email} {org_name}';
+    protected $signature = 'hi:create-organization-admin-user {email} {first_name} {last_name}';
 
     /**
      * The console command description.
@@ -33,7 +33,8 @@ class CreateOrganizationAdminUser extends Command
         DB::beginTransaction();
 
         $email = $this->argument('email');
-        $org_name = $this->argument('org_name');
+        $firstName = $this->argument('first_name');
+        $lastName = $this->argument('last_name');
         $type = User::ADMIN_GROUP_ORG_ADMIN;
 
         if (User::where('email', $email)->exists()) {
@@ -43,12 +44,9 @@ class CreateOrganizationAdminUser extends Command
 
         $user = User::create([
             'email' => $email,
-            'first_name' => $org_name,
-            'last_name' => $org_name,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
             'type' => $type,
-            'country_id' => null,
-            'clinic_id' => null,
-            'language_id' => null,
             'enabled' => true,
         ]);
 
@@ -58,7 +56,7 @@ class CreateOrganizationAdminUser extends Command
         }
 
         try {
-            self::createKeycloakUser($org_name, $email, $type);
+            self::createKeycloakUser($firstName, $lastName, $email, $type);
         } catch (\Exception $e) {
             DB::rollBack();
             $this->error('This user is unable to create on keycloak');
@@ -78,7 +76,7 @@ class CreateOrganizationAdminUser extends Command
      * @return false|mixed|string
      * @throws \Exception
      */
-    private function createKeycloakUser($org_name, $email, $userGroup)
+    private function createKeycloakUser($firstName, $lastName, $email, $userGroup)
     {
         $token = KeycloakHelper::getKeycloakAccessToken();
 
@@ -90,8 +88,8 @@ class CreateOrganizationAdminUser extends Command
                     'username' => $email,
                     'email' => $email,
                     'enabled' => true,
-                    'firstName' => $org_name,
-                    'lastName' => $org_name,
+                    'firstName' => $firstName,
+                    'lastName' => $lastName,
                     'attributes' => [
                         'locale' => ['en']
                     ]
