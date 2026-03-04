@@ -44,6 +44,7 @@ use App\Http\Controllers\TermAndConditionController;
 use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\TranslatorController;
 use App\Http\Controllers\EmailTemplateController;
+use App\Http\Controllers\ConfigurationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -358,7 +359,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     });
 
     // Superset
-    Route::get('/superset-guest-token', [SupersetController::class, 'index'])->middleware('role:view_dashboard');
+    Route::get('/superset-guest-token', [SupersetController::class, 'index'])->middleware('role:view_dashboard,access_all');
 
     // Download trackers
     Route::get('download-trackers', [DownloadTrackerController::class, 'index'])->middleware('role:manage_download_tracker');
@@ -409,6 +410,10 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Email template
     Route::apiResource('email-templates', EmailTemplateController::class)->middleware('role:manage_email_template,translate_email_template');
     Route::get('email-templates/{prefix}/get-by-prefix', [EmailTemplateController::class, 'getByPrefix']);
+
+    // Superset config
+    Route::post('configurations', [ConfigurationController::class, 'store'])->middleware('role:manage_configuration');
+    Route::get('configurations', [ConfigurationController::class, 'index'])->middleware('role:manage_configuration');
 });
 
 Route::group(['prefix' => 'external', 'middleware' => ['check.api.client']], function () {

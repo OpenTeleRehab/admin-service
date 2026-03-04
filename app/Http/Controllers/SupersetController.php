@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Firebase\JWT\JWT as JWT;
+use App\Helpers\SupersetHelper;
+use App\Models\Configuration;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 
 class SupersetController extends Controller
 {
@@ -13,45 +12,22 @@ class SupersetController extends Controller
     {
         $user = Auth::user();
 
-        $supersetUrl = env('SUPERSET_BASE_URL');
-        $supersetAdmin = env('SUPERSET_ADMIN_USER');
-        $supersetPassword = env('SUPERSET_ADMIN_PASSWORD');
+        $config = Configuration::where('name', Configuration::SUPERSET_CONFIG)->first();
 
-        // Step 1: Login to Superset and get access token.
-        $loginResponse = Http::post("$supersetUrl/api/v1/security/login", [
-            'username' => $supersetAdmin,
-            'password' => $supersetPassword,
-            'provider' => 'db',
-            'refresh' => true,
-        ]);
-
-        if (!$loginResponse->successful()) {
-            return response()->json([
-                'success' => false,
-                'message' => $loginResponse->body(),
-            ], 500);
+        if (!$config) {
+            abort(500, 'Superset configuration not found. Please set it up first.');
         }
 
-        $accessToken = $loginResponse->json()['access_token'];
+        $roleConfig = collect($config->config)->firstWhere('role', $user->type);
 
-        // Step 2: Get CSRF token and extract session cookies.
-        $csrfResponse = Http::withToken($accessToken)
-            ->withOptions(['verify' => false]) // Ignore SSL verification if needed.
-            ->get("$supersetUrl/api/v1/security/csrf_token");
-
-        if (!$csrfResponse->successful()) {
-            return response()->json([
-                'message' => $csrfResponse->body()
-            ], 500);
-        }
-
-        $csrfToken = $csrfResponse->json()['result'];
-
-        // Extract session cookies from the response.
-        $cookies = [];
-        foreach ($csrfResponse->cookies() as $cookie) {
-            $cookies[$cookie->getName()] = $cookie->getValue();
-        }
+        $replacementsMap = [
+            '{{country_id}}' => $user->country_id ?? null,
+            '{{region_id}}' => $user->region_id ?? null,
+            '{{clinic_id}}' => $user->clinic_id ?? null,
+            '{{phc_service_id}}' => $user->phc_service_id ?? null,
+            '{{user_role}}' => $user->type ?? null,
+            '{{therapist_user_id}}' => $user->therapist_user_id ?? null,
+        ];
 
         $guestTokenPayload = [
             'user' => [
@@ -60,94 +36,22 @@ class SupersetController extends Controller
                 'last_name' => $user->last_name
             ],
             'resources' => [
-                ['type' => 'dashboard', 'id' => null]
+                ['type' => 'dashboard', 'id' => $roleConfig['dashboard_id']]
             ],
-            'rls' => []
+            'rls' => SupersetHelper::buildRlsClauses($replacementsMap, $roleConfig['rls'])
         ];
 
-        if ($user->type === User::ADMIN_GROUP_SUPER_ADMIN || $user->type === User::ADMIN_GROUP_ORG_ADMIN) {
-            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_GLOBAL_ADMIN');
-        } else if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN || $user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_COUNTRY_AND_REGION_ADMIN');
-            if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
-                $guestTokenPayload['rls'] = [
-                    ['clause' => "country_id = {$user->country_id}"]
-                ];
-            } else {
-                $guestTokenPayload['rls'] = [
-                    ['clause' => "region_id = {$user->region_id}"]
-                ];
-            }
-        } else if ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
-            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_CLINIC_ADMIN');
-            $guestTokenPayload['rls'] = [
-                ['clause' => "clinic_id = $user->clinic_id"]
-            ];
-        } else if ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
-            $guestTokenPayload['resources'][0]['id'] = env('SUPERSET_DASHBOARD_ID_FOR_PHC_SERVICE_ADMIN');
-            $guestTokenPayload['rls'] = [
-                ['clause' => "phc_service_id = $user->phc_service_id"]
-            ];
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'No dashboard configured for this user role'
-            ], 403);
-        }
+        $guestToken = SupersetHelper::generateGuestToken($guestTokenPayload);
 
-        // Step 3: Request Guest Token from Superset, sending CSRF token and cookies.
-        $guestResponse = Http::withHeaders([
-            'X-CSRFToken' => $csrfToken,
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])
-            ->withToken($accessToken)
-            ->withCookies($cookies, parse_url($supersetUrl, PHP_URL_HOST)) // Attach session cookies.
-            ->post("$supersetUrl/api/v1/security/guest_token", $guestTokenPayload);
-
-        if (!$guestResponse->successful()) {
-            return response()->json([
-                'success' => false,
-                'message' => $guestResponse->body(),
-            ], 500);
-        }
-
-        // Step 4: Decode the guest token and extract expiration time.
-        $guestToken = $guestResponse->json()['token'];
-
-        // Decode the JWT token to get payload
-        $tokenParts = explode('.', $guestToken); // Split the JWT into parts
-        if (count($tokenParts) === 3) {
-            // Decode the payload part (index 1)
-            $payload = JWT::urlsafeB64Decode($tokenParts[1]);
-
-            // Convert the payload from JSON into an array
-            $payloadData = json_decode($payload, true);
-
-            // Extract expiration time (exp) from the payload
-            $expirationTime = isset($payloadData['exp']) ? $payloadData['exp'] : null;
-        }
+        $expirationTime = SupersetHelper::getExpirationTime($guestToken);
 
         return response()->json([
             'success' => true,
             'data' => [
-                'dashboard_id' => $this->getDashboardId($user->type),
+                'dashboard_id' => $roleConfig['dashboard_id'],
                 'guest_token' => $guestToken,
                 'expiration_time' => $expirationTime
             ],
         ]);
-    }
-
-    private function getDashboardId($userType)
-    {
-        $dashboardIds = [
-            User::ADMIN_GROUP_ORG_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_GLOBAL_ADMIN'),
-            User::ADMIN_GROUP_COUNTRY_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_COUNTRY_AND_REGION_ADMIN'),
-            User::ADMIN_GROUP_REGIONAL_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_COUNTRY_AND_REGION_ADMIN'),
-            User::ADMIN_GROUP_CLINIC_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_CLINIC_ADMIN'),
-            User::ADMIN_GROUP_PHC_SERVICE_ADMIN => env('SUPERSET_DASHBOARD_ID_FOR_PHC_SERVICE_ADMIN'),
-        ];
-
-        return $dashboardIds[$userType] ?? null;
     }
 }
