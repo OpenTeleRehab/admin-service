@@ -23,12 +23,13 @@ class ConfigurationController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|unique:configurations,name',
+            'name' => 'required|string',
             'config' => 'required|array',
             'config.*.role' => 'required|string',
             'config.*.dashboard_id' => 'required|string',
             'config.*.rls' => 'nullable|array',
             'config.*.rls.*.clause' => 'required|string',
+            'config.*.rls.*.dataset' => 'nullable',
         ]);
 
         Configuration::updateOrCreate(
