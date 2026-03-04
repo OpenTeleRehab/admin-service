@@ -53,6 +53,10 @@ class VerifyDataAccess
             if (!empty($request->header('int-province-id'))) {
                 $user->province_id = (int)$request->header('int-province-id');
             }
+
+            if (!empty($request->header('int-phc-worker-id'))) {
+                $user->phc_worker_id = (int)$request->header('int-phc-worker-id');
+            }
         }
 
         $countryHeader = $request->header('Country');
