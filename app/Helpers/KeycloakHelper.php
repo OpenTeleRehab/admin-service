@@ -346,7 +346,7 @@ class KeycloakHelper
         if ($response->successful()) {
             $result = $response->json();
 
-            Cache::put($cache_key, $result['access_token'], now()->addSeconds($result['expires_in'] - 60));
+            Cache::put($cache_key, $result['access_token'], now()->addSeconds($result['expires_in'] - 5));
 
             return $result['access_token'];
         }
