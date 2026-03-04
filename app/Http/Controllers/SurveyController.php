@@ -580,7 +580,7 @@ class SurveyController extends Controller
                     ->whereJsonContains('province', $authUser->province_id)
                     ->select('surveys.*');
 
-                if ($authUser->phc_service_id) {
+                if ($authUser->phc_worker_id) {
                     $treatmentSurveyQuery->whereJsonContains('phc_service', $authUser->phc_service_id);
                     $generalSurveyQuery->whereJsonContains('phc_service', $authUser->phc_service_id);
                 } else {
