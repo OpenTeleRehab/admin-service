@@ -211,6 +211,13 @@ class ScreeningQuestionnaireController extends Controller
 
             $sections = json_decode($request->get('sections'), true);
 
+            $sectionIds = $screeningQuestionnaire->sections->pluck('id')->toArray();
+            $targetSectionIds = collect($sections)->pluck('id')->filter()->toArray();
+            $diffSectionIds = array_diff($sectionIds, $targetSectionIds);
+            if (!empty($diffSectionIds)) {
+                $screeningQuestionnaire->sections()->whereIn('id', $diffSectionIds)->delete();
+            }
+
             foreach ($sections ?? [] as $sectionIndex => $sectionItem) {
                 $section = ScreeningQuestionnaireSection::updateOrCreate(
                     [
@@ -223,6 +230,13 @@ class ScreeningQuestionnaireController extends Controller
                         'questionnaire_id' => $screeningQuestionnaire->id,
                     ],
                 );
+
+                $questionIds = $section->questions->pluck('id')->toArray();
+                $targetQuestionIds = collect($sectionItem['questions'] ?? [])->pluck('id')->filter()->toArray();
+                $diffQuestionIds = array_diff($questionIds, $targetQuestionIds);
+                if (!empty($diffQuestionIds)) {
+                    $section->questions()->whereIn('id', $diffQuestionIds)->delete();
+                }
 
                 foreach ($sectionItem['questions'] ?? [] as $questionIndex => $questionItem) {
                     $fileId = $questionItem['file']['id'] ?? null;
@@ -250,6 +264,13 @@ class ScreeningQuestionnaireController extends Controller
                             'file_id' => $fileId,
                         ],
                     );
+
+                    $optionIds = $question->options->pluck('id')->toArray();
+                    $targetOptionIds = collect($questionItem['options'] ?? [])->pluck('id')->filter()->toArray();
+                    $diffOptionIds = array_diff($optionIds, $targetOptionIds);
+                    if (!empty($diffOptionIds)) {
+                        $question->options()->whereIn('id', $diffOptionIds)->delete();
+                    }
 
                     foreach ($questionItem['options'] ?? [] as $optionIndex => $optionItem) {
                         $fileId = $optionItem['file']['id'] ?? null;
@@ -340,6 +361,13 @@ class ScreeningQuestionnaireController extends Controller
                             }
                         }
                     }
+                }
+
+                $actionIds = $section->actions->pluck('id')->toArray();
+                $targetActionIds = collect($sectionItem['actions'] ?? [])->pluck('id')->filter()->toArray();
+                $diffActionIds = array_diff($actionIds, $targetActionIds);
+                if (!empty($diffActionIds)) {
+                    $section->actions()->whereIn('id', $diffActionIds)->delete();
                 }
 
                 foreach ($sectionItem['actions'] ?? [] as $actionItem) {

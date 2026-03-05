@@ -261,6 +261,8 @@
     "screening_questionnaire.delete_section_confirmation_message": "Are you sure you want to delete this section? All questions in this section will be deleted.",
     "screening_questionnaire.delete_question": "Delete Question",
     "screening_questionnaire.delete_question_confirmation_message": "Are you sure you want to delete this question? When delete this question it will affect to the question that used this question in skip logic.",
+    "screening_questionnaire.target_option_max_value.validate": "Maximum allowed value is ${max}.",
+    "screening_questionnaire.target_option_min_value.validate": "Minimum allowed value is ${min}.",
     "email_template.content_type": "Content type",
     "email_template.content": "Content",
     "email_template.edit.title": "Edit email template",
