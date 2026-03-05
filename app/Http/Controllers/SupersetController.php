@@ -22,7 +22,7 @@ class SupersetController extends Controller
 
         $replacementsMap = [
             '{{country_id}}' => $user->country_id ?? null,
-            '{{region_id}}' => $user->region_id ?? null,
+            '{{region_ids}}' => $user->regions?->pluck('id')->join(', '),
             '{{clinic_id}}' => $user->clinic_id ?? null,
             '{{phc_service_id}}' => $user->phc_service_id ?? null,
             '{{user_role}}' => $user->type ?? null,
