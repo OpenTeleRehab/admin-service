@@ -297,7 +297,7 @@ class QuestionnaireController extends Controller
     /**
      * @param \App\Models\Questionnaire $questionnaire
      *
-     * @return \App\Http\Resources\EducationMaterialResource
+     * @return \App\Http\Resources\QuestionnaireResource
      */
     public function show(Questionnaire $questionnaire)
     {
@@ -340,7 +340,9 @@ class QuestionnaireController extends Controller
      */
     public function destroy(Questionnaire $questionnaire)
     {
-        LanguageHelper::validateAssignedLanguageCode($questionnaire->suggested_lang);
+        if ($questionnaire->suggested_lang) {
+            LanguageHelper::validateAssignedLanguageCode($questionnaire->suggested_lang);
+        }
 
         $questionnaire->delete();
 
