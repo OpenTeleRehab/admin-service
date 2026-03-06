@@ -7,7 +7,7 @@ use App\Helpers\ContentHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\LanguageHelper;
 use App\Http\Resources\EducationMaterialResource;
-use App\Models\Category;
+use App\Http\Resources\EducationMaterialListResource;
 use App\Models\EducationMaterial;
 use App\Models\EducationMaterialCategory;
 use App\Models\File;
@@ -115,7 +115,7 @@ class EducationMaterialController extends Controller
         ];
         return [
             'success' => true,
-            'data' => EducationMaterialResource::collection($educationMaterials),
+            'data' => EducationMaterialListResource::collection($educationMaterials),
             'info' => $info,
         ];
     }
@@ -477,7 +477,9 @@ class EducationMaterialController extends Controller
      */
     public function destroy(EducationMaterial $educationMaterial)
     {
-        LanguageHelper::validateAssignedLanguageCode($educationMaterial->suggested_lang);
+        if ($educationMaterial->suggested_lang) {
+            LanguageHelper::validateAssignedLanguageCode($educationMaterial->suggested_lang);
+        }
 
         $educationMaterial->delete();
 

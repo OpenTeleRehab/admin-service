@@ -149,7 +149,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('exercise', [ExerciseController::class, 'store'])->middleware('role:setup_exercise');
     Route::get('exercise/{exercise}', [ExerciseController::class, 'show'])->middleware('role:setup_exercise,view_exercise,translate_exercise');
     Route::put('exercise/{exercise}', [ExerciseController::class, 'update'])->middleware('role:setup_exercise,translate_exercise');
-    Route::delete('exercise/{exercise}', [ExerciseController::class, 'destroy'])->middleware('role:setup_exercise');
+    Route::delete('exercise/{exercise}', [ExerciseController::class, 'destroy'])->middleware('role:setup_exercise,translate_exercise');
     Route::post('exercise/suggest', [ExerciseController::class, 'suggest'])->middleware('role:access_all');
     Route::get('exercise/list/by-ids', [ExerciseController::class, 'getByIds'])->middleware('role:access_all');
     Route::get('exercise/export/{type}', [ExerciseController::class, 'export'])->middleware('role:setup_exercise,export_exercise');
@@ -157,7 +157,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('get-exercise-files', [ExerciseController::class, 'getExerciseFiles'])->middleware('role:get_exercise_file');
     Route::get('get-exercises-for-open-library', [ExerciseController::class, 'getExercisesForOpenLibrary'])->middleware('role:get_library_exercise');
     Route::get('get-exercise-categories-for-open-library', [ExerciseController::class, 'getExerciseCategoriesForOpenLibrary'])->middleware('role:get_exercise_category');
-    Route::post('exercise/approve-translate/{exercise}', [ExerciseController::class, 'approveTranslation'])->middleware('role:setup_exercise');
+    Route::post('exercise/approve-translate/{exercise}', [ExerciseController::class, 'approveTranslation'])->middleware('role:translate_exercise');
     Route::post('exercise/updateFavorite/by-therapist/{exercise}', [ExerciseController::class, 'updateFavorite'])->middleware('role:access_all');
 
     // Education Material
@@ -165,14 +165,14 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('education-material', [EducationMaterialController::class, 'store'])->middleware('role:setup_educational_material');
     Route::get('education-material/{educationMaterial}', [EducationMaterialController::class, 'show'])->middleware('role:setup_educational_material,translate_educational_material, view_educational_material');
     Route::put('education-material/{educationMaterial}', [EducationMaterialController::class, 'update'])->middleware('role:setup_educational_material,translate_educational_material');
-    Route::delete('education-material/{educationMaterial}', [EducationMaterialController::class, 'destroy'])->middleware('role:setup_educational_material');
+    Route::delete('education-material/{educationMaterial}', [EducationMaterialController::class, 'destroy'])->middleware('role:setup_educational_material,translate_educational_material');
     Route::post('education-material/suggest', [EducationMaterialController::class, 'suggest'])->middleware('role:access_all');
     Route::get('education-material/list/by-ids', [EducationMaterialController::class, 'getByIds'])->middleware('role:access_all');
     Route::get('get-education-materials', [EducationMaterialController::class, 'getEducationMaterials'])->middleware('role:access_all');
     Route::get('get-education-material-files', [EducationMaterialController::class, 'getEducationMaterialFiles'])->middleware('role:get_educational_material_file');
     Route::get('get-education-materials-for-open-library', [EducationMaterialController::class, 'getEducationMaterialsForOpenLibrary'])->middleware('role:get_educational_material');
     Route::get('get-education-material-categories-for-open-library', [EducationMaterialController::class, 'getEducationMaterialCategoriesForOpenLibrary'])->middleware('role:get_educational_material_category');
-    Route::post('education-material/approve-translate/{educationMaterial}', [EducationMaterialController::class, 'approveTranslation'])->middleware('setup_educational_material');
+    Route::post('education-material/approve-translate/{educationMaterial}', [EducationMaterialController::class, 'approveTranslation'])->middleware('role:translate_educational_material');
     Route::post('education-material/updateFavorite/by-therapist/{educationMaterial}', [EducationMaterialController::class, 'updateFavorite'])->middleware('role:access_all');
 
     // Questionnaire
@@ -180,7 +180,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('questionnaire', [QuestionnaireController::class, 'store'])->middleware('role:setup_questionnaire');
     Route::get('questionnaire/{questionnaire}', [QuestionnaireController::class, 'show'])->middleware('role:setup_questionnaire,view_questionnaire,translate_questionnaire');
     Route::put('questionnaire/{questionnaire}', [QuestionnaireController::class, 'update'])->middleware('role:setup_questionnaire,translate_questionnaire');
-    Route::delete('questionnaire/{questionnaire}', [QuestionnaireController::class, 'destroy'])->middleware('role:setup_questionnaire');
+    Route::delete('questionnaire/{questionnaire}', [QuestionnaireController::class, 'destroy'])->middleware('role:setup_questionnaire,translate_questionnaire');
     Route::post('questionnaire/suggest', [QuestionnaireController::class, 'suggest'])->middleware('role:access_all');
     Route::get('questionnaire/list/by-ids', [QuestionnaireController::class, 'getByIds'])->middleware('role:access_all');
     Route::get('get-questionnaires', [QuestionnaireController::class, 'getQuestionnaires'])->middleware('role:access_all');
@@ -190,7 +190,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('get-questionnaires-for-open-library', [QuestionnaireController::class, 'getQuestionnairesForOpenLibrary'])->middleware('role:get_library_questionnaire');
     Route::get('get-questionnaire-categories-for-open-library', [QuestionnaireController::class, 'getQuestionnaireCategoriesForOpenLibrary'])->middleware('role:get_questionnaire_category');
     Route::post('questionnaire/mark-as-used/by-ids', [QuestionnaireController::class, 'markAsUsed'])->middleware('role:access_all');
-    Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation'])->middleware('role:setup_questionnaire');
+    Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation'])->middleware('role:translate_questionnaire');
     Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite'])->middleware('role:access_all');
     Route::get('get-questionnaire-by-id', [QuestionnaireController::class, 'getById'])->middleware('role:access_all');
     Route::get('get-questionnaire-by-therapist', [QuestionnaireController::class, 'getByTherapist']); // deprecated

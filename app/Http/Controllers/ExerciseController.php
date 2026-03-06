@@ -455,7 +455,9 @@ class ExerciseController extends Controller
      */
     public function destroy(Exercise $exercise)
     {
-        LanguageHelper::validateAssignedLanguageCode($exercise->suggested_lang);
+        if ($exercise->suggested_lang) {
+            LanguageHelper::validateAssignedLanguageCode($exercise->suggested_lang);
+        }
 
         $exercise->delete();
 
