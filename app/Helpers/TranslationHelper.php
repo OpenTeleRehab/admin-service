@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Translation;
 use Illuminate\Support\Facades\DB;

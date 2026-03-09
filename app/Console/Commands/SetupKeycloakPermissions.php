@@ -146,7 +146,6 @@ class SetupKeycloakPermissions extends Command
                 'manage_api_client',
                 'manage_mfa_policy',
                 'manage_faq_static_page',
-                'manage_email_template'
             ],
             'organization_admin' => [
                 'manage_system_limit',
@@ -197,6 +196,7 @@ class SetupKeycloakPermissions extends Command
                 'file_upload',
                 'view_province_list',
                 'manage_configuration',
+                'manage_email_template'
             ],
             'country_admin' => [
                 'view_organization',
