@@ -38,6 +38,11 @@ class ImportEmailTemplate extends Command
     public function handle()
     {
         $templates = Storage::get('email_template/content.json');
+        $templates = str_replace(
+            ['${ADMIN_APP_URL}', '${THERAPIST_APP_URL}'],
+            [env('APP_URL'), env('THERAPIST_APP_URL')],
+            $templates
+        );
         $templates = json_decode($templates, true);
 
         $this->output->progressStart(count($templates));

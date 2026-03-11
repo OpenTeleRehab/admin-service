@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\UserHelper;
 use App\Models\EmailTemplate;
 use App\Models\Language;
 use App\Models\User;
@@ -18,7 +19,7 @@ class PatientReferral extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, string $name)
+    public function __construct(User $user, object $therapist)
     {
         // Find user current language.
         $language = Language::find($user->language_id);
@@ -27,16 +28,16 @@ class PatientReferral extends Notification
         $emailTemplate = EmailTemplate::where('prefix', 'new-patient-referral-request-from-a-healthcare-worker')->firstOrFail();
 
         if ($language) {
-            $this->subject = config('mail.from.name') . ' - ' . $emailTemplate->getTranslation('title', $language->code);
+            $this->subject = $emailTemplate->getTranslation('title', $language->code);
             $this->content = $emailTemplate->getTranslation('content', $language->code);
         } else {
-            $this->subject = config('mail.from.name') . ' - ' . $emailTemplate->title;
+            $this->subject = $emailTemplate->title;
             $this->content = $emailTemplate->content;
         }
 
         // Replace email content.
-        $this->content = str_replace('#user_name#', $user->first_name, $this->content);
-        $this->content = str_replace('#healthcare_worker_name#', $name, $this->content);
+        $this->content = str_replace('#user_name#', UserHelper::getFullName($user->last_name, $user->first_name, $user->language_id), $this->content);
+        $this->content = str_replace('#healthcare_worker_name#', UserHelper::getFullName($therapist['last_name'], $therapist['first_name'], $user->language_id), $this->content);
     }
 
     /**

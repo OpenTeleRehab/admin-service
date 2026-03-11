@@ -145,6 +145,7 @@ class ForwarderController extends Controller
                     'country' => $countryCode,
                     'Accept' => 'application/json',
                     'int-clinic-id' => $user->clinic_id,
+                    'int-admin-user-id' => $user->id,
                 ])
                 ->put(env('PATIENT_SERVICE_URL') . $endpoint, $request->all());
         }

@@ -29,16 +29,14 @@ class NotificationController extends Controller
         ]);
 
         if ($healthcareWorker->successful()) {
-            $healthcareWorker = $healthcareWorker->json();
-            $name = $healthcareWorker['last_name'] . ' ' . $healthcareWorker['first_name'];
 
             User::where('clinic_id', $clinicId)
                 ->where('region_id', $regionId)
                 ->where('notifiable', 1)
                 ->where('enabled', 1)
                 ->get()
-                ->map(function (User $user) use ($name) {
-                    $user->notify(new PatientReferral($user, $name));
+                ->map(function (User $user) use ($healthcareWorker) {
+                    $user->notify(new PatientReferral($user, $healthcareWorker));
                 });
         }
     }
@@ -74,11 +72,11 @@ class NotificationController extends Controller
     public function patientCounterReferral(Request $request)
     {
         $request->validate([
-            'clinic_id' => 'required|exists:clinics,id',
+            'phc_service_id' => 'required|exists:phc_services,id',
             'therapist_id' => 'required|integer',
         ]);
 
-        $clinicId = $request->integer('clinic_id');
+        $phcServiceId = $request->integer('phc_service_id');
         $therapistId = $request->integer('therapist_id');
 
         $accessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
@@ -88,7 +86,7 @@ class NotificationController extends Controller
         ]);
 
         if ($therapist->successful()) {
-            User::where('clinic_id', $clinicId)
+            User::where('phc_service_id', $phcServiceId)
                 ->where('notifiable', 1)
                 ->get()
                 ->map(function (User $user) use ($therapist) {

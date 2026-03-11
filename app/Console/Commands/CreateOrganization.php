@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Organization;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Validator;
 
 class CreateOrganization extends Command
 {
@@ -30,6 +31,24 @@ class CreateOrganization extends Command
     {
         $adminEmail = $this->argument('admin_email');
         $orgName = $this->argument('org_name');
+        $validator = Validator::make([
+            'name' => $orgName,
+            'admin_email' => $adminEmail,
+            'sub_domain_name' => env('APP_NAME'),
+        ], [
+            'name' => 'unique:organizations,name',
+            'admin_email' => 'unique:organizations,admin_email',
+            'sub_domain_name' => 'unique:organizations,sub_domain_name',
+        ]);
+
+        if ($validator->fails()) {
+            foreach ($validator->errors()->all() as $error) {
+                $this->error($error);
+            }
+
+            return false;
+        }
+
         Organization::create([
             'name' => $orgName,
             'type' => Organization::NON_HI_TYPE,
