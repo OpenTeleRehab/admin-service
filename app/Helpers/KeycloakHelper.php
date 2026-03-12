@@ -100,7 +100,7 @@ class KeycloakHelper
      */
     public static function getKeycloakAccessToken()
     {
-        return Cache::get(self::ADMIN_ACCESS_TOKEN) ?? self::generateKeycloakToken(self::getTokenUrl(), env('KEYCLOAK_BACKEND_SECRET'), self::ADMIN_ACCESS_TOKEN);
+        return self::generateKeycloakToken(self::getTokenUrl(), env('KEYCLOAK_BACKEND_SECRET'), self::ADMIN_ACCESS_TOKEN);
     }
 
     /**
@@ -108,7 +108,7 @@ class KeycloakHelper
      */
     public static function getGAdminKeycloakAccessToken()
     {
-        return Cache::get(self::GADMIN_ACCESS_TOKEN) ?? self::generateKeycloakToken(self::getGAdminTokenUrl(), env('GADMIN_KEYCLOAK_BACKEND_SECRET'), self::GADMIN_ACCESS_TOKEN);
+        return self::generateKeycloakToken(self::getGAdminTokenUrl(), env('GADMIN_KEYCLOAK_BACKEND_SECRET'), self::GADMIN_ACCESS_TOKEN);
     }
 
     /**
@@ -120,7 +120,7 @@ class KeycloakHelper
         $therapistKeycloakUsername = env('THERAPIST_KEYCLOAK_BACKEND_USERNAME');
         $therapistKeycloakPassword = env('THERAPIST_KEYCLOAK_BACKEND_PASSWORD');
 
-        return Cache::get(self::THERAPIST_ACCESS_TOKEN) ?? self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN, $therapistKeycloakClientId, $therapistKeycloakUsername, $therapistKeycloakPassword);
+        return self::generateKeycloakToken(self::getTherapistTokenUrl(), env('THERAPIST_KEYCLOAK_BACKEND_SECRET'), self::THERAPIST_ACCESS_TOKEN, $therapistKeycloakClientId, $therapistKeycloakUsername, $therapistKeycloakPassword);
     }
 
     /**
@@ -334,24 +334,31 @@ class KeycloakHelper
      */
     private static function generateKeycloakToken($url, $client_secret, $cache_key, $clientId = null, $username = null, $password = null)
     {
-        $response = Http::asForm()->post($url, [
-            'grant_type' => 'password',
-            'client_id' => $clientId ?? env('KEYCLOAK_BACKEND_CLIENT'),
-            'client_secret' => $client_secret,
-            'username' => $username ?? env('KEYCLOAK_BACKEND_USERNAME'),
-            'password' => $password ?? env('KEYCLOAK_BACKEND_PASSWORD'),
-            'scope' => 'openid profile email'
-        ]);
+        return Cache::lock($cache_key . '_lock', 10)->block(5, function () use ($url, $client_secret, $cache_key, $clientId, $username, $password) {
 
-        if ($response->successful()) {
-            $result = $response->json();
+            if (Cache::has($cache_key)) {
+                return Cache::get($cache_key);
+            }
 
-            Cache::put($cache_key, $result['access_token'], now()->addSeconds($result['expires_in'] - 5));
+            $response = Http::asForm()->post($url, [
+                'grant_type' => 'password',
+                'client_id' => $clientId ?? env('KEYCLOAK_BACKEND_CLIENT'),
+                'client_secret' => $client_secret,
+                'username' => $username ?? env('KEYCLOAK_BACKEND_USERNAME'),
+                'password' => $password ?? env('KEYCLOAK_BACKEND_PASSWORD'),
+                'scope' => 'openid profile email'
+            ]);
 
-            return $result['access_token'];
-        }
+            if ($response->successful()) {
+                $result = $response->json();
 
-        return null;
+                Cache::put($cache_key, $result['access_token'], now()->addSeconds($result['expires_in'] - 20));
+
+                return $result['access_token'];
+            }
+
+            return null;
+        });
     }
 
     /**
