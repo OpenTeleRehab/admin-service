@@ -342,7 +342,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
         Route::get('patient/list/for-phc-worker-remove', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_remove_phc_worker_patient');
         Route::get('patient-treatment-plan', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_patient_treatment_plan');
         Route::get('patient-treatment-plan/get-treatment-plan-detail', [ForwarderController::class, 'index'])->middleware('role:manage_patient,view_patient_treatment_plan_detail');
-        Route::post('patient/transfer-to-therapist/{id}', [ForwarderController::class, 'store'])->middleware('role:manage_patient,manage_phc_worker,delete_phc_worker,delete_therapist');
+        Route::post('patient/transfer-to-therapist/{id}', [ForwarderController::class, 'store'])->middleware('role:manage_patient,manage_phc_worker,delete_phc_worker,delete_therapist,manage_therapist');
         Route::get('patient-referrals', [ForwarderController::class, 'index'])->middleware('role:manage_patient_referral');
         Route::get('patient-referrals/count', [ForwarderController::class, 'show'])->middleware('role:manage_patient_referral');
         Route::put('patient-referrals/{id}/decline', [ForwarderController::class, 'update'])->middleware('role:manage_patient_referral');
