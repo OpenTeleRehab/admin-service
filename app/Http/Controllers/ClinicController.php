@@ -20,8 +20,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-define("KEYCLOAK_USERS", env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/users');
-
 class ClinicController extends Controller
 {
     /**
@@ -321,9 +319,8 @@ class ClinicController extends Controller
 
             $users = User::where('clinic_id', $clinicId)->get();
 
-            $token = KeycloakHelper::getKeycloakAccessToken();
-
             foreach ($users as $user) {
+                $token = KeycloakHelper::getKeycloakAccessToken();
                 $response = Http::withToken($token)->get(
                     KeycloakHelper::getUserUrl(),
                     ['email' => $user->email]

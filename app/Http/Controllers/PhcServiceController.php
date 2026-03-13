@@ -261,9 +261,8 @@ class PhcServiceController extends Controller
 
         $adminUsers = User::where('phc_service_id', $phcServiceId)->get();
 
-        $token = KeycloakHelper::getKeycloakAccessToken();
-
         foreach ($adminUsers as $user) {
+            $token = KeycloakHelper::getKeycloakAccessToken();
             $response = Http::withToken($token)->get(
                 KeycloakHelper::getUserUrl(),
                 ['email' => $user->email]

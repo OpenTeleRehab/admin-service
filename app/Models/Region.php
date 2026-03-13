@@ -24,13 +24,19 @@ class Region extends Model
         'phc_worker_limit',
     ];
 
-
     /**
+     * Get the users who are assigned as regional admins for this region.
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(
+            User::class,
+            'region_admin',
+            'region_id',
+            'regional_admin_id'
+        );
     }
 
     /**
