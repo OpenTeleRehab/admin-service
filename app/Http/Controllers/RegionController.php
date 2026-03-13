@@ -357,9 +357,8 @@ class RegionController extends Controller
 
         $adminUsers = $region->users;
 
-        $token = KeycloakHelper::getKeycloakAccessToken();
-
         foreach ($adminUsers as $user) {
+            $token = KeycloakHelper::getKeycloakAccessToken();
             $response = Http::withToken($token)->get(
                 KeycloakHelper::getUserUrl(),
                 ['email' => $user->email]
