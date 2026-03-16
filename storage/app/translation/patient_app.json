@@ -274,6 +274,7 @@
     "chat_attachment.title": "Send attachment file",
     "chat_message.daily_reminder": "You have",
     "chat_message.unread_message": "Unread messages",
+    "chat_message.notification.title": "You have a message from ${name}",
     "edit.profile.discard.message": "Do you want to discard your changes?",
     "common.error_title_invalid_file_size": "File size limit",
     "common.error_message_invalid_file_size": "Please select a file less than or equal to ${size} MB",
