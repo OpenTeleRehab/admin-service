@@ -27,6 +27,7 @@ class SupersetController extends Controller
             '{{phc_service_id}}' => $user->phc_service_id ?? null,
             '{{user_role}}' => $user->type ?? null,
             '{{therapist_user_id}}' => $user->therapist_user_id ?? null,
+            '{{auth_id}}' => $user->id,
         ];
 
         $guestTokenPayload = [
