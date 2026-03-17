@@ -5,16 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\MfaSetting;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use App\Helpers\MfaSettingHelper;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\UpdateFederatedUsersMfaJob;
 use App\Http\Resources\MfaSettingResource;
+use App\Jobs\ReApplyMfaJob;
 use App\Models\Clinic;
 use App\Models\Country;
+use App\Models\JobTracker;
 use App\Models\Organization;
 use App\Models\PhcService;
 use App\Models\Region;
+use Illuminate\Support\Str;
 
 class MfaSettingController extends Controller
 {
@@ -168,9 +172,16 @@ class MfaSettingController extends Controller
 
         $newMfaSetting = MfaSetting::create($validatedData);
 
-        $job = new UpdateFederatedUsersMfaJob($newMfaSetting, $authUser);
+        $jobId = Str::uuid()->toString();
 
-        dispatch($job);
+        JobTracker::create([
+            'job_id' => $jobId,
+            'status' => JobTracker::QUEUED,
+            'trackable_type' => MfaSetting::class,
+            'trackable_id' => $newMfaSetting->id,
+        ]);
+
+        UpdateFederatedUsersMfaJob::dispatch($jobId, $newMfaSetting, $authUser);
 
         return ['success' => true, 'message' => 'mfa.setting.success_message.create'];
     }
@@ -263,9 +274,16 @@ class MfaSettingController extends Controller
 
         $mfaSetting->update($validatedData);
 
-        $job = new UpdateFederatedUsersMfaJob($mfaSetting, $authUser);
+        $jobId = Str::uuid()->toString();
 
-        dispatch($job);
+        JobTracker::create([
+            'job_id' => $jobId,
+            'status' => JobTracker::QUEUED,
+            'trackable_type' => MfaSetting::class,
+            'trackable_id' => $mfaSetting->id,
+        ]);
+
+        UpdateFederatedUsersMfaJob::dispatch($jobId, $mfaSetting, $authUser);
 
         return ['success' => true, 'message' => 'mfa.setting.success_message.update'];
     }
@@ -281,5 +299,23 @@ class MfaSettingController extends Controller
         $mfaSettingAboutRole = MfaSettingHelper::getMfaSettingAboveRole($authUser, $validatedData['role']);
 
         return response()->json(['success' => true, 'data' => $mfaSettingAboutRole?->mfa_enforcement], 200);
+    }
+
+    public function destroy(MfaSetting $mfaSetting)
+    {
+        $authUser = Auth::user();
+
+        $jobId = Str::uuid()->toString();
+
+        JobTracker::create([
+            'job_id' => $jobId,
+            'status' => JobTracker::QUEUED,
+            'trackable_type' => MfaSetting::class,
+            'trackable_id' => $mfaSetting->id,
+        ]);
+
+        ReApplyMfaJob::dispatch($jobId, $mfaSetting, $authUser);
+
+        return response()->json(['message' => 'mfa.delete.success']);
     }
 }

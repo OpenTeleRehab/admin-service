@@ -3,26 +3,23 @@
 namespace App\Jobs;
 
 use App\Events\MfaProgressStatus;
-use Throwable;
-use Carbon\Carbon;
-use App\Models\User;
+use App\Helpers\KeycloakHelper;
 use App\Models\Forwarder;
 use App\Models\JobTracker;
 use App\Models\MfaSetting;
 use App\Models\Organization;
-use App\Helpers\KeycloakHelper;
-use App\Helpers\MfaSettingHelper;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Models\User;
+use Carbon\Carbon;
+use Throwable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class UpdateFederatedUsersMfaJob implements ShouldQueue
+class ReApplyMfaJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, Queueable;
 
     protected $mfaSetting;
     protected $authUser;
@@ -49,7 +46,7 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
             $this->authUser,
             $this->jobId,
             $this->mfaSetting->id,
-            JobTracker::RUNNING
+            JobTracker::RUNNING,
         ));
 
         $authUserType = $this->authUser->type;
@@ -66,59 +63,15 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
             ];
             $orderByRoles = "'" . implode("','", $roleHierarchy) . "'";
 
-            $excludeRoles = [];
-
-            foreach ($roleHierarchy as $role) {
-                if ($role === $authUserType) break;
-
-                $excludeRoles[] = $role;
-            }
-
-            $excludeRoles[] = $authUserType;
-
-            $query = MfaSetting::where('role', $this->mfaSetting->role);
-
-            if (!empty($excludeRoles)) {
-                $query->whereNotIn('created_by_role', $excludeRoles);
-            }
+            $query = MfaSetting::query();
 
             if ($authUserType === User::ADMIN_GROUP_ORG_ADMIN) {
                 $query->whereJsonContains('organizations', $hiOrganization->id);
             }
 
-            $mfaSettings = $query->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')->get();
-
-            foreach ($mfaSettings as $mfaSetting) {
-                if (!$this->isScopeMatched($this->mfaSetting, $mfaSetting)) {
-                    continue;
-                }
-
-                if (MfaSettingHelper::validateMfaEnforcement($mfaSetting, $this->mfaSetting->mfa_enforcement) && in_array($hiOrganization?->id, $mfaSetting->organizations)) {
-                    $mfaSetting->update(['mfa_enforcement' => $this->mfaSetting->mfa_enforcement]);
-                }
-            }
-
-            if ($authUserType === User::ADMIN_GROUP_ORG_ADMIN) {
-                foreach ($mfaSettings as $mfaSetting) {
-                    $mfaSetting->update([
-                        'mfa_expiration_duration' => $this->mfaSetting?->mfa_expiration_duration,
-                        'skip_mfa_setup_duration' => $this->mfaSetting?->skip_mfa_setup_duration,
-                        'mfa_expiration_unit' => $this->mfaSetting?->mfa_expiration_unit,
-                        'skip_mfa_setup_unit' => $this->mfaSetting?->skip_mfa_setup_unit,
-                    ]);
-                }
-            }
+            $freshMfaSettings = MfaSetting::where('id', '!=', $this->mfaSetting->id)->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')->get();
 
             $federatedDomains = array_map(fn($d) => strtolower(trim($d)), explode(',', env('FEDERATED_DOMAINS', '')));
-
-            $freshMfaSettings = MfaSetting::where('role', $this->mfaSetting->role)
-                ->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')
-                ->get();
-
-            $countryIdsFromMfaSettings = $freshMfaSettings->pluck('country_ids')->flatten()->filter()->unique()->values()->all();
-            $regionIdsFromMfaSettings = $freshMfaSettings->pluck('region_ids')->flatten()->filter()->unique()->values()->all();
-            $clinicIdsFromMfaSettings = $freshMfaSettings->pluck('clinic_ids')->flatten()->filter()->unique()->values()->all();
-            $phcServiceIdsFromMfaSettings = $freshMfaSettings->pluck('phc_service_ids')->flatten()->filter()->unique()->values()->all();
 
             $internalUsersQuery = User::query()
                 ->where(function ($query) use ($federatedDomains) {
@@ -126,6 +79,11 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                         $query->whereRaw('LOWER(email) NOT LIKE ?', ['%' . $domain]);
                     }
                 });
+
+            $countryIdsFromMfaSettings = $freshMfaSettings->pluck('country_ids')->flatten()->filter()->unique()->values()->all();
+            $regionIdsFromMfaSettings = $freshMfaSettings->pluck('region_ids')->flatten()->filter()->unique()->values()->all();
+            $clinicIdsFromMfaSettings = $freshMfaSettings->pluck('clinic_ids')->flatten()->filter()->unique()->values()->all();
+            $phcServiceIdsFromMfaSettings = $freshMfaSettings->pluck('phc_service_ids')->flatten()->filter()->unique()->values()->all();
 
             $countryAdminsToRemoveMfa = (clone $internalUsersQuery)->where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)
                 ->whereNotIn('country_id', $countryIdsFromMfaSettings)
@@ -281,11 +239,14 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
 
             // end queue
             JobTracker::where('job_id', $this->jobId)->update(['status' => JobTracker::COMPLETED]);
+            MfaSetting::findOrFail($this->mfaSetting->id)->delete();
+
             broadcast(new MfaProgressStatus(
                 $this->authUser,
                 $this->jobId,
                 $this->mfaSetting->id,
-                JobTracker::COMPLETED
+                JobTracker::COMPLETED,
+                true,
             ));
         } catch (Throwable $e) {
             JobTracker::where('job_id', $this->jobId)->update([
@@ -299,48 +260,12 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                 $this->mfaSetting->id,
                 JobTracker::FAILED,
                 false,
-                $e->getMessage()
+                $e->getMessage(),
             ));
 
             Log::error("Error in UpdateFederatedUsersMfaJob: " . $e->getMessage(), ['exception' => $e]);
 
             throw $e;
         }
-    }
-
-    private function isScopeMatched(MfaSetting $source, MfaSetting $target): bool
-    {
-        $has = fn($a, $b) => !empty(array_intersect($a ?? [], $b ?? []));
-
-        return match ($source->created_by_role) {
-            User::ADMIN_GROUP_ORG_ADMIN => $has($source->country_ids, $target->country_ids),
-
-            User::ADMIN_GROUP_COUNTRY_ADMIN => $has($source->region_ids, $target->region_ids),
-
-            User::ADMIN_GROUP_REGIONAL_ADMIN =>
-            match ($source->role) {
-                User::ADMIN_GROUP_PHC_SERVICE_ADMIN,
-                User::GROUP_PHC_WORKER =>
-                $has($source->phc_service_ids, $target->phc_service_ids),
-
-                User::ADMIN_GROUP_CLINIC_ADMIN,
-                User::GROUP_THERAPIST =>
-                $has($source->clinic_ids, $target->clinic_ids),
-
-                default => true,
-            },
-
-            User::ADMIN_GROUP_PHC_SERVICE_ADMIN => $has($source->phc_service_ids, $target->phc_service_ids),
-
-            default => true,
-        };
-    }
-
-    public function failed(\Throwable $exception): void
-    {
-        JobTracker::where('job_id', $this->jobId)->update([
-            'status' => JobTracker::FAILED,
-            'message' => $exception->getMessage(),
-        ]);
     }
 }
