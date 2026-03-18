@@ -169,11 +169,18 @@ class TermAndConditionController extends Controller
     public function update(Request $request, $id)
     {
         $termAndCondition = TermAndCondition::findOrFail($id);
-        $termAndCondition->update([
+        $termAndCondition->fill([
             'version' => $request->get('version'),
             'content' => $request->get('content'),
             'auto_translated' => false,
         ]);
+
+        // Remove auto translation flag.
+        if ($termAndCondition->isDirty('content')) {
+            $termAndCondition->auto_translated = false;
+        }
+
+        $termAndCondition->save();
 
         return ['success' => true, 'message' => 'success_message.team_and_condition_update'];
     }

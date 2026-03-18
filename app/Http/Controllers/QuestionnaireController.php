@@ -24,8 +24,10 @@ class QuestionnaireController extends Controller
 {
     protected $questionnaireService;
 
-    public function __construct(QuestionnaireService $questionnaireService)
+    public function __construct(Request $request, QuestionnaireService $questionnaireService)
     {
+        parent::__construct($request);
+
         $this->questionnaireService = $questionnaireService;
     }
 

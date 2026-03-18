@@ -36,15 +36,13 @@ class Controller extends BaseController
      */
     public function __construct(Request $request)
     {
-        $languageId = $request->get('lang');
-        if (!$request->has('lang') && Auth::user()) {
-            $languageId = Auth::user()->language_id;
-        }
+        $languageId = $request->input('lang') ?? Auth::user()?->language_id;
 
         if ($languageId) {
-            $language = Language::find($languageId);
-            if ($language) {
-                App::setLocale(strtolower($language->code));
+            $code = Language::whereKey($languageId)->value('code');
+
+            if ($code) {
+                App::setLocale(strtolower($code));
             }
         }
     }

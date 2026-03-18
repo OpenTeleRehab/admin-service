@@ -258,7 +258,7 @@ class ExerciseController extends Controller
             return ['success' => false, 'message' => 'error_message.exercise_update'];
         }
 
-        $exercise->update([
+        $exercise->fill([
             'title' => $request->get('title'),
             'sets' => $request->get('sets'),
             'reps' => $request->get('reps'),
@@ -273,10 +273,10 @@ class ExerciseController extends Controller
         $languages = Language::where('code', '<>', config('app.fallback_locale'))->get();
         $translate = new GoogleTranslateHelper();
 
-        foreach ($additionalFields as $index => $additionalField) {
+        foreach ($additionalFields as $additionalField) {
             $additionalField = AdditionalField::updateOrCreate(
                 [
-                    'id' => isset($additionalField->id) ? $additionalField->id : null,
+                    'id' => $additionalField->id ?? null,
                 ],
                 [
                     'field' => $additionalField->field,
@@ -284,6 +284,12 @@ class ExerciseController extends Controller
                     'exercise_id' => $exercise->id
                 ]
             );
+
+            // Remove auto translation flag.
+            if ($additionalField->wasChanged()) {
+                $exercise->auto_translated = false;
+            }
+
             $additionalFieldIds[] = $additionalField->id;
             if ($additionalField->wasRecentlyCreated) {
                 foreach ($languages as $language) {
@@ -297,6 +303,13 @@ class ExerciseController extends Controller
                 }
             }
         }
+
+        // Remove auto translation flag.
+        if ($exercise->isDirty('title')) {
+            $exercise->auto_translated = false;
+        }
+
+        $exercise->save();
 
         // Remove deleted additional field.
         AdditionalField::where('exercise_id', $exercise->id)

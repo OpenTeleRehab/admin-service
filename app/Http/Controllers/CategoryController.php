@@ -220,9 +220,16 @@ class CategoryController extends Controller
     {
         LanguageHelper::validateAssignedLanguage($request->get('lang'));
 
-        $category->update([
+        $category->fill([
             'title' => $request->get('category'),
         ]);
+
+        // Remove auto translation flag.
+        if ($category->isDirty()) {
+            $category->auto_translated = false;
+        }
+
+        $category->save();
 
         return ['success' => true, 'message' => 'success_message.category_update'];
     }

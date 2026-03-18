@@ -334,7 +334,7 @@ class StaticPageController extends Controller
             return abort(409, 'error_message.url_exists');
         }
 
-        $staticPage->update([
+        $staticPage->fill([
             'title' => $request->get('title'),
             'content' => $request->get('content'),
             'private' => $request->boolean('private'),
@@ -342,8 +342,14 @@ class StaticPageController extends Controller
             'url_path_segment' => $request->get('url'),
             'background_color' => $request->get('background_color'),
             'text_color' => $request->get('text_color'),
-            'auto_translated' => false,
         ]);
+
+        // Remove auto translation flag.
+        if ($staticPage->isDirty(['title', 'content'])) {
+            $staticPage->auto_translated = false;
+        }
+
+        $staticPage->save();
 
         return ['success' => true, 'message' => 'success_message.static_file.update'];
     }

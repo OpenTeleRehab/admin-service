@@ -116,13 +116,19 @@ class AssistiveTechnologyController extends Controller
             $file_id = $file->id;
         }
 
-        $assistiveTechnology->update([
+        $assistiveTechnology->fill([
             'code' => $request->get('code'),
             'name' => $request->get('name'),
             'description' => $request->get('description'),
             'file_id' => $file_id,
-            'auto_translated' => false,
         ]);
+
+        // Remove auto translation flag.
+        if ($assistiveTechnology->isDirty(['name', 'description'])) {
+            $assistiveTechnology->auto_translated = false;
+        }
+
+        $assistiveTechnology->save();
 
         return ['success' => true, 'message' => 'success_message.assistive_technology_update'];
     }
