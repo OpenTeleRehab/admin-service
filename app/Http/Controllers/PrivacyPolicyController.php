@@ -171,11 +171,17 @@ class PrivacyPolicyController extends Controller
     public function update(Request $request, $id)
     {
         $privacyPolicy = PrivacyPolicy::findOrFail($id);
-        $privacyPolicy->update([
+        $privacyPolicy->fill([
             'version' => $request->get('version'),
             'content' => $request->get('content'),
-            'auto_translated' => false,
         ]);
+
+        // Remove auto translation flag.
+        if ($privacyPolicy->isDirty('content')) {
+            $privacyPolicy->auto_translated = false;
+        }
+
+        $privacyPolicy->save();
 
         return ['success' => true, 'message' => 'success_message.privacy_policy_update'];
     }

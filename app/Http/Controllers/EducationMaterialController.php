@@ -420,19 +420,26 @@ class EducationMaterialController extends Controller
             }
 
             $newFile = FileHelper::createFile($uploadedFile, File::EDUCATION_MATERIAL_PATH, File::EDUCATION_MATERIAL_THUMBNAIL_PATH);
-            $educationMaterial->update([
+            $educationMaterial->fill([
                 'title' => $request->get('title'),
                 'share_to_hi_library' => $request->boolean('share_to_hi_library'),
-                'file_id' => $newFile->id,
                 'share_with_phc_worker' => $request->boolean('share_with_phc_worker'),
+                'file_id' => $newFile->id,
             ]);
         } else {
-            $educationMaterial->update([
+            $educationMaterial->fill([
                 'title' => $request->get('title'),
                 'share_to_hi_library' => $request->boolean('share_to_hi_library'),
                 'share_with_phc_worker' => $request->boolean('share_with_phc_worker'),
             ]);
         }
+
+        // Remove auto translation flag.
+        if ($educationMaterial->isDirty('title')) {
+            $educationMaterial->auto_translated = false;
+        }
+
+        $educationMaterial->save();
 
         // Attach category to education material.
         EducationMaterialCategory::where('education_material_id', $educationMaterial->id)->delete();

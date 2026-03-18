@@ -129,7 +129,7 @@ class QuestionnaireService
         DB::beginTransaction();
 
         try {
-            $questionnaire->update([
+            $questionnaire->fill([
                 'title' => $data->title,
                 'description' => $data->description,
                 'share_to_hi_library' => $data->share_to_hi_library ?? false,
@@ -153,7 +153,7 @@ class QuestionnaireService
             foreach ($questions as $index => $question) {
                 $questionObj = Question::updateOrCreate(
                     [
-                        'id' => isset($question->id) ? $question->id : null,
+                        'id' => $question->id ?? null,
                     ],
                     [
                         'title' => $question->title,
@@ -164,6 +164,11 @@ class QuestionnaireService
                         'mandatory' => $question->mandatory ?? false,
                     ]
                 );
+
+                // Remove auto translation flag.
+                if ($questionObj->wasChanged('title')) {
+                    $questionnaire->auto_translated = false;
+                }
 
                 if (in_array($questionObj->id, (array) $noFileQuestions)) {
                     if ($questionObj->file_id) {
@@ -202,7 +207,7 @@ class QuestionnaireService
                     foreach ($question->answers as $answer) {
                         $answerObj = Answer::updateOrCreate(
                             [
-                                'id' => isset($answer->id) ? $answer->id : null,
+                                'id' => $answer->id ?? null,
                             ],
                             [
                                 'description' => $answer->description ?? [],
@@ -211,6 +216,11 @@ class QuestionnaireService
                                 'threshold' => isset($answer->threshold) && is_numeric($answer->threshold) ? $answer->threshold : null,
                             ]
                         );
+
+                        // Remove auto translation flag.
+                        if ($answerObj->wasChanged('description')) {
+                            $questionnaire->auto_translated = false;
+                        }
 
                         $answerIds[] = $answerObj->id;
 
@@ -237,6 +247,13 @@ class QuestionnaireService
                     ->whereNotIn('id', $answerIds)
                     ->delete();
             }
+
+            // Remove auto translation flag.
+            if ($questionnaire->isDirty(['title', 'description'])) {
+                $questionnaire->auto_translated = false;
+            }
+
+            $questionnaire->save();
 
             // Remove deleted questions.
             Question::where('questionnaire_id', $questionnaire->id)

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
@@ -13,7 +12,7 @@ use Spatie\Translatable\HasTranslations;
 
 class HealthCondition extends Model
 {
-    use HasTranslations, HasFactory, LogsActivity;
+    use HasTranslations, LogsActivity;
 
     /**
      * Indicates if the model should be timestamped.

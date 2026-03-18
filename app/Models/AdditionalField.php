@@ -68,10 +68,10 @@ class AdditionalField extends Model
             ]);
             if (!empty($response) && $response->successful()) {
                 $therapist = json_decode($response);
-            } 
+            }
         }
         $activity->causer_id = $therapist ? $therapist->id : $user->id;
-        $activity->full_name = $therapist ? $therapist->last_name . ' ' . $therapist->first_name : null; 
+        $activity->full_name = $therapist ? $therapist->last_name . ' ' . $therapist->first_name : null;
         $activity->clinic_id = $therapist ? $therapist->clinic_id : null;
         $activity->country_id = $therapist ? $therapist->country_id : null;
         $activity->group = $therapist ? 'therapist' : null;

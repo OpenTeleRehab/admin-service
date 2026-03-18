@@ -195,12 +195,18 @@ class GuidancePageController extends Controller
     {
         LanguageHelper::validateAssignedLanguage($request->get('lang'));
 
-        $guidancePage->update([
+        $guidancePage->fill([
             'title' => $request->get('title'),
             'content' => $request->get('content'),
             'target_role' => $request->get('target_role'),
-            'auto_translated' => false,
         ]);
+
+        // Remove auto translation flag.
+        if ($guidancePage->isDirty(['title', 'content'])) {
+            $guidancePage->auto_translated = false;
+        }
+
+        $guidancePage->save();
 
         return ['success' => true, 'message' => 'success_message.guidance.update'];
     }

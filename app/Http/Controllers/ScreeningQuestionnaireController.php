@@ -204,7 +204,7 @@ class ScreeningQuestionnaireController extends Controller
         try {
             $allFiles = $request->allFiles();
 
-            $screeningQuestionnaire->update([
+            $screeningQuestionnaire->fill([
                 'title' => $request->get('title'),
                 'description' => $request->get('description'),
             ]);
@@ -230,6 +230,11 @@ class ScreeningQuestionnaireController extends Controller
                         'questionnaire_id' => $screeningQuestionnaire->id,
                     ],
                 );
+
+                // Remove auto translation flag.
+                if ($section->wasChanged(['title', 'description'])) {
+                    $screeningQuestionnaire->auto_translated = false;
+                }
 
                 $questionIds = $section->questions->pluck('id')->toArray();
                 $targetQuestionIds = collect($sectionItem['questions'] ?? [])->pluck('id')->filter()->toArray();
@@ -264,6 +269,11 @@ class ScreeningQuestionnaireController extends Controller
                             'file_id' => $fileId,
                         ],
                     );
+
+                    // Remove auto translation flag.
+                    if ($question->wasChanged('question_text')) {
+                        $screeningQuestionnaire->auto_translated = false;
+                    }
 
                     $optionIds = $question->options->pluck('id')->toArray();
                     $targetOptionIds = collect($questionItem['options'] ?? [])->pluck('id')->filter()->toArray();
@@ -384,6 +394,13 @@ class ScreeningQuestionnaireController extends Controller
                     );
                 }
             }
+
+            // Remove auto translation flag.
+            if ($screeningQuestionnaire->isDirty()) {
+                $screeningQuestionnaire->auto_translated = false;
+            }
+
+            $screeningQuestionnaire->save();
 
             DB::commit();
 
