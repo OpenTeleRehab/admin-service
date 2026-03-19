@@ -32,6 +32,7 @@ class MfaSettingResource extends JsonResource
             'job_status' => $this->jobTrackers
                 ->sortByDesc('created_at')
                 ->first(),
+            'deleted_at' => $this->deleted_at,
         ];
     }
 }
