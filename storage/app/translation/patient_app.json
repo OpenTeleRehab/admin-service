@@ -86,6 +86,7 @@
     "common.record_video": "Record Video",
     "common.choose_from_library": "Choose from Library",
     "common.user.full_name": "${lastName} ${firstName}",
+    "common.notification": "Notification",
     "app.permission.setting.title": "App Permissions",
     "preferences": "Preferences",
     "tab.home": "Home",
