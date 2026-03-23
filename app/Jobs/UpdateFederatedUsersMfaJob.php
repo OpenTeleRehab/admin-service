@@ -115,10 +115,10 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
                 ->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')
                 ->get();
 
-            $countryIdsFromMfaSettings = $freshMfaSettings->pluck('country_ids')->flatten()->filter()->unique()->values()->all();
-            $regionIdsFromMfaSettings = $freshMfaSettings->pluck('region_ids')->flatten()->filter()->unique()->values()->all();
-            $clinicIdsFromMfaSettings = $freshMfaSettings->pluck('clinic_ids')->flatten()->filter()->unique()->values()->all();
-            $phcServiceIdsFromMfaSettings = $freshMfaSettings->pluck('phc_service_ids')->flatten()->filter()->unique()->values()->all();
+            $countryIdsFromMfaSettings = $freshMfaSettings->whereIn('created_by_role', [User::ADMIN_GROUP_SUPER_ADMIN, User::ADMIN_GROUP_ORG_ADMIN])->pluck('country_ids')->flatten()->filter()->unique()->values()->all();
+            $regionIdsFromMfaSettings = $freshMfaSettings->where('created_by_role', User::ADMIN_GROUP_COUNTRY_ADMIN)->pluck('region_ids')->flatten()->filter()->unique()->values()->all();
+            $clinicIdsFromMfaSettings = $freshMfaSettings->where('created_by_role', User::ADMIN_GROUP_REGIONAL_ADMIN)->pluck('clinic_ids')->flatten()->filter()->unique()->values()->all();
+            $phcServiceIdsFromMfaSettings = $freshMfaSettings->where('created_by_role', User::ADMIN_GROUP_REGIONAL_ADMIN)->pluck('phc_service_ids')->flatten()->filter()->unique()->values()->all();
 
             $internalUsersQuery = User::query()
                 ->where(function ($query) use ($federatedDomains) {

@@ -69,7 +69,7 @@ class ReApplyMfaJob implements ShouldQueue
                 $query->whereJsonContains('organizations', $hiOrganization->id);
             }
 
-            $freshMfaSettings = MfaSetting::where('id', '!=', $this->mfaSetting->id)->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')->get();
+            $freshMfaSettings = $query->where('id', '!=', $this->mfaSetting->id)->orderByRaw('FIELD(created_by_role, ' . $orderByRoles . ')')->get();
 
             $federatedDomains = array_map(fn($d) => strtolower(trim($d)), explode(',', env('FEDERATED_DOMAINS', '')));
 
@@ -80,10 +80,10 @@ class ReApplyMfaJob implements ShouldQueue
                     }
                 });
 
-            $countryIdsFromMfaSettings = $freshMfaSettings->pluck('country_ids')->flatten()->filter()->unique()->values()->all();
-            $regionIdsFromMfaSettings = $freshMfaSettings->pluck('region_ids')->flatten()->filter()->unique()->values()->all();
-            $clinicIdsFromMfaSettings = $freshMfaSettings->pluck('clinic_ids')->flatten()->filter()->unique()->values()->all();
-            $phcServiceIdsFromMfaSettings = $freshMfaSettings->pluck('phc_service_ids')->flatten()->filter()->unique()->values()->all();
+            $countryIdsFromMfaSettings = $freshMfaSettings->whereIn('created_by_role', [User::ADMIN_GROUP_SUPER_ADMIN, User::ADMIN_GROUP_ORG_ADMIN])->pluck('country_ids')->flatten()->filter()->unique()->values()->all();
+            $regionIdsFromMfaSettings = $freshMfaSettings->where('created_by_role', User::ADMIN_GROUP_COUNTRY_ADMIN)->pluck('region_ids')->flatten()->filter()->unique()->values()->all();
+            $clinicIdsFromMfaSettings = $freshMfaSettings->where('created_by_role', User::ADMIN_GROUP_REGIONAL_ADMIN)->pluck('clinic_ids')->flatten()->filter()->unique()->values()->all();
+            $phcServiceIdsFromMfaSettings = $freshMfaSettings->where('created_by_role', User::ADMIN_GROUP_REGIONAL_ADMIN)->pluck('phc_service_ids')->flatten()->filter()->unique()->values()->all();
 
             $countryAdminsToRemoveMfa = (clone $internalUsersQuery)->where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)
                 ->whereNotIn('country_id', $countryIdsFromMfaSettings)
@@ -118,6 +118,7 @@ class ReApplyMfaJob implements ShouldQueue
                     'mfaEnforcement' => '',
                     'trustedDeviceMaxAge' => '',
                     'skipMfaMaxAge' => '',
+                    'skipMfaUntil' => '',
                 ];
 
                 $payload = array_merge($existingAttributes, $payload);
