@@ -30,4 +30,6 @@ return [
   'patient_login_url' => env('PATIENT_SERVICE_URL') . '/auth/login',
 
   'webhook_url' => env('KEYCLOAK_URL') . '/auth/realms/' . env('KEYCLOAK_REAMLS_NAME') . '/webhooks',
+
+  'therapist_user_url' => env('KEYCLOAK_URL') . '/auth/admin/realms/' . env('THERAPIST_KEYCLOAK_REAMLS_NAME') . '/users',
 ];

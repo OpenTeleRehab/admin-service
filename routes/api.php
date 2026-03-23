@@ -45,6 +45,7 @@ use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\TranslatorController;
 use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\ConfigurationController;
+use App\Http\Controllers\UserMfaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -73,6 +74,9 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::get('mfa-settings', [MfaSettingController::class, 'index'])->middleware('role:manage_mfa_policy');
     Route::apiResource('mfa-settings', MfaSettingController::class)->middleware('role:manage_mfa_policy');
     Route::get('mfa-settings-validation', [MfaSettingController::class, 'validateMfaEnforcementAgainstHigherRole'])->middleware('role:manage_mfa_policy');
+
+    // User MFA
+    Route::post('user/{id}/reset-mfa-otp', [UserMfaController::class, 'resetOtp'])->middleware('role:manage_mfa_policy');
 
     // Translator
     Route::post('translator/updateStatus/{user}', [TranslatorController::class, 'updateStatus'])->middleware('role:manage_translator');

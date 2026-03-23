@@ -5,6 +5,7 @@ namespace App\Helpers;
 use Carbon\Carbon;
 use Firebase\JWT\JWT;
 use App\Models\Language;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -78,6 +79,73 @@ class KeycloakHelper
     public static function getTherapistTokenUrl(): string
     {
         return config('keycloak.therapist_token_url');
+    }
+
+    public static function getAccessTokenByUserType(string $userType)
+    {
+        if (in_array($userType, [\App\Models\User::GROUP_THERAPIST, \App\Models\User::GROUP_PHC_WORKER])) {
+            return self::getTherapistKeycloakAccessToken();
+        }
+
+        return self::getGAdminKeycloakAccessToken();
+    }
+
+    public static function getUserUrlByUserType(string $userType): string
+    {
+        if (in_array($userType, [\App\Models\User::GROUP_THERAPIST, \App\Models\User::GROUP_PHC_WORKER])) {
+            return self::getTherapistUserUrl();
+        }
+
+        return self::getUserUrl();
+    }
+
+    public static function getKeycloakUserByUsernameAndType(string $username, string $userType): ?array
+    {
+        $token = self::getAccessTokenByUserType($userType);
+        $userUrl = self::getUserUrlByUserType($userType);
+
+        if (!$token) {
+            return null;
+        }
+
+        $response = Http::withToken($token)
+            ->withHeaders([
+                'Content-Type' => 'application/json'
+            ])
+            ->get($userUrl, [
+                'username' => $username,
+                'exact' => 'true'
+            ]);
+
+        if ($response->successful()) {
+            return $response->json()[0] ?? null;
+        }
+
+        return null;
+    }
+
+    public static function getUserCredentialByUserType(string $userId, string $userType): ?array
+    {
+        $token = self::getAccessTokenByUserType($userType);
+        $userUrl = self::getUserUrlByUserType($userType);
+
+        $endpoint = $userUrl . '/' . $userId . '/credentials';
+
+        $response = Http::withToken($token)->get($endpoint);
+
+        if (!$response->successful()) {
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * @return string
+     */
+    public static function getTherapistUserUrl(): string
+    {
+        return config('keycloak.therapist_user_url');
     }
 
     /**
@@ -749,7 +817,7 @@ class KeycloakHelper
         $credential = collect($credentials)->firstWhere('type', $type);
 
         if (!$credential || empty($credential['id'])) {
-            return false;
+            return true;
         }
 
         $endpoint = self::getUserUrl() . '/' . $userId . '/credentials/' . $credential['id'];
@@ -758,6 +826,56 @@ class KeycloakHelper
 
         if (!$response->successful()) {
             throw new HttpException($response->status(), 'Failed to delete Keycloak user ' . $username . ' message: ' . $response->body());
+        }
+
+        return $response->successful();
+    }
+
+
+    public static function deleteUserCredentialByTypeByUserType(
+        string $username,
+        string $credentialType,
+        string $userType
+    ): bool {
+
+        $token = self::getAccessTokenByUserType($userType);
+        $userUrl = self::getUserUrlByUserType($userType);
+
+        if (!$token) {
+            return false;
+        }
+
+        $keycloakUser = self::getKeycloakUserByUsernameAndType($username, $userType);
+
+        if (!$keycloakUser || empty($keycloakUser['id'])) {
+            return false;
+        }
+
+        $userId = $keycloakUser['id'];
+
+        $credentials = self::getUserCredentialByUserType($userId, $userType);
+
+        if (empty($credentials)) {
+            return true;
+        }
+
+        $credential = collect($credentials)->firstWhere('type', $credentialType);
+
+        if (!$credential || empty($credential['id'])) {
+            return true;
+        }
+
+        $endpoint = $userUrl . '/' . $userId . '/credentials/' . $credential['id'];
+
+        $response = Http::withToken($token)->delete($endpoint);
+
+        if (!$response->successful()) {
+            Log::warning('Failed to delete credential', [
+                'username' => $username,
+                'user_type' => $userType,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
         }
 
         return $response->successful();
