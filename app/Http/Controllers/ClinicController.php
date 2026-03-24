@@ -14,6 +14,7 @@ use App\Models\Forwarder;
 use App\Models\MfaSetting;
 use App\Models\Survey;
 use App\Models\User;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -350,25 +351,32 @@ class ClinicController extends Controller
             JsonColumnHelper::removeFromJsonColumn(MfaSetting::class, 'clinic_ids', [$clinicId]);
             JsonColumnHelper::removeFromJsonColumn(Survey::class, 'clinic', [$clinicId]);
 
-            // Therapist service
-            Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
-                ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
-                    'entity_name' => 'rehab_service',
-                    'entity_id' => $clinicId,
-                ]);
+            $responses = Http::pool(fn (Pool $pool) => [
+                $pool->as('therapist')->withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+                    ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
+                        'entity_name' => 'rehab_service',
+                        'entity_id' => $clinicId,
+                    ]),
+                $pool->as('patient')->withHeaders([
+                    'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
+                        Forwarder::PATIENT_SERVICE,
+                        $country->iso_code
+                    ),
+                    'country' => $country->iso_code,
+                ])
+                    ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
+                        'entity_name' => 'rehab_service',
+                        'entity_id' => $clinicId,
+                    ])
+            ]);
 
-            // Patient service
-            Http::withHeaders([
-                'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
-                    Forwarder::PATIENT_SERVICE,
-                    $country->iso_code
-                ),
-                'country' => $country->iso_code,
-            ])
-                ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
-                    'entity_name' => 'rehab_service',
-                    'entity_id' => $clinicId,
-                ]);
+            if (!$responses['therapist']->successful()) {
+                Log::error("Therapist deletion failed. Status: {$responses['therapist']->status()}");
+            }
+
+            if (!$responses['patient']->successful()) {
+                Log::error("Patient deletion failed. Status: {$responses['patient']->status()}");
+            }
 
             $clinic->delete();
             return ['success' => true, 'message' => 'success_message.clinic_delete'];
@@ -526,29 +534,34 @@ class ClinicController extends Controller
     {
         $clinic->load(['users']);
 
+        $country = $clinic->province->region->country;
+
         $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code);
 
-        $therapistCountRes = Http::withToken($therapistPortalAccessToken)->get(
-            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'rehab_service',
-                'entity_id' => $clinic->id,
-                'user_type' => User::GROUP_THERAPIST,
-            ]
-        )->throw();
+        $responses = Http::pool(fn (Pool $pool) => [
+            $pool->as('therapist')->withToken($therapistPortalAccessToken)->get(
+                env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'rehab_service',
+                    'entity_id' => $clinic->id,
+                    'user_type' => User::GROUP_THERAPIST,
+                ]
+            ),
+            $pool->as('patient')->withToken($patientPortalAccessToken)->get(
+                env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'rehab_service',
+                    'entity_id' => $clinic->id,
+                ]
+            ),
+        ]);
 
-        $clinic->therapist_count = $therapistCountRes->json('data', 0);
+        $responses['therapist']->throw();
+        $responses['patient']->throw();
 
-        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
-            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'rehab_service',
-                'entity_id' => $clinic->id,
-            ]
-        )->throw();
-
-        $clinic->patient_count = $patientCountRes->json('data', 0);
+        $clinic->therapist_count = $responses['therapist']->json('data', 0);
+        $clinic->patient_count = $responses['patient']->json('data', 0);
 
         return response()->json([
             'data' => new EntitiesByClinicResource($clinic),

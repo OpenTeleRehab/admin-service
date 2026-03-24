@@ -16,12 +16,12 @@ class EntitiesByRegionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'regional_admin_count' => $this->users->where('type', User::ADMIN_GROUP_REGIONAL_ADMIN)->count(),
+            'regional_admin_count' => $this->regional_admin_count,
             'province_count' => $this->provinces->count(),
             'rehab_service_count' => $this->clinics->count(),
-            'rehab_service_admin_count' => $this->users->where('type', User::ADMIN_GROUP_CLINIC_ADMIN)->count(),
+            'rehab_service_admin_count' => $this->rehab_service_admin_count,
             'phc_service_count' => $this->phcServices->count(),
-            'phc_service_admin_count' => $this->users->where('type', User::ADMIN_GROUP_PHC_SERVICE_ADMIN)->count(),
+            'phc_service_admin_count' => $this->phc_service_admin_count,
             'therapist_count' => $this->therapist_count,
             'phc_worker_count' => $this->phc_worker_count,
             'patient_count' => $this->patient_count,
