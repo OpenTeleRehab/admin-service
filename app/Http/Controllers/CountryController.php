@@ -18,6 +18,7 @@ use App\Models\PhcService;
 use App\Models\Survey;
 use App\Models\UserSurvey;
 use Exception;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Stevebauman\Location\Facades\Location;
@@ -409,31 +410,40 @@ class CountryController extends Controller
         JsonColumnHelper::removeFromJsonColumn(MfaSetting::class, 'country_ids', [$countryId]);
         JsonColumnHelper::removeFromJsonColumn(Survey::class, 'country', [$countryId]);
 
-        // Phone service
-        Http::post(
-            env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
-            ['clinic_ids' => $country->clinics->pluck('id')]
-        );
-
-        // Therapist service
-        Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
-            ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
-                'entity_name' => 'country',
-                'entity_id' => $countryId,
-            ]);
-
-        // Patient service
-        Http::withHeaders([
-            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
-                Forwarder::PATIENT_SERVICE,
-                $country->iso_code
+        $responses = Http::pool(fn (Pool $pool) => [
+            $pool->as('phone')->post(
+                env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
+                ['clinic_ids' => $country->clinics->pluck('id')]
             ),
-            'country' => $country->iso_code,
-        ])
-            ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
-                'entity_name' => 'country',
-                'entity_id' => $countryId,
-            ]);
+            $pool->as('therapist')->withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
+                ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
+                    'entity_name' => 'country',
+                    'entity_id' => $countryId,
+                ]),
+            $pool->as('patient')->withHeaders([
+                'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
+                    Forwarder::PATIENT_SERVICE,
+                    $country->iso_code
+                ),
+                'country' => $country->iso_code,
+            ])
+                ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
+                    'entity_name' => 'country',
+                    'entity_id' => $countryId,
+                ])
+        ]);
+
+        if (!$responses['phone']->successful()) {
+            Log::error("Phone deletion failed. Status: {$responses['phone']->status()}");
+        }
+
+        if (!$responses['therapist']->successful()) {
+            Log::error("Therapist deletion failed. Status: {$responses['therapist']->status()}");
+        }
+
+        if (!$responses['patient']->successful()) {
+            Log::error("Patient deletion failed. Status: {$responses['patient']->status()}");
+        }
 
         $country->delete();
 
@@ -516,39 +526,41 @@ class CountryController extends Controller
         ]);
 
         $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code);
 
-        $therapistCountRes = Http::withToken($therapistPortalAccessToken)->get(
-            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'country',
-                'entity_id' => $country->id,
-                'user_type' => User::GROUP_THERAPIST,
-            ]
-        )->throw();
+        $responses = Http::pool(fn (Pool $pool) => [
+            $pool->as('therapist')->withToken($therapistPortalAccessToken)->get(
+                env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'country',
+                    'entity_id' => $country->id,
+                    'user_type' => User::GROUP_THERAPIST,
+                ]
+            ),
+            $pool->as('phc_worker')->withToken($therapistPortalAccessToken)->get(
+                env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'country',
+                    'entity_id' => $country->id,
+                    'user_type' => User::GROUP_PHC_WORKER,
+                ]
+            ),
+            $pool->as('patient')->withToken($patientPortalAccessToken)->get(
+                env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'country',
+                    'entity_id' => $country->id,
+                ]
+            ),
+        ]);
 
-        $country->therapist_count = $therapistCountRes->json('data', 0);
+        $responses['therapist']->throw();
+        $responses['phc_worker']->throw();
+        $responses['patient']->throw();
 
-        $phcWorkerCountRes = Http::withToken($therapistPortalAccessToken)->get(
-            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'country',
-                'entity_id' => $country->id,
-                'user_type' => User::GROUP_PHC_WORKER,
-            ]
-        )->throw();
-
-        $country->phc_worker_count = $phcWorkerCountRes->json('data', 0);
-
-        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
-            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'country',
-                'entity_id' => $country->id,
-            ]
-        )->throw();
-
-        $country->patient_count = $patientCountRes->json('data', 0);
+        $country->therapist_count = $responses['therapist']->json('data', 0);
+        $country->phc_worker_count = $responses['phc_worker']->json('data', 0);
+        $country->patient_count = $responses['patient']->json('data', 0);
 
         return response()->json([
             'data' => new EntitiesByCountryResource($country),

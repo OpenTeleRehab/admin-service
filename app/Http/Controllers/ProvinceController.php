@@ -13,6 +13,7 @@ use App\Models\Region;
 use App\Models\Survey;
 use App\Models\User;
 use App\Models\UserSurvey;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -361,25 +362,33 @@ class ProvinceController extends Controller
 
         JsonColumnHelper::removeFromJsonColumn(Survey::class, 'province', [$provinceId]);
 
-        // Therapist service
-        Http::withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
-            ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
-                'entity_name' => 'province',
-                'entity_id' => $provinceId,
-            ]);
+        $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code);
 
-        // Patient service
-        Http::withHeaders([
-            'Authorization' => 'Bearer ' . Forwarder::getAccessToken(
-                Forwarder::PATIENT_SERVICE,
-                $country->iso_code
+        $responses = Http::pool(fn (Pool $pool) => [
+            $pool->as('therapist')->withToken($therapistPortalAccessToken)->post(
+                env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [
+                    'entity_name' => 'province',
+                    'entity_id' => $provinceId,
+                ]
             ),
-            'country' => $country->iso_code,
-        ])
-            ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
-                'entity_name' => 'province',
-                'entity_id' => $provinceId,
-            ]);
+            $pool->as('patient')->withHeaders([
+                'Authorization' => 'Bearer ' . $patientPortalAccessToken,
+                'country' => $country->iso_code,
+            ])
+                ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
+                    'entity_name' => 'province',
+                    'entity_id' => $provinceId,
+                ]),
+        ]);
+
+        if (!$responses['therapist']->successful()) {
+            Log::error("Therapist deletion failed. Status: {$responses['therapist']->status()}");
+        }
+
+        if (!$responses['patient']->successful()) {
+            Log::error("Patient deletion failed. Status: {$responses['patient']->status()}");
+        }
 
         $province->forceDelete();
 
@@ -460,40 +469,44 @@ class ProvinceController extends Controller
             'phcServices',
         ]);
 
+        $country = $province->region->country;
+
         $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code);
 
-        $therapistCountRes = Http::withToken($therapistPortalAccessToken)->get(
-            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'province',
-                'entity_id' => $province->id,
-                'user_type' => User::GROUP_THERAPIST,
-            ]
-        )->throw();
+        $responses = Http::pool(fn (Pool $pool) => [
+            $pool->as('therapist')->withToken($therapistPortalAccessToken)->get(
+                env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'province',
+                    'entity_id' => $province->id,
+                    'user_type' => User::GROUP_THERAPIST,
+                ]
+            ),
+            $pool->as('phc_worker')->withToken($therapistPortalAccessToken)->get(
+                env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'province',
+                    'entity_id' => $province->id,
+                    'user_type' => User::GROUP_PHC_WORKER,
+                ]
+            ),
+            $pool->as('patient')->withToken($patientPortalAccessToken)->get(
+                env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'province',
+                    'entity_id' => $province->id,
+                ]
+            ),
+        ]);
 
-        $province->therapist_count = $therapistCountRes->json('data', 0);
+        $responses['therapist']->throw();
+        $responses['phc_worker']->throw();
+        $responses['patient']->throw();
 
-        $phcWorkerCountRes = Http::withToken($therapistPortalAccessToken)->get(
-            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'province',
-                'entity_id' => $province->id,
-                'user_type' => User::GROUP_PHC_WORKER,
-            ]
-        )->throw();
-
-        $province->phc_worker_count = $phcWorkerCountRes->json('data', 0);
-
-        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
-            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'province',
-                'entity_id' => $province->id,
-            ]
-        )->throw();
-
-        $province->patient_count = $patientCountRes->json('data', 0);
+        $province->therapist_count = $responses['therapist']->json('data', 0);
+        $province->phc_worker_count = $responses['phc_worker']->json('data', 0);
+        $province->patient_count = $responses['patient']->json('data', 0);
 
         return response()->json([
             'data' => new EntitiesByProvinceResource($province),

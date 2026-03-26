@@ -13,6 +13,7 @@ use App\Models\Region;
 use App\Models\Survey;
 use App\Models\User;
 use App\Models\UserSurvey;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -354,10 +355,16 @@ class RegionController extends Controller
     {
         $regionId = $region->id;
         $country = $region->country;
+        $clinicIds = $region->clinics->pluck('id')->toArray();
+        $phcServiceIds = $region->phcServices->pluck('id')->toArray();
 
-        $adminUsers = $region->users;
+        $combinedUsers = User::where(function($query) use ($clinicIds, $phcServiceIds, $regionId) {
+            $query->whereIn('clinic_id', $clinicIds)
+                ->orWhereIn('phc_service_id', $phcServiceIds)
+                ->orWhereHas('regions', fn($q) => $q->where('region_id', $regionId));
+        })->get();
 
-        foreach ($adminUsers as $user) {
+        foreach ($combinedUsers as $user) {
             $token = KeycloakHelper::getKeycloakAccessToken();
             $response = Http::withToken($token)->get(
                 KeycloakHelper::getUserUrl(),
@@ -503,40 +510,57 @@ class RegionController extends Controller
             'phcServices',
         ]);
 
+        $country = $region->country;
+
+        $clinicIds = $region->clinics->pluck('id');
+        $phcServiceIds = $region->phcServices->pluck('id');
+
+        $region->rehab_service_admin_count = User::whereIn('clinic_id', $clinicIds)
+            ->where('type', User::ADMIN_GROUP_CLINIC_ADMIN)
+            ->count();
+
+        $region->regional_admin_count = $region->users->count();
+
+        $region->phc_service_admin_count = User::whereIn('phc_service_id', $phcServiceIds)
+            ->where('type', User::ADMIN_GROUP_PHC_SERVICE_ADMIN)
+            ->count();
+
         $therapistPortalAccessToken = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+        $patientPortalAccessToken = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $country->iso_code);
 
-        $therapistCountRes = Http::withToken($therapistPortalAccessToken)->get(
-            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'region',
-                'entity_id' => $region->id,
-                'user_type' => User::GROUP_THERAPIST,
-            ]
-        )->throw();
+        $responses = Http::pool(fn (Pool $pool) => [
+            $pool->as('therapist')->withToken($therapistPortalAccessToken)->get(
+                env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'region',
+                    'entity_id' => $region->id,
+                    'user_type' => User::GROUP_THERAPIST,
+                ]
+            ),
+            $pool->as('phc_worker')->withToken($therapistPortalAccessToken)->get(
+                env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'region',
+                    'entity_id' => $region->id,
+                    'user_type' => User::GROUP_PHC_WORKER,
+                ]
+            ),
+            $pool->as('patient')->withToken($patientPortalAccessToken)->get(
+                env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
+                [
+                    'entity_name' => 'region',
+                    'entity_id' => $region->id,
+                ]
+            ),
+        ]);
 
-        $region->therapist_count = $therapistCountRes->json('data', 0);
+        $responses['therapist']->throw();
+        $responses['phc_worker']->throw();
+        $responses['patient']->throw();
 
-        $phcWorkerCountRes = Http::withToken($therapistPortalAccessToken)->get(
-            env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'region',
-                'entity_id' => $region->id,
-                'user_type' => User::GROUP_PHC_WORKER,
-            ]
-        )->throw();
-
-        $region->phc_worker_count = $phcWorkerCountRes->json('data', 0);
-
-        $patientCountRes = Http::withToken($patientPortalAccessToken)->get(
-            env('PATIENT_SERVICE_URL') . '/data-clean-up/users/count',
-            [
-                'entity_name' => 'region',
-                'entity_id' => $region->id,
-            ]
-        )->throw();
-
-        $region->patient_count = $patientCountRes->json('data', 0);
+        $region->therapist_count = $responses['therapist']->json('data', 0);
+        $region->phc_worker_count = $responses['phc_worker']->json('data', 0);
+        $region->patient_count = $responses['patient']->json('data', 0);
 
         return response()->json([
             'data' => new EntitiesByRegionResource($region),
