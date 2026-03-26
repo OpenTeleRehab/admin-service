@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Class KeycloakHelper
@@ -630,11 +631,11 @@ class KeycloakHelper
             'exact' => 'true'
         ]);
 
-        if ($response->successful()) {
-            return $response->json()[0] ?? null;
+        if (!$response->successful()) {
+            throw new HttpException($response->status(), 'Fail to fetch keycloak user ' . $username . ' message: ' . $response->body());
         }
 
-        return null;
+        return $response->json()[0] ?? null;
     }
 
     /**
@@ -693,10 +694,10 @@ class KeycloakHelper
             ->put($url, $keycloakUser);
 
         if (!$updateResponse->successful()) {
-            return false;
+            throw new HttpException($updateResponse->status(), 'Failed to set Keycloak user attribute ' . $username . ' message: ' . $updateResponse->body());
         }
 
-        return true;
+        return $updateResponse->successful();
     }
 
     /**
@@ -754,6 +755,10 @@ class KeycloakHelper
         $endpoint = self::getUserUrl() . '/' . $userId . '/credentials/' . $credential['id'];
 
         $response = Http::withToken($token)->delete($endpoint);
+
+        if (!$response->successful()) {
+            throw new HttpException($response->status(), 'Failed to delete Keycloak user ' . $username . ' message: ' . $response->body());
+        }
 
         return $response->successful();
     }
