@@ -6,6 +6,7 @@ use App\Events\ApplyPrivacyPolicyAutoTranslationEvent;
 use App\Helpers\GoogleTranslateHelper;
 use App\Models\Language;
 use Illuminate\Support\Facades\App;
+use Spatie\Activitylog\Facades\Activity;
 
 class ApplyPrivacyPolicyAutoTranslationListener
 {
@@ -21,6 +22,9 @@ class ApplyPrivacyPolicyAutoTranslationListener
         if (App::getLocale() !== 'en') {
             return;
         }
+
+        // Disable activity logging
+        Activity::disableLogging();
 
         $translate = new GoogleTranslateHelper();
         $supportedLanguages = $translate->supportedLanguages();
@@ -48,5 +52,8 @@ class ApplyPrivacyPolicyAutoTranslationListener
             $privacyPolicy->setTranslation('auto_translated', $languageCode, true);
         }
         $privacyPolicy->save();
+
+        // Re-enable activity logging
+        Activity::enableLogging();
     }
 }

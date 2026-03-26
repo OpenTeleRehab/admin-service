@@ -6,6 +6,7 @@ use App\Events\ApplyTermAndConditionAutoTranslationEvent;
 use App\Helpers\GoogleTranslateHelper;
 use App\Models\Language;
 use Illuminate\Support\Facades\App;
+use Spatie\Activitylog\Facades\Activity;
 
 class ApplyTermAndConditionAutoTranslationListener
 {
@@ -21,6 +22,8 @@ class ApplyTermAndConditionAutoTranslationListener
         if (App::getLocale() !== 'en') {
             return;
         }
+        // Disable activity logging
+        Activity::disableLogging();
 
         $translate = new GoogleTranslateHelper();
         $supportedLanguages = $translate->supportedLanguages();
@@ -48,5 +51,8 @@ class ApplyTermAndConditionAutoTranslationListener
             $termAndCondition->setTranslation('auto_translated', $languageCode, true);
         }
         $termAndCondition->save();
+
+        // Re-enable activity logging
+        Activity::enableLogging();
     }
 }
