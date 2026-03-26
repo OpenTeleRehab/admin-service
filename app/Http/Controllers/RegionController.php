@@ -466,6 +466,13 @@ class RegionController extends Controller
         return response()->json(['data' => RegionResource::collection($query->get())]);
     }
 
+    public function getRegionByRegionalAdmin()
+    {
+        $regions = Auth::user()->regions;
+
+        return response()->json(['data' => RegionResource::collection($regions)]);
+    }
+
     /**
      * Retrieve the list of limitations for all regions within the authenticated user's country.
      *

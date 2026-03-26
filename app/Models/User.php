@@ -28,6 +28,15 @@ class User extends Authenticatable
     const GROUP_PATIENT = 'patient';
     const GROUP_PHC_WORKER = 'phc_worker';
 
+    const ROLE_HIERARCHY = [
+        self::ADMIN_GROUP_SUPER_ADMIN,
+        self::ADMIN_GROUP_ORG_ADMIN,
+        self::ADMIN_GROUP_COUNTRY_ADMIN,
+        self::ADMIN_GROUP_REGIONAL_ADMIN,
+        self::ADMIN_GROUP_CLINIC_ADMIN,
+        self::ADMIN_GROUP_PHC_SERVICE_ADMIN,
+    ];
+
     /**
      * The attributes that are mass assignable.
      *

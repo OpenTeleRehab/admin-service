@@ -396,7 +396,7 @@ class PhcServiceController extends Controller
     public function getOptionList()
     {
         if (Auth::user()->country_id) {
-            $phcServices = PhcService::whereHas('province.region', function ($q) {
+            $phcServices = PhcService::with('province')->whereHas('province.region', function ($q) {
                 $q->where('country_id', Auth::user()->country_id);
             })->get();
         } else {
