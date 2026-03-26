@@ -7,6 +7,7 @@ use App\Models\GlobalAssistiveTechnologyPatient;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Spatie\Activitylog\Facades\Activity;
 
 class SyncAssistiveTechnologyPatientData extends Command
 {
@@ -31,6 +32,9 @@ class SyncAssistiveTechnologyPatientData extends Command
     public function handle()
     {
         $hosts = config('settings.hosting_country');
+
+        // Disable activity logging for data sync
+        Activity::disableLogging();
 
         // Sync assistive technology provided patient from vn db or other country to new table.
         foreach ($hosts as $host) {
@@ -93,6 +97,9 @@ class SyncAssistiveTechnologyPatientData extends Command
                 );
             }
         }
+
+        // Re-enable activity logging after data sync
+        Activity::enableLogging();
 
         $this->info('Data has been sync successfully');
     }

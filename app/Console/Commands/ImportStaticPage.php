@@ -8,6 +8,7 @@ use App\Models\Translation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Facades\Activity;
 
 class ImportStaticPage extends Command
 {
@@ -42,6 +43,9 @@ class ImportStaticPage extends Command
         $admin_static_pages = Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/page/static-page-data/?url-segment=about-us&platform=' . Translation::ADMIN_PORTAL);
         $therapist_static_pages = Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/page/static-page-data/?url-segment=about-us&platform=' . Translation::THERAPIST_PORTAL);
         $patient_static_pages = Http::get(env('GLOBAL_ADMIN_SERVICE_URL') . '/page/static-page-data/?url-segment=about-us&platform=' . Translation::PATIENT_APP);
+
+        // Disable activity logging for static page import
+        Activity::disableLogging();
 
         if (StaticPage::count() > 0) {
             $this->info('These static pages is already exists');
@@ -78,6 +82,9 @@ class ImportStaticPage extends Command
                 ]);
             }
         }
+
+        // Re-enable activity logging after static page import
+        Activity::enableLogging();
 
         $this->info('Static page has been created successfully');
 

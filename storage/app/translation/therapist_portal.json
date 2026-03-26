@@ -146,6 +146,7 @@
     "common.phc_service": "PHC Service",
     "common.supplementary_phc_worker": "Supplementary Healthcare Worker",
     "common.phc_worker": "Healthcare Worker",
+    "common.user.full_name": "${lastName} ${firstName}",
     "home": "Home",
     "login": "Login",
     "dashboard": "Dashboard",

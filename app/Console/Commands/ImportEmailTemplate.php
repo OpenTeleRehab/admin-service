@@ -6,6 +6,7 @@ use App\Models\EmailTemplate;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Facades\Activity;
 
 class ImportEmailTemplate extends Command
 {
@@ -37,6 +38,9 @@ class ImportEmailTemplate extends Command
      */
     public function handle()
     {
+        // Disable activity logging for email template import
+        Activity::disableLogging();
+
         $templates = Storage::get('email_template/content.json');
         $templates = str_replace(
             ['${ADMIN_APP_URL}', '${THERAPIST_APP_URL}'],
@@ -65,6 +69,9 @@ class ImportEmailTemplate extends Command
         }
 
         $this->output->progressFinish();
+
+        // Re-enable activity logging after email template import
+        Activity::enableLogging();
 
         $this->info('Email template has been created successfully');
 

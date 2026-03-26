@@ -8,6 +8,7 @@ use App\Models\Localization;
 use App\Models\Translation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Facades\Activity;
 
 class ImportDefaultTranslation extends Command
 {
@@ -39,6 +40,9 @@ class ImportDefaultTranslation extends Command
      */
     public function handle()
     {
+        // Disable activity logging for translation import
+        Activity::disableLogging();
+
         $platforms = [
             Translation::ADMIN_PORTAL,
             Translation::THERAPIST_PORTAL,
@@ -99,6 +103,10 @@ class ImportDefaultTranslation extends Command
             $this->warn("Translation completed with errors:");
             $this->error(json_encode($errors, JSON_PRETTY_PRINT));
         }
+
+        // Re-enable activity logging after translation import
+        Activity::enableLogging();
+
         return 0;
     }
 }

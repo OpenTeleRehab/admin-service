@@ -1,12 +1,13 @@
 <?php
 namespace App\Models;
 use Spatie\Activitylog\Models\Activity;
-use App\Models\Country;
-use App\Models\Organization;
-use App\Models\Clinic;
 
 class ExtendActivity extends Activity
 {
+    const THERAPIST_SERVICE = 'therapist_service';
+    const PATIENT_SERVICE = 'patient_service';
+    const UNKNOWN = 'unknown';
+
     public function user()
     {
         return $this->belongsTo(User::class, 'causer_id');

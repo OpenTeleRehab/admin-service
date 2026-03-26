@@ -57,21 +57,14 @@ class Question extends Model
     public function tapActivity(Activity $activity)
     {
         $user = Auth::user();
-        $therapist = null;
-        if ($this->questionnaire->therapist_id) {
-            $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-            $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/therapist/by-id', [
-                'id' => $this->questionnaire->therapist_id,
-            ]);
-            if (!empty($response) && $response->successful()) {
-                $therapist = json_decode($response);
-            }
+        if ($user->type === User::GROUP_THERAPIST) {
+            $activity->causer_id = $user->therapist_user_id;
+            $activity->country_id = $user->country_id;
+            $activity->region_id = $user->region_id;
+            $activity->province_id = $user->province_id;
+            $activity->clinic_id = $user->clinic_id;
+            $activity->log_name = ExtendActivity::THERAPIST_SERVICE;
         }
-        $activity->causer_id = $therapist ? $therapist->id : $user->id;
-        $activity->full_name = $therapist ? $therapist->last_name . ' ' . $therapist->first_name : null;
-        $activity->clinic_id = $therapist ? $therapist->clinic_id : null;
-        $activity->country_id = $therapist ? $therapist->country_id : null;
-        $activity->group = $therapist ? 'therapist' : null;
     }
 
     /**

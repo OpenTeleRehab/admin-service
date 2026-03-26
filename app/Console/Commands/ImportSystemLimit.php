@@ -6,6 +6,7 @@ use App\Models\SystemLimit;
 use App\Models\Translation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Facades\Activity;
 
 class ImportSystemLimit extends Command
 {
@@ -37,6 +38,9 @@ class ImportSystemLimit extends Command
      */
     public function handle()
     {
+        // Disable activity logging for system limit import
+        Activity::disableLogging();
+
         $this->alert('Start importing system limit: ');
         $limitContent = Storage::get("system_limit/settings.json");
         $translateData = json_decode($limitContent, true) ?? [];
@@ -53,6 +57,9 @@ class ImportSystemLimit extends Command
             $this->output->progressAdvance();
         }
         $this->output->progressFinish();
+
+        // Re-enable activity logging after system limit import
+        Activity::enableLogging();
 
         return 0;
     }

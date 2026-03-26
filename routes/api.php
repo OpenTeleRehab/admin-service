@@ -330,6 +330,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
         Route::post('phc-workers/updateStatus/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
         Route::post('phc-workers/resend-email/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker');
         Route::post('phc-workers/delete/by-id/{phcWorker}', [ForwarderController::class, 'store'])->middleware('role:manage_phc_worker,delete_phc_worker');
+        Route::get('therapist-audit-logs', [ForwarderController::class, 'index'])->middleware('role:view_audit_log');
     });
 
     // Patient Service
@@ -347,6 +348,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
         Route::get('patient-referrals/count', [ForwarderController::class, 'show'])->middleware('role:manage_patient_referral');
         Route::put('patient-referrals/{id}/decline', [ForwarderController::class, 'update'])->middleware('role:manage_patient_referral');
         Route::post('patient-referral-assignments', [ForwarderController::class, 'store'])->middleware('role:manage_patient_referral_assignment');
+        Route::get('patient-audit-logs', [ForwarderController::class, 'index'])->middleware('role:view_audit_log');
     });
 
     // Global Assistive Technology Patients
@@ -379,7 +381,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Province
     Route::get('provinces', [ProvinceController::class, 'index'])->middleware('role:manage_province,view_province_list');
     Route::get('provinces-by-user-country', [ProvinceController::class, 'getProvincesByUserCountry'])->middleware('role:access_all');
-    Route::get('provinces-by-user-region', [ProvinceController::class, 'getByUserRegion'])->middleware('role:manage_province');
+    Route::get('provinces-by-user-region', [ProvinceController::class, 'getByUserRegion'])->middleware('role:manage_province,view_province_list');
     Route::get('provinces/{province}/entities', [ProvinceController::class, 'getEntitiesByPhcServiceId'])->middleware('role:manage_province');
     Route::get('province-limitation/{province}', [ProvinceController::class, 'getLimitation'])->middleware('role:manage_province,view_province_list');
     Route::post('provinces', [ProvinceController::class, 'store'])->middleware('role:manage_province');

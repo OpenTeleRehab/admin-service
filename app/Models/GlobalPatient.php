@@ -48,7 +48,7 @@ class GlobalPatient extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->logExcept(['id', 'created_at', 'updated_at', 'patient_id', 'gender', 'date_of_birth', 'country_id', 'clinic_id', 'location', 'enabled', 'deleted_at']);
+            ->logExcept(['id', 'created_at', 'updated_at', 'patient_id', 'gender', 'date_of_birth', 'country_id', 'clinic_id', 'phc_service_id', 'location', 'enabled', 'deleted_at']);
     }
 
     /**

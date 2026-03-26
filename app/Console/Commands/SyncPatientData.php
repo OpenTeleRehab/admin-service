@@ -11,6 +11,7 @@ use App\Models\HealthCondition;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Spatie\Activitylog\Facades\Activity;
 
 class SyncPatientData extends Command
 {
@@ -35,7 +36,8 @@ class SyncPatientData extends Command
     public function handle()
     {
         $hosts = config('settings.hosting_country');
-
+        // Disable activity logging for data sync
+        Activity::disableLogging();
         // Sync patient and treatment plans from vn db or other country to new table.
         foreach ($hosts as $host) {
             $country = Country::where('iso_code', $host)->first();
@@ -173,6 +175,9 @@ class SyncPatientData extends Command
             GlobalPatient::whereDate('updated_at', '<', Carbon::today())->forceDelete();
             GlobalTreatmentPlan::whereDate('updated_at', '<', Carbon::today())->forceDelete();
         }
+
+        // Re-enable activity logging after data sync
+        Activity::enableLogging();
 
         $this->info('Data has been sync successfully');
     }

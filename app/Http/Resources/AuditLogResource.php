@@ -5,7 +5,11 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\Clinic;
 use App\Models\User;
+use App\Models\Region;
+use App\Models\PhcService;
 use App\Models\Country;
+use App\Models\Province;
+use App\Models\ExtendActivity;
 use Carbon\Carbon;
 
 class AuditLogResource extends JsonResource
@@ -22,20 +26,56 @@ class AuditLogResource extends JsonResource
         $userGroup = '';
         $userClinic = '';
         $userCountry = '';
+        $userRegion = '';
+        $userPhcService = '';
+        $userProvince = '';
         $changes = $this->changes;
-        if ($this->full_name || $this->group || $this->clinic_id || $this->country_id) {
-            $fullName = $this->full_name;
-            $userGroup = $this->group;
-            $clinic = Clinic::find($this->clinic_id);
-            $country = Country::find($this->country_id);
-            $userClinic = $clinic?->name;
-            $userCountry = $country?->name;
+        if ($this->country_id || $this->region_id || $this->province_id || $this->clinic_id || $this->phc_service_id ) {
+            $fullName = $this->causer_name ?? ExtendActivity::UNKNOWN;
+            $userGroup = $this->causer_group ?? ExtendActivity::UNKNOWN;
+            if ($this->country_id) {
+                $country = Country::find($this->country_id);
+                $userCountry = $country?->name ?? ExtendActivity::UNKNOWN;
+            }
+
+            if ($this->region_id) {
+                $region = Region::find($this->region_id);
+                $userRegion = $region?->name ?? ExtendActivity::UNKNOWN;
+            }
+
+            if ($this->province_id) {
+                $province = Province::find($this->province_id);
+                $userProvince = $province?->name ?? ExtendActivity::UNKNOWN;
+            }
+
+            if ($this->clinic_id) {
+                $clinic = Clinic::find($this->clinic_id);
+                $userClinic = $clinic?->name ?? ExtendActivity::UNKNOWN;
+            }
+
+            if ($this->phc_service_id) {
+                $phcService = PhcService::find($this->phc_service_id);
+                $userPhcService = $phcService?->name ?? ExtendActivity::UNKNOWN;
+            }
         } else {
-            $user = User::find($this->causer_id);
-            $fullName = $user ? $user->last_name . ' ' . $user->first_name : null;
-            $userGroup = $user?->type;
-            $userClinic = $user?->clinic?->name;
-            $userCountry = $user?->country?->name;
+            $user = $this->user;
+            $fullName = $user ? $user->last_name . ' ' . $user->first_name : ExtendActivity::UNKNOWN;
+            $userGroup = $user?->type ?? ExtendActivity::UNKNOWN;
+            $userClinic = $user?->clinic_id ? $user?->clinic?->name ?? ExtendActivity::UNKNOWN : '';
+            $userCountry = $user?->country_id ? $user?->country?->name ?? ExtendActivity::UNKNOWN : '';
+            $userPhcService = $user?->phc_service_id ? $user?->phcService?->name ?? ExtendActivity::UNKNOWN : '';
+
+            if ($user?->region_id) {
+                $userRegion = $user?->region?->name ?? ExtendActivity::UNKNOWN;
+            } elseif ($user?->type === User::ADMIN_GROUP_REGIONAL_ADMIN && $user?->regions) {
+                $userRegion = $user?->regions->pluck('name')->join(', ') ?: ExtendActivity::UNKNOWN;
+            }
+
+            if ($user?->clinic_id) {
+                $userProvince = $user?->clinic?->province ? $user?->clinic?->province?->name ?? ExtendActivity::UNKNOWN : '';
+            } elseif ($user?->phc_service_id) {
+                $userProvince = $user?->phcService?->province ? $user?->phcService?->province?->name ?? ExtendActivity::UNKNOWN : '';
+            }
         }
 
         $beforeChanged = isset($changes['old']) ? $changes['old'] : [];
@@ -62,7 +102,10 @@ class AuditLogResource extends JsonResource
             'type_of_changes' => $this->description,
             'who' => $fullName,
             'country' => $userCountry,
+            'region' => $userRegion,
+            'province' => $userProvince,
             'clinic' => $userClinic,
+            'phc_service' => $userPhcService,
             'user_group' => $userGroup,
             'date_time' => $this->created_at,
             'subject_type' => $subjectType,
