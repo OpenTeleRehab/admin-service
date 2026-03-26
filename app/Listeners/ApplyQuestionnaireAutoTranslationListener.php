@@ -7,7 +7,7 @@ use App\Events\ApplyQuestionnaireAutoTranslationEvent;
 use App\Helpers\GoogleTranslateHelper;
 use App\Models\Language;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
+use Spatie\Activitylog\Facades\Activity;
 
 class ApplyQuestionnaireAutoTranslationListener
 {
@@ -23,6 +23,9 @@ class ApplyQuestionnaireAutoTranslationListener
         if (App::getLocale() !== config('app.fallback_locale')) {
             return;
         }
+
+        // Disable activity logging
+        Activity::disableLogging();
 
         $translate = new GoogleTranslateHelper();
         $supportedLanguages = $translate->supportedLanguages();
@@ -69,5 +72,8 @@ class ApplyQuestionnaireAutoTranslationListener
             }
         }
         $questionnaire->save();
+
+        // Re-enable activity logging
+        Activity::enableLogging();
     }
 }

@@ -6,6 +6,7 @@ use App\Events\ApplyHealthConditionAutoTranslationEvent;
 use App\Helpers\GoogleTranslateHelper;
 use App\Models\Language;
 use Illuminate\Support\Facades\App;
+use Spatie\Activitylog\Facades\Activity;
 
 class ApplyHealthConditionAutoTranslationListener
 {
@@ -21,6 +22,9 @@ class ApplyHealthConditionAutoTranslationListener
         if (App::getLocale() !== 'en') {
             return;
         }
+
+        // Disable activity logging
+        Activity::disableLogging();
 
         $translate = new GoogleTranslateHelper();
         $supportedLanguages = $translate->supportedLanguages();
@@ -48,5 +52,8 @@ class ApplyHealthConditionAutoTranslationListener
             $healthCondition->setTranslation('auto_translated', $languageCode, true);
         }
         $healthCondition->save();
+
+        // Re-enable activity logging
+        Activity::enableLogging();
     }
 }

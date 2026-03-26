@@ -6,6 +6,7 @@ use App\Events\ApplyAssistiveTechnologyAutoTranslationEvent;
 use App\Helpers\GoogleTranslateHelper;
 use App\Models\Language;
 use Illuminate\Support\Facades\App;
+use Spatie\Activitylog\Facades\Activity;
 
 class ApplyAssistiveTechnologyAutoTranslationListener
 {
@@ -21,6 +22,9 @@ class ApplyAssistiveTechnologyAutoTranslationListener
         if (App::getLocale() !== 'en') {
             return;
         }
+
+        // Disable activity logging
+        Activity::disableLogging();
 
         $translate = new GoogleTranslateHelper();
         $supportedLanguages = $translate->supportedLanguages();
@@ -53,5 +57,8 @@ class ApplyAssistiveTechnologyAutoTranslationListener
         }
 
         $assistiveTechnology->save();
+
+        // Re-enable activity logging
+        Activity::enableLogging();
     }
 }
