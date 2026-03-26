@@ -335,12 +335,4 @@ class UpdateFederatedUsersMfaJob implements ShouldQueue
             default => true,
         };
     }
-
-    public function failed(\Throwable $exception): void
-    {
-        JobTracker::where('job_id', $this->jobId)->update([
-            'status' => JobTracker::FAILED,
-            'message' => $exception->getMessage(),
-        ]);
-    }
 }
