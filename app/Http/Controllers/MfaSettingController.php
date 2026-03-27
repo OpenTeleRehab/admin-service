@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Forwarder;
 use App\Models\User;
 use App\Models\MfaSetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use App\Helpers\KeycloakHelper;
 use App\Helpers\MfaSettingHelper;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\UpdateFederatedUsersMfaJob;
@@ -19,6 +21,7 @@ use App\Models\Organization;
 use App\Models\PhcService;
 use App\Models\Region;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 
 class MfaSettingController extends Controller
 {
