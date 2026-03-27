@@ -240,7 +240,20 @@ class ReApplyMfaJob implements ShouldQueue
 
             // end queue
             JobTracker::where('job_id', $this->jobId)->update(['status' => JobTracker::COMPLETED]);
-            MfaSetting::findOrFail($this->mfaSetting->id)->delete();
+            $mfaSetting = MfaSetting::findOrFail($this->mfaSetting->id);
+            $modelData = $mfaSetting;
+            activity()->withoutLogs(function () use ($mfaSetting) {
+                $mfaSetting->delete();
+            });
+
+            // Manual activity log
+            activity()
+                ->causedBy($this->authUser)
+                ->performedOn($modelData)
+                ->withProperties(['old' => $modelData])
+                ->useLog('admin_service')
+                ->event('deleted')
+                ->log('deleted');
 
             broadcast(new MfaProgressStatus(
                 $this->authUser,

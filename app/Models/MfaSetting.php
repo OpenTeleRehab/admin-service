@@ -85,7 +85,7 @@ class MfaSetting extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->logExcept(['created_at', 'updated_at']);
+            ->logExcept(['id', 'created_at', 'updated_at']);
     }
 
     /**
