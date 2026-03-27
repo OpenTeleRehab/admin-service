@@ -29,17 +29,17 @@ class MigrateRegionMapping extends Command
             [31, 'Belgium', 'Test Service - UHasselt', null, null, null],
 
             // Benin
-            [30, 'Benin', 'HI BENIN Test', 'Test Ville', 'Test Département', 'donmaurales@yahoo.fr'],
-            [30, 'Benin', 'DSI Test', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
-            [30, 'Benin', 'ASIN Test', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
-            [30, 'Benin', 'APDP Test', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
-            [30, 'Benin', 'CNHU-HKM', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
-            [30, 'Benin', 'Ex-HIA Cotonou', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
-            [30, 'Benin', 'CSVHSET', 'Abomey-Calavi', 'Atlantique', 'p.togni@hi.org'],
-            [30, 'Benin', 'HZ-OKT', 'Ouidah', 'Atlantique', 'p.togni@hi.org'],
-            [30, 'Benin', 'CHUZ-AS', 'Abomey-Calavi', 'Atlantique', 'p.togni@hi.org'],
-            [30, 'Benin', 'CHUD-BA', 'Parakou', 'Borgou', 'mhcapo-chichi@gouv.bj'],
-            [30, 'Benin', 'HZ-BOKO', 'Boko', 'Borgou', 'mhcapo-chichi@gouv.bj'],
+            [40, 'Benin', 'HI BENIN', 'Test Ville', 'Test Département', 'donmaurales@yahoo.fr'],
+            [40, 'Benin', 'DSI', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
+            [40, 'Benin', 'ASIN', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
+            [40, 'Benin', 'APDP', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
+            [40, 'Benin', 'CNHU-HKM', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
+            [40, 'Benin', 'Ex-HIA Cotonou', 'Cotonou', 'Littoral', 'dafaton@yahoo.fr'],
+            [40, 'Benin', 'CSVHSET', 'Abomey-Calavi', 'Atlantique', 'p.togni@hi.org'],
+            [40, 'Benin', 'HZ-OKT', 'Ouidah', 'Atlantique', 'p.togni@hi.org'],
+            [40, 'Benin', 'CHUZ-AS', 'Abomey-Calavi', 'Atlantique', 'p.togni@hi.org'],
+            [40, 'Benin', 'CHUD-BA', 'Parakou', 'Borgou', 'mhcapo-chichi@gouv.bj'],
+            [40, 'Benin', 'HZ-BOKO', 'Boko', 'Borgou', 'mhcapo-chichi@gouv.bj'],
 
             // Cambodia
             [36, 'Cambodia', 'PRC Kampong Cham', 'Kampong Cham', 'Kampong Cham PRC', 'c.doung@hi.org'],
