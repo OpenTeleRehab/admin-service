@@ -376,7 +376,8 @@ class CountryController extends Controller
     public function destroy(Country $country)
     {
         $countryId = $country->id;
-
+        
+        // Admin Users : Country Admin , Regional Admin , Rehab Service Admin , PHC Service Admin [Query By Country ID]
         $adminUsers = User::where('country_id', $countryId)->get();
 
         foreach ($adminUsers as $user) {

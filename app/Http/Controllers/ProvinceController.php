@@ -324,13 +324,14 @@ class ProvinceController extends Controller
         $provinceId = $province->id;
         $country = $province->region->country;
 
-        $adminUsers = User::whereHas('phcService', function ($q) use ($province) {
-            $q->where('province_id', $province->id);
-        })
-            ->whereHas('clinic', function ($q) use ($province) {
+        $adminUsers = User::where(function ($query) use ($province) {
+            $query->whereHas('phcService', function ($q) use ($province) {
                 $q->where('province_id', $province->id);
             })
-            ->get();
+            ->orWhereHas('clinic', function ($q) use ($province) {
+                $q->where('province_id', $province->id);
+            });
+        })->get();
 
         foreach ($adminUsers as $user) {
             $token = KeycloakHelper::getKeycloakAccessToken();
