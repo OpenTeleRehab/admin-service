@@ -1,5 +1,4 @@
 {
     "therapist_content_limit": 20,
-    "number_of_ongoing_treatment_per_therapist" : 15,
     "pain_threshold_limit": 8
 }
