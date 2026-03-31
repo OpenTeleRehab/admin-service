@@ -823,7 +823,7 @@ class SurveyController extends Controller
      */
     public function submit(Request $request)
     {
-        $survey = Survey::find($request->integer('survey_id'));
+        $survey = Survey::findOrFail($request->integer('survey_id'));
         if ($survey->role === User::GROUP_PATIENT && ($survey->include_at_the_start || $survey->include_at_the_end)) {
             $userSurvey = UserSurvey::updateOrCreate(
                 [
@@ -867,16 +867,32 @@ class SurveyController extends Controller
      */
     public function skipSurvey(Request $request)
     {
-        UserSurvey::updateOrCreate(
-            [
-                'user_id' => $request->integer('user_id'),
-                'survey_id' => $request->integer('survey_id'),
-            ],
-            [
-                'status' => UserSurvey::STATUS_SKIPPED,
-                'skipped_at' => Carbon::now(),
-            ]
-        );
+        $survey = Survey::findOrFail($request->integer('survey_id'));
+        if ($survey->role === User::GROUP_PATIENT && ($survey->include_at_the_start || $survey->include_at_the_end)) {
+            UserSurvey::updateOrCreate(
+                [
+                    'user_id' => $request->integer('user_id'),
+                    'survey_id' => $request->integer('survey_id'),
+                    'survey_phase' => $request->string('survey_phase'),
+                    'treatment_plan_id' => $request->integer('treatment_plan_id'),
+                ],
+                [
+                    'status' => UserSurvey::STATUS_SKIPPED,
+                    'skipped_at' => Carbon::now(),
+                ]
+            );
+        } else {
+            UserSurvey::updateOrCreate(
+                [
+                    'user_id' => $request->integer('user_id'),
+                    'survey_id' => $request->integer('survey_id'),
+                ],
+                [
+                    'status' => UserSurvey::STATUS_SKIPPED,
+                    'skipped_at' => Carbon::now(),
+                ]
+            );
+        }
 
         return ['success' => true, 'message' => 'success_message.survey_skipped'];
     }
