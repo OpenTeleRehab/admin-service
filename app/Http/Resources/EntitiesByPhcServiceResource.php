@@ -19,6 +19,7 @@ class EntitiesByPhcServiceResource extends JsonResource
             'phc_service_admin_count' => $this->users->where('type', User::ADMIN_GROUP_PHC_SERVICE_ADMIN)->count(),
             'phc_worker_count' => $this->phc_worker_count,
             'patient_count' => $this->patient_count,
+            'phc_worker_limit' => $this->phc_worker_limit,
         ];
     }
 }
