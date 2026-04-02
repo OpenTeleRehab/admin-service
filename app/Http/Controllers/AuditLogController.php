@@ -314,7 +314,7 @@ class AuditLogController extends Controller
         ];
         // Check if user just refresh the page
         $isRefresh = isset($details['response_mode'], $details['response_type']) && !isset($details['custom_required_action']);
-        if (!$isRefresh && $user && $user->email !== env('KEYCLOAK_BACKEND_USERNAME')) {
+        if (!$isRefresh && $user && $user->email !== env('KEYCLOAK_BACKEND_USERNAME') && $user->email !== env('KEYCLOAK_LIBRARY_USERNAME')) {
             activity()
                 ->performedOn($user)
                 ->causedBy($user)

@@ -35,7 +35,14 @@ class EmailTemplateController extends Controller
      */
     public function update(UpdateEmailTemplateRequest $request, EmailTemplate $emailTemplate)
     {
-        $emailTemplate->update($request->validated());
+        $emailTemplate->fill($request->validated());
+
+        // Remove auto translation flag.
+        if ($emailTemplate->isDirty()) {
+            $emailTemplate->auto_translated = false;
+        }
+
+        $emailTemplate->save();
 
         return response()->json([
             'success' => true,

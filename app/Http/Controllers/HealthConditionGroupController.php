@@ -206,9 +206,16 @@ class HealthConditionGroupController extends Controller
      */
     public function update(Request $request, HealthConditionGroup $healthConditionGroup)
     {
-        $healthConditionGroup->update([
+        $healthConditionGroup->fill([
             'title' => $request->get('health_condition_group'),
         ]);
+
+        // Remove auto translation flag.
+        if ($healthConditionGroup->isDirty()) {
+            $healthConditionGroup->auto_translated = false;
+        }
+
+        $healthConditionGroup->save();
 
         return ['success' => true, 'message' => 'success_message.health_condition_group_update'];
     }

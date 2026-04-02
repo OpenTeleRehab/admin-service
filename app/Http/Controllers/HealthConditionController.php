@@ -196,9 +196,16 @@ class HealthConditionController extends Controller
      */
     public function update(Request $request, HealthCondition $healthCondition)
     {
-        $healthCondition->update([
+        $healthCondition->fill([
             'title' => $request->get('health_condition_value'),
         ]);
+
+        // Remove auto translation flag.
+        if ($healthCondition->isDirty()) {
+            $healthCondition->auto_translated = false;
+        }
+
+        $healthCondition->save();
 
         return ['success' => true, 'message' => 'success_message.health_condition_update'];
     }

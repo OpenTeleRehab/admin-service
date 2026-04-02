@@ -12,6 +12,9 @@ use App\Events\ApplyQuestionnaireAutoTranslationEvent;
 use App\Events\ApplyStaticPageAutoTranslationEvent;
 use App\Events\ApplyTermAndConditionAutoTranslationEvent;
 use App\Events\ApplyTranslationAutoTranslationEvent;
+use App\Events\ApplyHealthConditionGroupAutoTranslationEvent;
+use App\Events\ApplyHealthConditionAutoTranslationEvent;
+use App\Events\ApplyEmailTemplateAutoTranslationEvent;
 use App\Models\Category;
 use App\Models\EducationMaterial;
 use App\Models\Exercise;
@@ -21,6 +24,9 @@ use App\Models\Questionnaire;
 use App\Models\StaticPage;
 use App\Models\TermAndCondition;
 use App\Models\Translation;
+use App\Models\HealthConditionGroup;
+use App\Models\HealthCondition;
+use App\Models\EmailTemplate;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ApplyNewLanguageTranslationListener implements ShouldQueue
@@ -91,6 +97,21 @@ class ApplyNewLanguageTranslationListener implements ShouldQueue
         $translations = Translation::all();
         foreach ($translations as $translation) {
             event(new ApplyTranslationAutoTranslationEvent($translation, $langCode));
+        }
+
+        $healthConditionGroups = HealthConditionGroup::all();
+        foreach ($healthConditionGroups as $healthConditionGroup) {
+            event(new ApplyHealthConditionGroupAutoTranslationEvent($healthConditionGroup, $langCode));
+        }
+
+        $healthConditions = HealthCondition::all();
+        foreach ($healthConditions as $healthCondition) {
+            event(new ApplyHealthConditionAutoTranslationEvent($healthCondition, $langCode));
+        }
+
+        $emailTemplates = EmailTemplate::all();
+        foreach ($emailTemplates as $emailTemplate) {
+            event(new ApplyEmailTemplateAutoTranslationEvent($emailTemplate, $langCode));
         }
     }
 }

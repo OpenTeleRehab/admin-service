@@ -15,6 +15,7 @@ use App\Events\ApplyQuestionnaireAutoTranslationEvent;
 use App\Events\ApplyStaticPageAutoTranslationEvent;
 use App\Events\ApplyTermAndConditionAutoTranslationEvent;
 use App\Events\ApplyTranslationAutoTranslationEvent;
+use App\Events\ApplyEmailTemplateAutoTranslationEvent;
 use App\Listeners\ApplyAssistiveTechnologyAutoTranslationListener;
 use App\Listeners\ApplyCategoryAutoTranslationListener;
 use App\Listeners\ApplyExerciseAutoTranslationListener;
@@ -28,6 +29,7 @@ use App\Listeners\ApplyQuestionnaireAutoTranslationListener;
 use App\Listeners\ApplyStaticPageAutoTranslationListener;
 use App\Listeners\ApplyTermAndConditionAutoTranslationListener;
 use App\Listeners\ApplyTranslationAutoTranslationListener;
+use App\Listeners\ApplyEmailTemplateAutoTranslationListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -81,6 +83,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         ApplyHealthConditionAutoTranslationEvent::class => [
             ApplyHealthConditionAutoTranslationListener::class,
+        ],
+        ApplyEmailTemplateAutoTranslationEvent::class => [
+           ApplyEmailTemplateAutoTranslationListener::class,
         ],
     ];
 

@@ -1099,6 +1099,7 @@
     "setting.health_condition_group.title": "Health Condition Group Title",
     "setting.health_condition_group.health_condition_value": "Health Condition Value",
     "setting.health_condition_group.health_condition_value_hint": "Use semicolon ( ; ) between values to separate",
+    "setting.health_condition.health_condition_value": "Health Condition Value",
     "setting.health_condition_group.not_inused": "Not in used",
     "placeholder.enter_health_condition_group_name": "Enter health condition group name",
     "placeholder.enter_health_condition_value": "Enter health condition value",
