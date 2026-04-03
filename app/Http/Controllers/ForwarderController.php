@@ -57,6 +57,7 @@ class ForwarderController extends Controller
                 'int-province-id' => $user?->clinic?->province_id ?: $user?->phcService?->province_id,
                 'int-phc-service-id' => $user?->phc_service_id,
                 'int-admin-user-id' => $user?->id,
+                'int-language-id' => $user?->language_id,
             ])->get(env('PATIENT_SERVICE_URL') . $endpoint, $params);
             return response($response->body(), $response->status())
                 ->withHeaders([
