@@ -19,6 +19,7 @@ class EntitiesByClinicResource extends JsonResource
             'rehab_service_admin_count' => $this->users->where('type', User::ADMIN_GROUP_CLINIC_ADMIN)->count(),
             'therapist_count' => $this->therapist_count,
             'patient_count' => $this->patient_count,
+            'therapist_limit' => $this->therapist_limit,
         ];
     }
 }
