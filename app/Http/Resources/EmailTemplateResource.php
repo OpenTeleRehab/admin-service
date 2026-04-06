@@ -19,6 +19,7 @@ class EmailTemplateResource extends JsonResource
             'content_type' => $this->content_type,
             'title' => $this->title,
             'content' => $this->content,
+            'auto_translated' => $this->auto_translated,
         ];
     }
 }

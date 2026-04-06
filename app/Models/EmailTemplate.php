@@ -21,6 +21,7 @@ class EmailTemplate extends Model
         'content_type',
         'title',
         'content',
+        'auto_translated',
     ];
 
     /**
@@ -28,7 +29,7 @@ class EmailTemplate extends Model
      *
      * @var string[]
      */
-    public $translatable = ['title', 'content'];
+    public $translatable = ['title', 'content', 'auto_translated'];
 
     /**
      * Get the options for activity logging.

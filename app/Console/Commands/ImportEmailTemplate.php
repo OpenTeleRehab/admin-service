@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\ApplyEmailTemplateAutoTranslationEvent;
 use App\Models\EmailTemplate;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -57,12 +58,15 @@ class ImportEmailTemplate extends Command
             $exist = EmailTemplate::where('prefix', $prefix)->exists();
 
             if (!$exist) {
-                EmailTemplate::create([
+                $emailTemplate = EmailTemplate::create([
                     'prefix' => $prefix,
                     'content_type' => $template['content_type'],
                     'title' => $template['title'],
                     'content' => $template['content'],
                 ]);
+
+                // Add automatic translation for email template.
+                event(new ApplyEmailTemplateAutoTranslationEvent($emailTemplate));
             }
 
             $this->output->progressAdvance();
