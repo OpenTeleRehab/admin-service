@@ -107,7 +107,16 @@ class MigrateRegionMapping extends Command
                 [$countryId, $countryName, $rehabServiceName, $provinceName, $regionName, $adminEmails] = $row;
                 $this->performMapping($countryId, $countryName, $rehabServiceName, $provinceName, $regionName, $adminEmails, $data);
             }
-
+            $this->info("Mapping Rehab Service Admin region_id");
+            $userAdmin = User::where('type', User::ADMIN_GROUP_CLINIC_ADMIN)->get();
+            foreach($userAdmin as $user){
+                $clinic = Clinic::find($user->clinic_id);
+                if(!$clinic){
+                    continue;
+                }
+                $user->region_id = $clinic?->region_id;
+                $user->save();
+            }
             $this->info('Data mapping completed successfully!');
         } catch (\Exception $e) {
             $this->error('Operation failed: ' . $e->getMessage());
