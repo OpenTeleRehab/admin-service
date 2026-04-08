@@ -17,19 +17,19 @@ class MfaProgressStatus implements ShouldBroadcastNow
     public int $rowId;
     public string $status;
     public ?string $message;
-    public ?bool $isDeleted;
+    public ?bool $isDeleting;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($authUser, string $jobId, int $rowId, string $status, ?bool $isDeleted = false, ?string $message = null)
+    public function __construct($authUser, string $jobId, int $rowId, string $status, ?bool $isDeleting = false, ?string $message = null)
     {
         $this->authUser = $authUser;
         $this->jobId = $jobId;
         $this->rowId = $rowId;
         $this->status = $status;
         $this->message = $message;
-        $this->isDeleted = $isDeleted;
+        $this->isDeleting = $isDeleting;
     }
 
     /**

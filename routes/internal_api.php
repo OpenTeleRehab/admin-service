@@ -5,6 +5,8 @@ use App\Http\Controllers\Internal\RegionController;
 use App\Http\Controllers\Internal\CountryController;
 use App\Http\Controllers\Internal\ProvinceController;
 use App\Http\Controllers\Internal\ClinicController;
+use App\Http\Controllers\Internal\JobTrackerController;
+use App\Http\Controllers\Internal\MfaSettingController;
 use App\Http\Controllers\Internal\PhcServiceController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,4 +37,11 @@ Route::group(['middleware' => ['auth:api', 'role:access_all', 'verify.data.acces
     Route::get('clinic/by-ids', [ClinicController::class, 'getByIds']);
 
     Route::get('phc-service/by-ids', [PhcServiceController::class, 'getByIds']);
+
+    // MFA settings
+    Route::get('mfa-settings/get-for-therapist-service', [MfaSettingController::class, 'getMfaSettingsForTherapistService']);
+    Route::delete('mfa-settings/{id}', [MfaSettingController::class, 'destroy']);
+
+    // Job tracker
+    Route::put('job-trackers/{id}', [JobTrackerController::class, 'update']);
 });

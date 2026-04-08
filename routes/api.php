@@ -72,8 +72,8 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
 
     // Mfa Config
     Route::get('mfa-settings', [MfaSettingController::class, 'index'])->middleware('role:manage_mfa_policy');
+    Route::get('mfa-settings/validation', [MfaSettingController::class, 'validateMfaEnforcement'])->middleware('role:manage_mfa_policy');
     Route::apiResource('mfa-settings', MfaSettingController::class)->middleware('role:manage_mfa_policy');
-    Route::get('mfa-settings-validation', [MfaSettingController::class, 'validateMfaEnforcementAgainstHigherRole'])->middleware('role:manage_mfa_policy');
 
     // User MFA
     Route::post('user/{id}/reset-mfa-otp', [UserMfaController::class, 'resetOtp'])->middleware('role:manage_mfa_policy');
@@ -378,6 +378,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     // Region
     Route::get('regions/{region}/entities', [RegionController::class, 'getEntitiesByRegionId'])->middleware('role:manage_region');
     Route::get('regions/by-auth-country', [RegionController::class, 'getRegionByCountry']);
+    Route::get('regions/by-regional-admin', [RegionController::class, 'getRegionByRegionalAdmin']);
     Route::apiResource('regions', RegionController::class)->middleware('role:manage_region,view_region_list');
     Route::get('region-limitation', [RegionController::class, 'getLimitation'])->middleware('role:view_region_list');
     Route::get('region-limitations-by-user-country', [RegionController::class, 'countryRegionLimitations'])->middleware('role:manage_region');
