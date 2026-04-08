@@ -4,10 +4,11 @@ namespace App\Console\Commands;
 
 use App\Helpers\TreatmentPlanHelper;
 use App\Models\Country;
+use App\Models\Clinic;
 use App\Models\Forwarder;
 use App\Models\GlobalPatient;
 use App\Models\GlobalTreatmentPlan;
-use App\Models\HealthCondition;
+use App\Models\PhcService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -54,49 +55,11 @@ class SyncPatientData extends Command
             }
 
             if ($patientData) {
-                foreach ($patientData as $patient) {
-                    GlobalPatient::updateOrCreate(
-                        [
-                            'patient_id' => $patient->id,
-                            'country_id' => $patient->country_id
-                        ],
-                        [
-                            'gender' => $patient->gender,
-                            'date_of_birth' => $patient->date_of_birth,
-                            'identity' => $patient->identity,
-                            'clinic_id' => $patient->clinic_id ?? null,
-                            'phc_service_id' => $patient->phc_service_id ?? null,
-                            'enabled' => $patient->enabled,
-                            'location' => $patient->location,
-                            'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : $patient->deleted_at,
-                        ],
-                    );
-                }
+                self::savePatientData($patientData);
             }
 
             if ($treatmentPlanData) {
-                foreach ($treatmentPlanData as $treatmentPlan) {
-                    $status = TreatmentPlanHelper::determineStatus($treatmentPlan->start_date, $treatmentPlan->end_date);
-
-                    GlobalTreatmentPlan::updateOrCreate(
-                        [
-                            'treatment_id' => $treatmentPlan->id,
-                            'patient_id' => $treatmentPlan->patient_id,
-                            'country_id' => $country->id
-                        ],
-                        [
-                            'treatment_id' => $treatmentPlan->id,
-                            'name' => $treatmentPlan->name,
-                            'patient_id' => $treatmentPlan->patient_id,
-                            'country_id' => $country->id,
-                            'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
-                            'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
-                            'status' => $status,
-                            'health_condition_id' => $treatmentPlan->health_condition_id,
-                            'health_condition_group_id' => $treatmentPlan->health_condition_group_id
-                        ],
-                    );
-                }
+                self::saveTreatmentPlanData($treatmentPlanData, $patientData);
             }
         }
 
@@ -113,61 +76,12 @@ class SyncPatientData extends Command
             $treatmentPlanGlobal = json_decode(Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/treatment-plan/list/global'));
         }
 
-        $healthConditionIds = collect($treatmentPlanGlobal)
-            ->pluck('health_condition_id')
-            ->filter()
-            ->unique()
-            ->values();
-
-        $healthConditions = HealthCondition::whereIn('id', $healthConditionIds)->get()->keyBy('id');
-
         if ($patientGlobal) {
-            foreach ($patientGlobal as $patient) {
-                GlobalPatient::updateOrCreate(
-                    [
-                        'patient_id' => $patient->id,
-                        'country_id' => $patient->country_id,
-                    ],
-                    [
-                        'patient_id' => $patient->id,
-                        'gender' => $patient->gender,
-                        'date_of_birth' => $patient->date_of_birth,
-                        'identity' => $patient->identity,
-                        'clinic_id' => $patient->clinic_id ?? null,
-                        'phc_service_id' => $patient->phc_service_id ?? null,
-                        'country_id' => $patient->country_id,
-                        'enabled' => $patient->enabled,
-                        'location' => $patient->location,
-                        'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : $patient->deleted_at,
-                    ],
-                );
-            }
+            self::savePatientData($patientGlobal);
         }
 
         if ($treatmentPlanGlobal) {
-            foreach ($treatmentPlanGlobal as $treatmentPlan) {
-                $patient = current(array_filter($patientGlobal, fn($patient) => $patient->id == $treatmentPlan->patient_id));
-                $status = TreatmentPlanHelper::determineStatus($treatmentPlan->start_date, $treatmentPlan->end_date);
-
-                GlobalTreatmentPlan::updateOrCreate(
-                    [
-                        'treatment_id' => $treatmentPlan->id,
-                        'patient_id' => $treatmentPlan->patient_id,
-                        'country_id' => $patient->country_id,
-                    ],
-                    [
-                        'treatment_id' => $treatmentPlan->id,
-                        'name' => $treatmentPlan->name,
-                        'patient_id' => $treatmentPlan->patient_id,
-                        'country_id' => $patient->country_id,
-                        'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
-                        'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
-                        'status' => $status,
-                        'health_condition_id' => $treatmentPlan->health_condition_id,
-                        'health_condition_group_id' => $healthConditions[$treatmentPlan->health_condition_id]->parent_id ?? null,
-                    ],
-                );
-            }
+            self::saveTreatmentPlanData($treatmentPlanGlobal, $patientGlobal);
         }
 
         if ($this->option('all')) {
@@ -180,5 +94,124 @@ class SyncPatientData extends Command
         Activity::enableLogging();
 
         $this->info('Data has been sync successfully');
+    }
+
+    /**
+     * Save patient data to global tables.
+     *
+     * @param array $data
+     * @return void
+     */
+    private static function savePatientData($data)
+    {
+        $refs = self::loadReferenceData(collect($data), ['country', 'clinic', 'phc_service']);
+        foreach ($data as $patient) {
+            if (!self::isValidData($patient, $refs, ['country','clinic','phc_service'])) {
+                continue;
+            }
+            GlobalPatient::updateOrCreate(
+                [
+                    'patient_id' => $patient->id,
+                    'country_id' => $patient->country_id,
+                ],
+                [
+                    'gender' => $patient->gender,
+                    'date_of_birth' => $patient->date_of_birth,
+                    'identity' => $patient->identity,
+                    'clinic_id' => $patient->clinic_id ?? null,
+                    'phc_service_id' => $patient->phc_service_id ?? null,
+                    'enabled' => $patient->enabled,
+                    'location' => $patient->location,
+                    'deleted_at' => $patient->deleted_at ? Carbon::parse($patient->deleted_at) : null,
+                ]
+            );
+        }
+    }
+
+    /**
+     * Save treatment plan data to global tables.
+     *
+     * @param array $data
+     * @return void
+     */
+    private static function saveTreatmentPlanData($data, $patientData)
+    {
+        $refs = self::loadReferenceData(collect($patientData), ['country']);
+        foreach ($data as $treatmentPlan) {
+            $patient = current(array_filter($patientData, fn($patient) => $patient->id == $treatmentPlan->patient_id));
+            $status = TreatmentPlanHelper::determineStatus($treatmentPlan->start_date, $treatmentPlan->end_date);
+            if (!self::isValidData($patient, $refs, ['country'])) {
+                continue;
+            }
+            GlobalTreatmentPlan::updateOrCreate(
+                [
+                    'treatment_id' => $treatmentPlan->id,
+                    'patient_id' => $treatmentPlan->patient_id,
+                    'country_id' => $patient->country_id
+                ],
+                [
+                    'name' => $treatmentPlan->name,
+                    'start_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->start_date)->format('Y-m-d'),
+                    'end_date' => date_create_from_format(config('settings.date_format'), $treatmentPlan->end_date)->format('Y-m-d'),
+                    'status' => $status,
+                    'health_condition_id' => $treatmentPlan->health_condition_id,
+                    'health_condition_group_id' => $treatmentPlan->health_condition_group_id,
+                ]
+            );
+        }
+    }
+
+    /**
+     * Load reference data.
+     *
+     * @param \Illuminate\Support\Collection $data
+     * @param array $keys
+     * @return array
+     */
+    private static function loadReferenceData($data, array $keys = [])
+    {
+        $refs = [];
+
+        if (in_array('country', $keys)) {
+            $countryIds = $data->pluck('country_id')->filter()->unique();
+            $refs['countries'] = Country::whereIn('id', $countryIds)->get()->keyBy('id');
+        }
+
+        if (in_array('clinic', $keys)) {
+            $clinicIds = $data->pluck('clinic_id')->filter()->unique();
+            $refs['clinics'] = Clinic::whereIn('id', $clinicIds)->get()->keyBy('id');
+        }
+
+        if (in_array('phc_service', $keys)) {
+            $phcServiceIds = $data->pluck('phc_service_id')->filter()->unique();
+            $refs['phcServices'] = PhcService::whereIn('id', $phcServiceIds)->get()->keyBy('id');
+        }
+
+        return $refs;
+    }
+
+    /**
+     * Validate data item against reference data.
+     *
+     * @param object $item
+     * @param array $refs
+     * @param array $keys
+     * @return bool
+     */
+    private static function isValidData($item, array $refs, array $keys)
+    {
+        if (in_array('country', $keys) && (!isset($refs['countries']) || !$refs['countries']->has($item->country_id))) {
+            return false;
+        }
+
+        if (in_array('clinic', $keys) && ($item->clinic_id && (!isset($refs['clinics']) || !$refs['clinics']->has($item->clinic_id)))) {
+            return false;
+        }
+
+        if (in_array('phc_service', $keys) && ($item->phc_service_id && (!isset($refs['phcServices']) || !$refs['phcServices']->has($item->phc_service_id)))) {
+            return false;
+        }
+
+        return true;
     }
 }
