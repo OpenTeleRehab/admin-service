@@ -7,15 +7,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Internal\MfaSettingResource;
 use App\Models\MfaSetting;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class MfaSettingController extends Controller
 {
-    public function getMfaSettingsForTherapistService()
+    public function getMfaSettingsForTherapistService(Request $request)
     {
+        $excludeId = $request->get('exclude_id');
         $organization = MfaSettingHelper::getOrganization();
-        $mfaSettings = MfaSetting::whereIn('role', [User::GROUP_THERAPIST, User::GROUP_PHC_WORKER])
-            ->whereJsonContains('organizations', $organization->id)
-            ->get();
+        $query = MfaSetting::whereIn('role', [User::GROUP_THERAPIST, User::GROUP_PHC_WORKER])
+            ->whereJsonContains('organizations', $organization->id);
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        $mfaSettings = $query->get();
 
         return response()->json(['data' => MfaSettingResource::collection($mfaSettings)]);
     }
