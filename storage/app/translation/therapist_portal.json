@@ -512,6 +512,7 @@
     "chat_message.server_down": "Chat server is temporary down. Please contact your administrator.",
     "chat_message.patient_is_not_online": "Your patient can't reply instantly now. Will get back to you soon.",
     "chat_message.therapist_in_not_active": "This patient is not active. You can't send message or make a call right now.",
+    "chat_message.no_participants_auto_end_call": "No participants are currently in the call. The call will automatically end soon.",
     "chat_attachment.title": "Send attachment file",
     "chat_attachment.caption": "Caption",
     "placeholder.type.message": "Type message",
