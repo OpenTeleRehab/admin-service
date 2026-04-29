@@ -70,6 +70,16 @@ class Clinic extends Model
     }
 
     /**
+     * Get the country that the clinic belongs to.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    /**
      * Bootstrap the model and its traits.
      *
      * @return void
