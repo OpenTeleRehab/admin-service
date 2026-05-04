@@ -45,23 +45,59 @@ class ClinicController extends Controller
      *
      * @return array
      */
-    public function index()
+    public function index(Request $request)
     {
+        $searchValue = $request->get('search_value');
+        $pageSize = $request->get('page_size');
+
         $user = Auth::user();
+
+        $query = Clinic::query();
+
         if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
-            $clinics = $user->country->clinics;
+            $query->where('country_id', $user->country_id);
         } else if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
-            $clinics = Clinic::whereIn(
-                'region_id',
-                $user->regions->pluck('id')
-            )->get();
-        } else {
-            $clinics = Clinic::all();
+            $regionIds = $user->regions->pluck('id')->toArray();
+
+            if ($user->region_id) {
+                $regionIds[] = $user->region_id;
+            }
+
+            $query->whereIn('region_id', array_unique($regionIds));
         }
 
+        if ($searchValue) {
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('name', 'like', '%' . $searchValue . '%');
+            });
+        }
+
+        if ($request->has('filters')) {
+            $filters = $request->get('filters');
+            foreach ($filters as $filter) {
+                $filterObj = json_decode($filter);
+                if ($filterObj->columnName === 'province') {
+                    $query->where('province_id', $filterObj->value);
+                } elseif ($filterObj->columnName === 'region') {
+                    $query->whereHas('province.region', function ($q) use ($filterObj) {
+                        $q->where('id', $filterObj->value);
+                    });
+                } elseif ($filterObj->columnName === 'country_iso') {
+                    $query->where(function ($q) use ($filterObj) {
+                        $q->where('dial_code', 'like', '%' . $filterObj->value . '%')
+                            ->orWhereHas('country', function ($subQ) use ($filterObj) {
+                                $subQ->where('iso_code', 'like', '%' . $filterObj->value . '%');
+                            });
+                    });
+                } else {
+                    $query->where('clinics.' . $filterObj->columnName, 'like', '%' .  $filterObj->value . '%');
+                }
+            }
+        }
+
+        $clinics = $query->paginate($pageSize);
         return ['success' => true, 'data' => ClinicResource::collection($clinics)];
     }
-
     /**
      * @OA\Post(
      *     path="/api/clinic",
