@@ -25,8 +25,6 @@ class MigrateRegionMapping extends Command
         $data = [
             // [ID, Country, Rehab Service, Province, Region, Regional Admin]
             [38, 'Antarctica', 'Web Essentials', 'Test Province', 'Test Region', 'apps@web-essentials.co'],
-            [31, 'Belgium', 'Test Service', null, null, null],
-            [31, 'Belgium', 'Test Service - UHasselt', null, null, null],
 
             // Benin
             [40, 'Benin', 'HI BENIN', 'Test Ville', 'Test Département', 'donmaurales@yahoo.fr'],
@@ -50,15 +48,9 @@ class MigrateRegionMapping extends Command
             [36, 'Cambodia', 'PRC Kien Kleang', 'Phnom Penh', 'Phnom Penh', 'r.chor@hi.org'],
             [36, 'Cambodia', 'KC Provincial Hospital', 'Kampong Cham', 'Kampong Cham PH', 'r.chor@hi.org'],
 
-            // Colombia
-            [43, 'Colombia', 'ECHO', null, null, null],
-            [43, 'Colombia', 'MALTESER', null, null, null],
-            [43, 'Colombia', 'AIV', null, null, null],
-            [43, 'Colombia', 'CDCS-V-A', null, null, null],
-
             // Haiti
-            [46, 'Haiti', 'FONTEN', 'Les Cayes', 'Sud', 'an.brisard@hi.org'],
-            [46, 'Haiti', 'FONHARE', 'Ouanaminthe', 'Nord-Est', 'an.brisard@hi.org'],
+            [46, 'Haiti', 'FONTEN', 'Les Cayes', 'Sud', 'nirva.fonten.haiti@gmail.com'],
+            [46, 'Haiti', 'FONHARE', 'Ouanaminthe', 'Nord-Est', 'biberlande06@gmail.com'],
 
             // Lao
             [44, 'Lao People\'s Democratic Republic', 'CMR', null, null, null],
@@ -72,34 +64,34 @@ class MigrateRegionMapping extends Command
 
             // Rwanda
             [39, 'Rwanda', 'BUSHENGE PROVINCIAL HOSPITAL', 'Western', 'Western', 'm.eliackim@hi.org'],
-            [39, 'Rwanda', 'BYUMBA LEVEL 2 TEACHING HOSPITAL', 'Northern', 'Northern', 'm.eliackim@hi.org'],
+            [39, 'Rwanda', 'BYUMBA LEVEL 2 TEACHING HOSPITAL', 'Northern', 'Northern', 'mukadaphrose2017@gmail.com'],
             [39, 'Rwanda', 'GAHINI DISTRICT HOSPITAL', 'Eastern', 'Eastern', 'm.eliackim@hi.org'],
-            [39, 'Rwanda', 'KIBUYE REFERRAL HOSPITAL', 'Western', 'Western', 'm.eliackim@hi.org'],
+            [39, 'Rwanda', 'KIBUYE REFERRAL HOSPITAL', 'Western', 'Western', 'celey9@gmail.com'],
             [39, 'Rwanda', 'NYANZA DISTRICT HOSPITAL', 'Southern', 'Southern', 'm.eliackim@hi.org'],
-            [39, 'Rwanda', 'RUHENGERI LEVEL 2 TEACHING HOSPITAL', 'Northern', 'Northern', 'm.eliackim@hi.org'],
+            [39, 'Rwanda', 'RUHENGERI LEVEL 2 TEACHING HOSPITAL', 'Northern', 'Northern', 'muribene12@gmail.com'],
 
             // Thailand
             [42, 'Thailand', 'Rehab-Thailand', null, null, null],
             [42, 'Thailand', 'Rehab -Emergency', null, null, null],
 
             // Viet Nam
-            [34, 'Viet Nam', 'Bệnh viện HI', 'HI', 'HI', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Bệnh viện PHCN Thừa Thiên Huế', 'Huế', 'Huế', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Khoa PHCN - Trường Đại học Y Dược Huế', 'Huế', 'Huế', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Khoa PHCN Bệnh viện Đa khoa tỉnh Quảng Trị', 'Quảng Trị', 'Quảng Trị', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Khoa PHCN - Bệnh viện Đa khoa tỉnh Đồng Nai', 'Đồng Nai', 'Đồng Nai', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Bệnh viện PHCN Hà Nội', 'Hà Nội', 'Hà Nội', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Private Clinics', 'Private Clinics', 'Private Clinics', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Web Essential', 'Web Essential', 'Web Essential', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Test Web Essentials', 'Test Web Essentials', 'Test Web Essentials', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Khoa PHCN - BV TW Huế', 'Huế', 'Huế', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'BV Nam Đông', 'Huế', 'Huế', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Trường ĐHKTYT Hải Dương', 'Hải Phòng', 'Hải Phòng', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Bệnh viện YHCT&PHCN Bình Định', 'Gia Lai', 'Gia Lai', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'BV YHCT&PHCN tỉnh Quảng trị', 'Quảng Trị', 'Quảng Trị', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Phong khám Olympic An Khang', 'Huế', 'Huế', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Bệnh viện Hữu nghị Việt Đức', 'Hà Nội', 'Hà Nội', ['t.le@hi.org', 'l.ngo@hi.org']],
-            [34, 'Viet Nam', 'Bệnh viện Bạch Mai', 'Hà Nội', 'Hà Nội', ['t.le@hi.org', 'l.ngo@hi.org']],
+            [34, 'Viet Nam', 'Bệnh viện HI', 'HI', 'HI', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Bệnh viện PHCN Thừa Thiên Huế', 'Huế', 'Huế', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Khoa PHCN - Trường Đại học Y Dược Huế', 'Huế', 'Huế', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Khoa PHCN Bệnh viện Đa khoa tỉnh Quảng Trị', 'Quảng Trị', 'Quảng Trị', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Khoa PHCN - Bệnh viện Đa khoa tỉnh Đồng Nai', 'Đồng Nai', 'Đồng Nai', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Bệnh viện PHCN Hà Nội', 'Hà Nội', 'Hà Nội', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Private Clinics', 'Private Clinics', 'Private Clinics', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Web Essential', 'Web Essential', 'Web Essential', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Test Web Essentials', 'Test Web Essentials', 'Test Web Essentials', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Khoa PHCN - BV TW Huế', 'Huế', 'Huế', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'BV Nam Đông', 'Huế', 'Huế', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Trường ĐHKTYT Hải Dương', 'Hải Phòng', 'Hải Phòng', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Bệnh viện YHCT&PHCN Bình Định', 'Gia Lai', 'Gia Lai', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'BV YHCT&PHCN tỉnh Quảng trị', 'Quảng Trị', 'Quảng Trị', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Phong khám Olympic An Khang', 'Huế', 'Huế', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Bệnh viện Hữu nghị Việt Đức', 'Hà Nội', 'Hà Nội', 'l.ngo@hi.org'],
+            [34, 'Viet Nam', 'Bệnh viện Bạch Mai', 'Hà Nội', 'Hà Nội', 'l.ngo@hi.org'],
         ];
 
         try {
@@ -188,46 +180,54 @@ class MigrateRegionMapping extends Command
 
         // 5. Find or Create Regional Admins
         foreach (Arr::wrap($adminEmails) as $adminEmail) {
-            if ($adminEmail) {
-                $regionalAdmin = User::firstOrCreate(
-                    ['email' => $adminEmail],
-                    [
-                        'first_name' => explode('.', explode('@', $adminEmail)[0])[0],
-                        'last_name' => 'Admin',
-                        'type' => User::ADMIN_GROUP_REGIONAL_ADMIN,
-                        'country_id' => $countryId,
-                        'enabled' => true,
-                        'language_id' => $country->language_id,
-                        'gender' => 'other',
-                    ]
-                );
+            if (!$adminEmail) {
+                continue;
+            }
 
-                // Attach Region to Admins
-                $regionalAdmin->regions()->syncWithoutDetaching($region->id);
-                $this->info("Region {$regionName} ensured for Admin {$regionalAdmin->email}");
+            $regionalAdmin = User::where('email', $adminEmail)->first();
 
-                // Only run this if the user was newly created
-                if ($regionalAdmin->wasRecentlyCreated) {
-                    $this->info("Created Regional Admin locally: {$adminEmail}");
+            if (!$regionalAdmin) {
+                $regionalAdmin = User::create([
+                    'email' => $adminEmail,
+                    'first_name' => explode('.', explode('@', $adminEmail)[0])[0],
+                    'last_name' => 'Admin',
+                    'type' => User::ADMIN_GROUP_REGIONAL_ADMIN,
+                    'country_id' => $countryId,
+                    'enabled' => true,
+                    'language_id' => $country->language_id,
+                    'gender' => 'other',
+                ]);
+                $this->info("Created Regional Admin: {$adminEmail}");
+            } else {
+                if ($regionalAdmin->type !== User::ADMIN_GROUP_REGIONAL_ADMIN) {
+                    $regionalAdmin->type = User::ADMIN_GROUP_REGIONAL_ADMIN;
+                    $regionalAdmin->save();
+                    $this->info("Updated {$adminEmail} type to Regional Admin");
+                }
+            }
 
-                    // Sync to Keycloak
-                    try {
-                        $keycloakUser = KeycloakHelper::getKeycloakUserByUsername($adminEmail);
+            // Attach Region to Admin
+            $regionalAdmin->regions()->syncWithoutDetaching($region->id);
+            $this->info("Region {$regionName} ensured for Admin {$regionalAdmin->email}");
 
-                        if (!$keycloakUser) {
-                            KeycloakHelper::createUser(
-                                $regionalAdmin,
-                                null,
-                                false,
-                                User::ADMIN_GROUP_REGIONAL_ADMIN
-                            );
-                            $this->info("Synced {$adminEmail} to Keycloak successfully.");
-                        } else {
-                            $this->info("User {$adminEmail} already exists in Keycloak, skipping creation.");
-                        }
-                    } catch (\Exception $e) {
-                        $this->warn("Failed to sync {$adminEmail} to Keycloak: " . $e->getMessage());
+            // Sync to Keycloak only if newly created
+            if ($regionalAdmin->wasRecentlyCreated) {
+                try {
+                    $keycloakUser = KeycloakHelper::getKeycloakUserByUsername($adminEmail);
+
+                    if (!$keycloakUser) {
+                        KeycloakHelper::createUser(
+                            $regionalAdmin,
+                            null,
+                            false,
+                            User::ADMIN_GROUP_REGIONAL_ADMIN
+                        );
+                        $this->info("Synced {$adminEmail} to Keycloak successfully.");
+                    } else {
+                        $this->info("User {$adminEmail} already exists in Keycloak, skipping creation.");
                     }
+                } catch (\Exception $e) {
+                    $this->warn("Failed to sync {$adminEmail} to Keycloak: " . $e->getMessage());
                 }
             }
         }
