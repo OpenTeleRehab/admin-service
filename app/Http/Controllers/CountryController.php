@@ -17,11 +17,9 @@ use App\Models\MfaSetting;
 use App\Models\PhcService;
 use App\Models\Survey;
 use App\Models\UserSurvey;
-use Exception;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Stevebauman\Location\Facades\Location;
 
 class CountryController extends Controller
 {
@@ -50,17 +48,10 @@ class CountryController extends Controller
     public function index()
     {
         $countries = Country::all();
-        $userCountryCode = null;
-        $clientIps = explode(',', \request()->ip());
-        $publicIp = trim(current($clientIps));
-        if ($publicIp && $position = Location::get($publicIp)) {
-            $userCountryCode = $position->countryCode;
-        }
 
         return [
             'success' => true,
             'data' => CountryResource::collection($countries),
-            'user_country_code' => $userCountryCode,
         ];
     }
 
