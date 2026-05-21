@@ -1300,6 +1300,7 @@
     "error_message.phc_worker_create": "Healthcare Worker cannot be created",
     "regional_admin.new": "New Regional Admin",
     "regional_admin.edit": "Edit Regional Admin",
+    "regional_admin.delete": "Delete Regional Admin",
     "referral.referred_by": "Referred by",
     "referral.lead.and.supplementary": "Lead / Supplementary Healthcare Worker",
     "referral.phc_request_reason": "Healthcare Worker Reason",
