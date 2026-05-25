@@ -87,7 +87,7 @@ class KeycloakHelper
             return self::getTherapistKeycloakAccessToken();
         }
 
-        return self::getGAdminKeycloakAccessToken();
+        return self::getKeycloakAccessToken();
     }
 
     public static function getUserUrlByUserType(string $userType): string
