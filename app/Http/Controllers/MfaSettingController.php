@@ -37,6 +37,19 @@ class MfaSettingController extends Controller
             $query->whereJsonContains('country_ids', $user->country_id);
         }
 
+        if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+            $regionIds = $user->regions()->pluck('id');
+            $query->where(function ($q) use ($regionIds) {
+                $regionIds->each(fn ($id) =>
+                    $q->orWhereJsonContains('region_ids', $id)
+                );
+            });
+        } elseif ($user->type === User::ADMIN_GROUP_CLINIC_ADMIN) {
+            $query->whereJsonContains('clinic_ids', $user->clinic_id);
+        } elseif ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+            $query->whereJsonContains('phc_service_ids', $user->phc_service_id);
+        }
+
         $mfaSettings = $query->orderBy('created_at', 'desc')->get();
 
         $allClinicIds = collect($mfaSettings)->pluck('clinic_ids')->flatten()->unique();
