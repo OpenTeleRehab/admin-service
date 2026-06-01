@@ -111,7 +111,7 @@ class SyncScreeningQuestionnaireData extends Command
                     // Fetch and store the associated file from global
                     if ($question->file) {
                         $file = $question->file;
-                        $fileId = self::storeFile($file, File::SCREENING_QUESTIONNAIRE_PATH);
+                        $fileId = self::storeFile($file, $oldQuestionFileId);
                     }
 
                     DB::table('screening_questionnaire_questions')->updateOrInsert(
@@ -130,9 +130,6 @@ class SyncScreeningQuestionnaireData extends Command
                         ]
                     );
 
-                    // Delete old file
-                    self::deleteFile($oldQuestionFileId);
-
                     // Upsert question options and logics
                     foreach ($question->options as $option) {
                         $fileId = null;
@@ -145,7 +142,7 @@ class SyncScreeningQuestionnaireData extends Command
                         // Fetch and store the associated file from global
                         if ($option->file) {
                             $file = $option->file;
-                            $fileId = self::storeFile($file, File::SCREENING_QUESTIONNAIRE_PATH);
+                            $fileId = self::storeFile($file, $oldFileId);
                         }
 
                         DB::table('screening_questionnaire_question_options')->updateOrInsert(
@@ -166,9 +163,6 @@ class SyncScreeningQuestionnaireData extends Command
                                 'updated_at' => Carbon::now(),
                             ]
                         );
-
-                        // Delete old file
-                        self::deleteFile($oldFileId);
                     }
 
                     foreach ($question->logics as $logic) {
@@ -201,45 +195,37 @@ class SyncScreeningQuestionnaireData extends Command
      * Store a file from global and return the local file ID.
      *
      * @param object $file
-     * @param string $fileDir
+     * @param int|null $oldFileId
      * @return int|null
      */
-    private static function storeFile($file, $fileDir)
+    private static function storeFile($file, $oldFileId = null)
     {
         try {
             $file_url = env('GLOBAL_ADMIN_SERVICE_URL') . '/file/' . $file->id;
-            $filePath = $fileDir . '/' . $file->filename;
+            $filePath = File::SCREENING_QUESTIONNAIRE_PATH . '/' . $file->filename;
             $fileContent = file_get_contents($file_url);
-            $localFile = File::create([
-                'filename' => $file->filename,
-                'path' => $filePath,
-                'content_type' => $file->content_type,
-            ]);
-
+            $localFile = File::find($oldFileId);
+            if ($localFile) {
+                if ($localFile->path !== $filePath) {
+                    Storage::delete($localFile->path);
+                }
+                $localFile->update([
+                    'filename' => $file->filename,
+                    'path' => $filePath,
+                    'content_type' => $file->content_type,
+                ]);
+            } else {
+                $localFile = File::create([
+                    'filename' => $file->filename,
+                    'path' => $filePath,
+                    'content_type' => $file->content_type,
+                ]);
+            }
             Storage::put($filePath, $fileContent);
-            $fileId = $localFile->id;
+            return $localFile->id;
         } catch (\Exception $e) {
             Log::debug("Failed to store associated file from global {$file->id}: " . $e->getMessage());
         }
-        return $fileId ?? null;
-    }
-
-    /**
-     * Delete a file by its ID.
-     *
-     * @param int $fileId
-     * @return void
-     */
-    private static function deleteFile($fileId)
-    {
-        try {
-            $file = File::find($fileId);
-            if ($file) {
-                Storage::delete($file->path);
-                $file->delete();
-            }
-        } catch (\Exception $e) {
-            Log::debug("Failed to delete file {$fileId}: " . $e->getMessage());
-        }
+        return null;
     }   
 }
