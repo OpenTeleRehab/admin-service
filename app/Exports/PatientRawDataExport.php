@@ -51,8 +51,9 @@ class PatientRawDataExport
      */
     public static function export($payload)
     {
-        $translations = TranslationHelper::getTranslations($payload['lang']);
-        $language = Language::find($payload['lang']);
+        $languageId = $payload['lang'] ?? null;
+        $translations = TranslationHelper::getTranslations($languageId);
+        $languageCode = Language::find($languageId)?->code ?? config('app.fallback_locale');
         $basePath = 'app/' . self::$exportDirectoryName;
         $absolutePath = storage_path($basePath);
         $hosts = config('settings.hosting_country');
@@ -203,16 +204,16 @@ class PatientRawDataExport
                 $patient->call,
             ];
 
-            $patientAssistiveData = array_merge($patientAssistiveData, self::getPatientAssistiveTechnologyData($patient->assistiveTechnologies, $patientData));
-            $patientSurveyData = array_merge($patientSurveyData, self::getPatientSurveyData($patient->id, $patientData));
+            $patientAssistiveData = array_merge($patientAssistiveData, self::getPatientAssistiveTechnologyData($patient->assistiveTechnologies, $patientData, $languageCode));
+            $patientSurveyData = array_merge($patientSurveyData, self::getPatientSurveyData($patient->id, $patientData, $languageCode));
 
             if (count((array) $patient->treatmentPlans) > 0) {
                 foreach ($patient->treatmentPlans as $index => $treatmentPlan) {
                     $healthCondition = HealthCondition::find($treatmentPlan->health_condition_id);
 
-                    $healthConditionName = $healthCondition?->getTranslation('title', $language?->code ?? 'en');
+                    $healthConditionName = $healthCondition?->getTranslation('title', $languageCode);
                     $healthConditionGroup = $healthCondition?->parent;
-                    $healthConditionGroupName = $healthConditionGroup?->getTranslation('title', $language?->code ?? 'en');
+                    $healthConditionGroupName = $healthConditionGroup?->getTranslation('title', $languageCode);
                     $startDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->start_date)->format('Y-m-d');
                     $endDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->end_date)->format('Y-m-d');
                     $treatmentStatus = self::getTreatmentPlanStatus($startDate, $endDate, $translations);
@@ -255,7 +256,7 @@ class PatientRawDataExport
 
                             $initailResult = self::getSurveyResult($treatmentInitialSurvey?->answer);
                             $finalResult = self::getSurveyResult($treatmentFinalSurvey?->answer);
-                            $surveyTitle = $patientTreatmentSurvey->questionnaire->getTranslation('title', $language?->code ?? 'en');
+                            $surveyTitle = $patientTreatmentSurvey->questionnaire->getTranslation('title', $languageCode);
                             $patientTreatmentPlanSurveyData[] = array_merge($patientData, [
                                 $treatmentPlan->name,
                                 $healthConditionGroupName,
@@ -299,7 +300,7 @@ class PatientRawDataExport
                                     $treatmentStatus,
                                     $startDate,
                                     $endDate,
-                                    $foundQuestionnaire->getTranslation('title', $language?->code ?? 'en'),
+                                    $foundQuestionnaire->getTranslation('title', $languageCode),
                                     $phase,
                                     self::getQuestionnaireResult($foundQuestionnaire, $questionnaire->answer)
                                 ]);
@@ -425,7 +426,7 @@ class PatientRawDataExport
         return $totalAnswerValue;
     }
 
-    public static function getPatientAssistiveTechnologyData($patientAssistiveTechnologies, $patientData)
+    public static function getPatientAssistiveTechnologyData($patientAssistiveTechnologies, $patientData, $languageCode)
     {
         $data = [];
         if (count((array) $patientAssistiveTechnologies) > 0) {
@@ -433,7 +434,7 @@ class PatientRawDataExport
                 $assistive = AssistiveTechnology::find($assistiveTechnology->assistive_technology_id);
                 $provisionDate = Carbon::createFromFormat('d/m/Y', $assistiveTechnology->provision_date);
                 $assistiveData = array_merge($patientData, [
-                    $assistive?->getTranslation('name', $language?->code ?? 'en'),
+                    $assistive?->getTranslation('name', $languageCode),
                     $provisionDate->format('Y-m-d')
                 ]);
                 $data[] = $assistiveData;
@@ -445,7 +446,7 @@ class PatientRawDataExport
         return $data;
     }
 
-    public static function getPatientSurveyData($patientId, $patientData)
+    public static function getPatientSurveyData($patientId, $patientData, $languageCode)
     {
         $data = [];
         $patientSurveys = Survey::join('user_surveys', 'surveys.id', 'user_surveys.survey_id')
@@ -458,7 +459,7 @@ class PatientRawDataExport
             ->get();
         if (count($patientSurveys) > 0) {
             foreach ($patientSurveys as $patientSurvey) {
-                $surveyTitle = $patientSurvey->questionnaire->getTranslation('title', $language?->code ?? 'en');
+                $surveyTitle = $patientSurvey->questionnaire->getTranslation('title', $languageCode);
                 $result = self::getSurveyResult(json_decode($patientSurvey->answer, true));
                 $data[] = array_merge($patientData, [
                     $surveyTitle,
