@@ -496,4 +496,20 @@ class PhcServiceController extends Controller
             'data' => new EntitiesByPhcServiceResource($phcService),
         ]);
     }
+
+    /**
+     * Get PHC Service by id.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getById(Request $request)
+    {
+        $phcService = PhcService::find($request->get('id'));
+        if (!$phcService) {
+            return response()->json(['message' => 'PHC Service not found'], 404);
+        }
+
+        return new PhcServiceResource($phcService);
+    }
 }
