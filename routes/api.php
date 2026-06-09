@@ -465,6 +465,7 @@ Route::get('public/privacy-policy', [PrivacyPolicyController::class, 'index']);
 Route::get('language', [LanguageController::class, 'index']);
 Route::get('assistive-technologies', [AssistiveTechnologyController::class, 'index']);
 Route::get('clinic/get-by-id/{clinic}', [ClinicController::class, 'getById']);
+Route::get('phc-service/get-by-id', [PhcServiceController::class, 'getById']);
 Route::get('get-publish-survey', [SurveyController::class, 'getPublishSurveyByUserType']);
 Route::post('audit-logs', [AuditLogController::class, 'store']);
 Route::get('job-trackers/{jobId}', [JobTrackerController::class, 'stream']);
