@@ -71,10 +71,13 @@ class QuestionnaireResultExport
             }
 
             $sheet = $spreadsheet->createSheet();
-            $title = trim(mb_substr($questionnaire['title'] ?? '', 0, 29)) ?: 'Unknown';
+            $questionnaireTitle = $questionnaire['title'] ?? '';
+            $invalidCharacter = ['*', ':', '/', '\\', '?', '[', ']'];
             // Remove invalid characters from the title
-            $title = preg_replace('/[?]/', '', $title);
-            $sheet->setTitle($title);
+            $title = str_replace($invalidCharacter, '', $questionnaireTitle);
+            $sheetTitle = trim(mb_substr($title, 0, 29)) ?: 'Unknown';
+
+            $sheet->setTitle($sheetTitle);
             $sheet->mergeCells('A1:A2');
             $sheet->mergeCells('B1:B2');
             $sheet->mergeCells('C1:C2');
@@ -172,12 +175,12 @@ class QuestionnaireResultExport
                 $location = $translations['common.' . $patient['location']];
                 $gender = $translations['common.' . $patient['gender']];
                 $healthCondition = HealthCondition::find($treatmentPlan['health_condition_id']);
-                $healthConditionName = $healthCondition?->getTranslation('name', $payload['lang'] ?? 'en');
+                $healthConditionName = $healthCondition?->getTranslation('title', $payload['lang'] ?? 'en');
 
                 $healthConditionGroupName = null;
                 if ($healthCondition) {
                     $healthConditionGroup = HealthConditionGroup::find($healthCondition->parent_id);
-                    $healthConditionGroupName = $healthConditionGroup?->getTranslation('name', $payload['lang'] ?? 'en');
+                    $healthConditionGroupName = $healthConditionGroup?->getTranslation('title', $payload['lang'] ?? 'en');
                 }
 
                 $data = [
