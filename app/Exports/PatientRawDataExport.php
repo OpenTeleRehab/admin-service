@@ -210,12 +210,8 @@ class PatientRawDataExport
                 foreach ($patient->treatmentPlans as $index => $treatmentPlan) {
                     $healthCondition = HealthCondition::find($treatmentPlan->health_condition_id);
 
-                    if (!$healthCondition) {
-                        continue;
-                    }
-
                     $healthConditionName = $healthCondition?->getTranslation('title', $language?->code ?? 'en');
-                    $healthConditionGroup = $healthCondition->parent;
+                    $healthConditionGroup = $healthCondition?->parent;
                     $healthConditionGroupName = $healthConditionGroup?->getTranslation('title', $language?->code ?? 'en');
                     $startDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->start_date)->format('Y-m-d');
                     $endDate = Carbon::createFromFormat('d/m/Y', $treatmentPlan->end_date)->format('Y-m-d');
