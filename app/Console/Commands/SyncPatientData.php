@@ -140,7 +140,7 @@ class SyncPatientData extends Command
         foreach ($data as $treatmentPlan) {
             $patient = current(array_filter($patientData, fn($patient) => $patient->id == $treatmentPlan->patient_id));
             $status = TreatmentPlanHelper::determineStatus($treatmentPlan->start_date, $treatmentPlan->end_date);
-            if (!self::isValidData($patient, $refs, ['country'])) {
+            if ($patient === false || !self::isValidData($patient, $refs, ['country'])) {
                 continue;
             }
             GlobalTreatmentPlan::updateOrCreate(

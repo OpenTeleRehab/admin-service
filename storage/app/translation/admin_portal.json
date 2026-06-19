@@ -1314,6 +1314,8 @@
     "success_message.referral.decline": "Referral declined successfully",
     "error.region.therapist_limit.less_than.provinces.total.therapist_limit": "The total therapist limit assigned to provinces in this region is ${therapist_limit_used}. You cannot set the therapist limit for this region to a number lower than the total therapist limit currently allocated to those provinces.",
     "error.region.phc_worker_limit.less_than.provinces.total.phc_worker_limit": "The total healthcare worker limit assigned to provinces in this region is ${phc_worker_limit_used}.You cannot set the healthcare worker limit for this region to a number lower than the total healthcare worker limit currently allocated to those provinces.",
+    "error.country.therapist_limit.less_than.region.theraist_limit": "The country therapist limit is lower than the total therapist limit allocated to regions in the country",
+    "error.country.phc_worker_limit.less_than.region.phc_worker_limit": "The country healthcare worker limit is lower than the total healthcare worker limit allocated to regions in the country",
     "placeholder.province": "Select a province",
     "placeholder.phc_service": "Select a PHC service",
     "survey.service_type": "Service Type",
