@@ -654,4 +654,36 @@ class QuestionnaireController extends Controller
             })->get();
         return QuestionnaireResource::collection($questionnaires);
     }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function getByRegionalAdmin(Request $request)
+    {
+        $regionalAdmin = User::findOrFail($request->get('regional_admin_id'));
+        $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
+        $response = Http::withToken($access_token)->get(env('THERAPIST_SERVICE_URL') . '/therapist/list/by-region-ids', [
+            'region_ids' => $regionalAdmin->regions()->pluck('id')->all(),
+        ]);
+        $therapists = $response->json('data');
+        $ids = collect($therapists)->pluck('id')->all();
+        $questionnaires = Questionnaire::where('is_survey', false)
+            ->where(function ($query) use ($ids) {
+                $query->whereIn('therapist_id', $ids)
+                    ->orWhere('therapist_id', null);
+            })->get();
+        return QuestionnaireResource::collection($questionnaires);
+    }
+
+    /**
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function getByPhcServiceAdmin()
+    {
+        $questionnaires = Questionnaire::where('is_survey', false)->where('share_with_phc_worker', true)->get();
+        return QuestionnaireResource::collection($questionnaires);
+    }
 }
