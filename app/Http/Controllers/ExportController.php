@@ -58,6 +58,10 @@ class ExportController extends Controller
                     $payload['clinic_id'] = $user->clinic_id;
                 } else if ($user->type === User::ADMIN_GROUP_COUNTRY_ADMIN) {
                     $payload['country_admin_id'] = $user->id;
+                } else if ($user->type === User::ADMIN_GROUP_REGIONAL_ADMIN) {
+                    $payload['regional_admin_id'] = $user->id;
+                } else if ($user->type === User::ADMIN_GROUP_PHC_SERVICE_ADMIN) {
+                    $payload['phc_service_admin_id'] = $user->id;
                 }
 
                 $payload['source'] = Forwarder::GADMIN_SERVICE;

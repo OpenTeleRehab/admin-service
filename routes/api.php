@@ -197,9 +197,11 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::post('questionnaire/approve-translate/{questionnaire}', [QuestionnaireController::class, 'approveTranslation'])->middleware('role:translate_questionnaire');
     Route::post('questionnaire/updateFavorite/by-therapist/{questionnaire}', [QuestionnaireController::class, 'updateFavorite'])->middleware('role:access_all');
     Route::get('get-questionnaire-by-id', [QuestionnaireController::class, 'getById'])->middleware('role:access_all');
-    Route::get('get-questionnaire-by-therapist', [QuestionnaireController::class, 'getByTherapist']); // deprecated
-    Route::get('get-questionnaire-by-clinic-admin', [QuestionnaireController::class, 'getByClinicAdmin']); // deprecated
-    Route::get('get-questionnaire-by-country-admin', [QuestionnaireController::class, 'getByCountryAdmin']); // deprecated
+    Route::get('get-questionnaire-by-therapist', [QuestionnaireController::class, 'getByTherapist'])->middleware('role:access_all');
+    Route::get('get-questionnaire-by-clinic-admin', [QuestionnaireController::class, 'getByClinicAdmin'])->middleware('role:access_all');
+    Route::get('get-questionnaire-by-country-admin', [QuestionnaireController::class, 'getByCountryAdmin'])->middleware('role:access_all');
+    Route::get('get-questionnaire-by-regional-admin', [QuestionnaireController::class, 'getByRegionalAdmin'])->middleware('role:access_all');
+    Route::get('get-questionnaire-by-phc-service-admin', [QuestionnaireController::class, 'getByPhcServiceAdmin'])->middleware('role:access_all');
 
     // Additional Fields
     Route::get('get-exercise-additional-fields-for-open-library', [ExerciseController::class, 'getExerciseAdditionalFieldsForOpenLibrary'])->middleware('role:get_exercise_additional_field');
