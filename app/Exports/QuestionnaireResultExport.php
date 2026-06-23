@@ -66,7 +66,7 @@ class QuestionnaireResultExport
                         'completed' => true,
                     ]);
                     $hostActivities = $response->json('data');
-                    $activities = array_merge($activities, $hostActivities);
+                    $activities = array_merge($activities, $hostActivities ?? []);
                 }
             }
 
