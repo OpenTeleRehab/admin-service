@@ -28,7 +28,7 @@ class ExportController extends Controller
         $country = $request->header('country');
 
         $payload = [
-            'job_id' => $jobId,
+            'job_id' => (string) $jobId,
             'lang' => $lang,
             'type' => $type,
         ];
@@ -67,6 +67,7 @@ class ExportController extends Controller
                 ])->get(env('PATIENT_SERVICE_URL') . '/export', $payload);
 
                 $externalExport = $response->ok();
+                $generateExport = false;
             }
         }
 
