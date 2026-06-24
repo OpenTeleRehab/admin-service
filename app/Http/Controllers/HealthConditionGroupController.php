@@ -256,7 +256,8 @@ class HealthConditionGroupController extends Controller
      */
     public function destroy(HealthConditionGroup $healthConditionGroup)
     {
-        if (!$healthConditionGroup->healthConditions->count()) {
+        if (!$healthConditionGroup->isUsed()) {
+            $healthConditionGroup->healthConditions->each->delete();
             $healthConditionGroup->delete();
 
             return ['success' => true, 'message' => 'success_message.health_condition_group_delete'];
