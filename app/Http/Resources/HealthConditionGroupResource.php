@@ -19,6 +19,7 @@ class HealthConditionGroupResource extends JsonResource
             'title' => $this->title,
             'children' => $this->healthConditions->count(),
             'auto_translated' => $this->auto_translated,
+            'is_used' => $this->isUsed()
         ];
     }
 }

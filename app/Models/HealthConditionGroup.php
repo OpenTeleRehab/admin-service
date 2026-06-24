@@ -78,4 +78,16 @@ class HealthConditionGroup extends Model
     {
         return $this->hasMany(HealthCondition::class, 'parent_id', 'id');
     }
+
+    /**
+     * Check if the health condition group is used.
+     *
+     * @return bool
+     */
+    public function isUsed()
+    {
+        return $this->healthConditions->contains(function ($healthCondition) {
+            return $healthCondition->isUsed();
+        });
+    }
 }
