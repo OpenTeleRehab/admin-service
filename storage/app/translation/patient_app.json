@@ -93,6 +93,7 @@
     "common.call.to.phc_worker": "Call to Healthcare Worker",
     "common.call.to.phc_service": "Call to PHC Service",
     "common.call.to.clinic": "Call to Rehab Service",
+    "common.retry": "Retry",
     "app.permission.setting.title": "App Permissions",
     "preferences": "Preferences",
     "tab.home": "Home",
@@ -577,5 +578,6 @@
     "error.message.phc.appointment.to.validate.error": "Please select a time later than the start time",
     "error.message.phc.patient.date_of_birth.required": "Please select date of birth",
     "phc.referral_reason": "Referral Reason",
-    "phc.referral_reason_placeholder": "Enter referral reason"
+    "phc.referral_reason_placeholder": "Enter referral reason",
+    "error.message.network.error": "Connection error. Please check your internet connection and try again."
 }

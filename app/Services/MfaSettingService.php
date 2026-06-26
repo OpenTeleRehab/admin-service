@@ -77,16 +77,24 @@ class MfaSettingService
         }
     }
 
-    public function applyToTherapistService($mfaSettingRole, $broadcastChannel, $jobId, $rowId, $isDeleting)
+    public function applyToTherapistService($mfaSetting, $broadcastChannel, $jobId, $isDeleting, $authUser)
     {
         $token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
         Http::withToken($token)->acceptJson()->post(env('THERAPIST_SERVICE_URL') . '/internal/mfa-settings', [
-            'role' => $mfaSettingRole,
+            'role' => $mfaSetting->role,
             'broadcast_channel' => $broadcastChannel,
             'job_id' => $jobId,
-            'row_id' => $rowId,
+            'row_id' => $mfaSetting->id,
             'is_deleting' => $isDeleting
         ])->throw();
+        if ($isDeleting) {
+            activity()->causedBy($authUser)
+                ->performedOn($mfaSetting)
+                ->withProperties(['old' => $mfaSetting])
+                ->useLog('admin_service')
+                ->event('deleted')
+                ->log('deleted');
+        }
     }
 
     public function removeMfaForUsers($users)
