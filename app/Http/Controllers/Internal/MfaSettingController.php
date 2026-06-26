@@ -29,7 +29,9 @@ class MfaSettingController extends Controller
 
     public function destroy($id)
     {
-        MfaSetting::findOrFail($id)->delete();
+        activity()->withoutLogs(function () use ($id) {
+            MfaSetting::findOrFail($id)->delete();
+        });
 
         return response()->json(['message' => 'MFA setting deleted successfully.']);
     }

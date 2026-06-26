@@ -48,11 +48,11 @@ class ApplyMfaSettings implements ShouldQueue
 
             if (in_array($this->mfaSetting->role, [User::GROUP_THERAPIST, User::GROUP_PHC_WORKER])) {
                 $mfaSettingService->applyToTherapistService(
-                    $this->mfaSetting->role,
+                    $this->mfaSetting,
                     "user.{$this->authUser->id}.mfa",
                     $this->jobId,
-                    $this->mfaSetting->id,
-                    $this->isDeleting
+                    $this->isDeleting,
+                    $this->authUser
                 );
 
                 return;
