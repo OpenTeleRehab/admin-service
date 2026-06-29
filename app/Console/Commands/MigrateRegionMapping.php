@@ -53,7 +53,7 @@ class MigrateRegionMapping extends Command
             [46, 'Haiti', 'FONHARE', 'Ouanaminthe', 'Nord-Est', 'biberlande06@gmail.com'],
 
             // Lao
-            [44, 'Lao People\'s Democratic Republic', 'CMR', null, null, null],
+            [44, 'Lao People\'s Democratic Republic', 'CMR', 'Vientiane', 'Vientiane Capital', 'n.thalangsy@hi.org'],
 
             // Myanmar
             [41, 'Myanmar', 'South East - AC6', null, null, null],

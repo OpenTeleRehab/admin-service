@@ -334,6 +334,7 @@
     "error.phone": "Please fill mobile number",
     "error.first_name": "Please fill first name",
     "error.gender": "Please fill gender",
+    "error.date_of_birth": "Please select date of birth",
     "error.last_name": "Please fill last name",
     "error.email": "Please fill in the email",
     "error.country": "Please select a country",
