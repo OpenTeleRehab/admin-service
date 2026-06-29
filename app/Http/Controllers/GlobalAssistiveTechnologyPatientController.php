@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Resources\GlobalAssistiveTechnologyPatientResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use App\Models\GlobalAssistiveTechnologyPatient;
 
 class GlobalAssistiveTechnologyPatientController extends Controller
 {
@@ -15,27 +18,43 @@ class GlobalAssistiveTechnologyPatientController extends Controller
     public function index(Request $request)
     {
         $data = $request->all();
+        $authUser = Auth::user();
 
-        $query = DB::table('global_assistive_technology_patients as gat')
-            ->select(DB::raw('
-                gat.patient_id,
-                ANY_VALUE(gat.gender) as gender,
-                ANY_VALUE(gat.identity) as identity,
-                ANY_VALUE(gat.date_of_birth) as date_of_birth,
-                ANY_VALUE(gat.provision_date) as provision_date,
-                ANY_VALUE(gat.country_id) as country_id,
-                ANY_VALUE(gat.clinic_id) as clinic_id,
-                group_concat(gat.assistive_technology_id) as assistive_technology_id
-            '))
-            ->leftJoin('assistive_technologies', 'gat.assistive_technology_id', '=', 'assistive_technologies.id')
-            ->where('gat.deleted_at', null);
+        $query = GlobalAssistiveTechnologyPatient::selectRaw("
+                patient_id,
+                ANY_VALUE(gender) as gender,
+                ANY_VALUE(identity) as identity,
+                ANY_VALUE(date_of_birth) as date_of_birth,
+                ANY_VALUE(provision_date) as provision_date,
+                ANY_VALUE(country_id) as country_id,
+                ANY_VALUE(clinic_id) as clinic_id,
+                GROUP_CONCAT(assistive_technology_id) as assistive_technology_id
+            ")
+            ->whereNull('deleted_at');
 
-        if (isset($data['country'])) {
-            $query->where('country_id', $data['country']);
-        }
-
-        if (isset($data['clinic'])) {
-            $query->where('clinic_id', $data['clinic']);
+        switch ($authUser->type) {
+            case User::ADMIN_GROUP_COUNTRY_ADMIN:
+                $query->where('country_id', $authUser->country_id);
+                break;
+            case User::ADMIN_GROUP_REGIONAL_ADMIN:
+                $userRegionIds = $authUser->regions->pluck('id')->toArray();
+                $query->where(function ($subQuery) use ($userRegionIds) {
+                    $subQuery->whereHas('clinic', fn($q) =>
+                        $q->whereIn('region_id', $userRegionIds)
+                    )
+                    ->orWhereHas('phcService.province', fn($q) =>
+                        $q->whereIn('region_id', $userRegionIds)
+                    );
+                });
+                break;
+            case User::ADMIN_GROUP_CLINIC_ADMIN:
+                $query->where('clinic_id', $authUser->clinic_id);
+                break;
+            case User::ADMIN_GROUP_PHC_SERVICE_ADMIN:
+                $query->where('phc_service_id', $authUser->phc_service_id);
+                break;
+            default:
+                $query;
         }
 
         if (isset($data['from_date']) && isset($data['to_date'])) {
@@ -86,7 +105,7 @@ class GlobalAssistiveTechnologyPatientController extends Controller
             $query->orderBy($data['order_by']);
         }
 
-        $users = $query->groupBy('gat.patient_id')->paginate($data['page_size']);
+        $users = $query->groupBy('patient_id')->paginate($data['page_size']);
         $info = [
             'current_page' => $users->currentPage(),
             'total_count' => $users->total(),
