@@ -463,6 +463,7 @@
     "success_message.assistive_technology_update": "Assistive technology updated successfully",
     "success_message.assistive_technology_delete": "Assistive technology deleted successfully",
     "error_message.assistive_technology_exists": "Assistive technology code already exists",
+    "error_message.assistive_technology_deleted_exists": "Assistive technology code already exists (deleted record)",
     "toast_title.new_assistive_technology": "New assistive technology",
     "toast_title.edit_assistive_technology": "Edit assistive technology",
     "toast_title.delete_assistive_technology": "Delete assistive technology",
