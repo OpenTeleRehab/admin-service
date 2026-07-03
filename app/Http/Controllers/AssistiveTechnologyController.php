@@ -34,10 +34,17 @@ class AssistiveTechnologyController extends Controller
     public function store(Request $request)
     {
         $existing = AssistiveTechnology::where('code', $request->get('code'))->count();
+        $deletedExisting = AssistiveTechnology::onlyTrashed()
+            ->where('code', $request->get('code'))
+            ->exists();
         $file = null;
 
         if ($existing) {
             return abort(409, 'error_message.assistive_technology_exists');
+        }
+
+        if ($deletedExisting) {
+            return abort(409, 'error_message.assistive_technology_deleted_exists');
         }
 
         if ($request->hasFile('file')) {
@@ -96,9 +103,16 @@ class AssistiveTechnologyController extends Controller
         $existing = AssistiveTechnology::where('id', '<>', $assistiveTechnology->id)
             ->where('code', $request->get('code'))
             ->count();
+        $deletedExisting = AssistiveTechnology::onlyTrashed()
+            ->where('code', $request->get('code'))
+            ->exists();
 
         if ($existing) {
             return abort(409, 'error_message.assistive_technology_exists');
+        }
+
+        if ($deletedExisting) {
+            return abort(409, 'error_message.assistive_technology_deleted_exists');
         }
 
         // Replace new file.
