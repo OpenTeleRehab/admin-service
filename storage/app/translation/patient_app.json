@@ -438,6 +438,7 @@
     "phc.patient.supplementary_phc_workers": "Supplementary Healthcare Workers",
     "phc.patient.note": "Note",
     "error.message.phc.patient.phone.required": "Phone number is required",
+    "error.message.phc.patient.phone.invalid": "Phone number must contain digits only",
     "error.message.phc.patient.gender.required": "Gender is required",
     "error.message.phc.patient.last.name": "Last name is required",
     "error.message.phc.patient.first.name": "First name is required",
