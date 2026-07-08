@@ -48,7 +48,7 @@ class ClinicController extends Controller
     public function index(Request $request)
     {
         $searchValue = $request->get('search_value');
-        $pageSize = $request->get('page_size');
+        $pageSize = $request->get('page_size', 99999);
 
         $user = Auth::user();
 
