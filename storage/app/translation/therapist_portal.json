@@ -270,6 +270,7 @@
     "treatment_plan.detail": "Treatment Plan Detail",
     "treatment_plan.edit.info": "Edit Treatment Info",
     "treatment_plan.create": "Treatment Create",
+    "treatment_plan.create_for_patient": "Create Patient Treatment Plan",
     "treatment_plan.name": "Diagnostic",
     "treatment_plan.activities_tab": "Activities",
     "treatment_plan.questionnaires_tab": "Questionnaires",
