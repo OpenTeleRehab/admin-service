@@ -81,7 +81,7 @@ class ForwarderController extends Controller
         $countryCode = $user->country?->iso_code ?? $request->header('Country');
         if ($service_name !== null && str_contains($service_name, Forwarder::THERAPIST_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE);
-            return Http::withToken($access_token)->withHeaders([
+            $response = Http::withToken($access_token)->withHeaders([
                 'Accept' => 'application/json',
                 'int-country-id' => $user->country_id,
                 'int-region-id' => $user?->region_id,
@@ -92,6 +92,8 @@ class ForwarderController extends Controller
                 'int-admin-user-id' => $user?->id,
             ])
                 ->post(env('THERAPIST_SERVICE_URL') . $endpoint, $request->all());
+            return response($response->body(), $response->status())
+                ->withHeaders($response->headers());
         } elseif ($service_name !== null && str_contains($service_name, Forwarder::PATIENT_SERVICE)) {
             $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $countryCode);
             $response = Http::withToken($access_token)->withHeaders([

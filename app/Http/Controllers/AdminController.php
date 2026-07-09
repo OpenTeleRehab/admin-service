@@ -259,6 +259,26 @@ class AdminController extends Controller
                 Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'nullable',
                 'exists:countries,id',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->type !== User::ADMIN_GROUP_COUNTRY_ADMIN) {
+                        return;
+                    }
+
+                    $exists = User::where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)
+                        ->where('country_id', $value)
+                        ->where(function ($query) {
+                            $query->where('enabled', 1)
+                                ->orWhere(function ($query) {
+                                    $query->where('enabled', 0)
+                                        ->whereNull('last_login');
+                                });
+                        })
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('error.country.in_used');
+                    }
+                },
             ],
 
             'region_ids' => [
@@ -447,6 +467,27 @@ class AdminController extends Controller
                 Rule::requiredIf(fn() => $request->type === User::ADMIN_GROUP_COUNTRY_ADMIN),
                 'nullable',
                 'exists:countries,id',
+                function ($attribute, $value, $fail) use ($request, $id) {
+                    if ($request->type !== User::ADMIN_GROUP_COUNTRY_ADMIN) {
+                        return;
+                    }
+
+                    $exists = User::where('type', User::ADMIN_GROUP_COUNTRY_ADMIN)
+                        ->where('country_id', $value)
+                        ->where('id', '<>', $id)
+                        ->where(function ($query) {
+                            $query->where('enabled', 1)
+                                ->orWhere(function ($query) {
+                                    $query->where('enabled', 0)
+                                        ->whereNull('last_login');
+                                });
+                        })
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('error.country.in_used');
+                    }
+                },
             ],
 
             'region_ids' => [
