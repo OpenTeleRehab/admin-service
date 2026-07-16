@@ -405,7 +405,11 @@ class CountryController extends Controller
         $responses = Http::pool(fn (Pool $pool) => [
             $pool->as('phone')->post(
                 env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
-                ['clinic_ids' => $country->clinics->pluck('id')]
+                ['clinic_ids' => array_merge(
+                        $country->clinics->pluck('id')->toArray(),
+                        $country->regions->flatMap->phcServices->pluck('id')->toArray()
+                    )
+                ]
             ),
             $pool->as('therapist')->withToken(Forwarder::getAccessToken(Forwarder::THERAPIST_SERVICE))
                 ->post(env('THERAPIST_SERVICE_URL') . '/data-clean-up/users/delete', [

@@ -716,6 +716,7 @@
     "clinic.region": "Region",
     "clinic.city": "City",
     "clinic.country.iso_code": "Country's iso code",
+    "clinic.exclude.referral.patient": "Exclude referral patients",
     "placeholder.clinic.name": "Enter name",
     "placeholder.clinic.region": "Enter region",
     "placeholder.clinic.province": "Enter province",

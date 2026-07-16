@@ -398,7 +398,10 @@ class RegionController extends Controller
         // Phone service
         Http::post(
             env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
-            ['clinic_ids' => $region->clinics->pluck('id')]
+            ['clinic_ids' => array_merge(
+                $region->clinics->pluck('id')->toArray(),
+                $region->phcServices->pluck('id')->toArray()
+            )]
         );
 
         // Therapist service
