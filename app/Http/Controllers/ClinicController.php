@@ -403,7 +403,11 @@ class ClinicController extends Controller
                     ->post(env('PATIENT_SERVICE_URL') . '/data-clean-up/users/delete', [
                         'entity_name' => 'rehab_service',
                         'entity_id' => $clinicId,
-                    ])
+                    ]),
+                $pool->as('phone')->post(
+                    env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
+                    ['clinic_ids' => [$clinicId]]
+                ),
             ]);
 
             if (!$responses['therapist']->successful()) {

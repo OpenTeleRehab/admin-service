@@ -310,6 +310,10 @@ class PhcServiceController extends Controller
                     'entity_name' => 'phc_service',
                     'entity_id' => $phcServiceId,
                 ]),
+            $pool->as('phone')->post(
+                env('PHONE_SERVICE_URL') . '/data-clean-up/phones/bulk-delete',
+                ['clinic_ids' => [$phcServiceId]]
+            ),
         ]);
 
         if (!$responses['therapist']->successful()) {
