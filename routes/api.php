@@ -143,6 +143,7 @@ Route::group(['middleware' => ['auth:api', 'verify.data.access']], function () {
     Route::put('clinic/{clinic}', [ClinicController::class, 'update'])->middleware('role:manage_clinic');
     Route::delete('clinic/{clinic}', [ClinicController::class, 'destroy'])->middleware('role:manage_clinic');
     Route::get('clinics-by-user-country', [ClinicController::class, 'getClinicsByUserCountry'])->middleware('role:access_all');
+    Route::get('clinic-by-province', [ClinicController::class, 'getByProvince'])->middleware('role:manage_clinic');
     Route::get('clinic/{clinic}/entities', [ClinicController::class, 'getEntitiesByClinicId'])->middleware('role:manage_clinic');
 
     // Library

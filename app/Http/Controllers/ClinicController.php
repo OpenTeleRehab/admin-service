@@ -607,4 +607,17 @@ class ClinicController extends Controller
             'data' => new EntitiesByClinicResource($clinic),
         ]);
     }
+
+    /**
+     * Get Rehab Services by province.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getByProvince(Request $request)
+    {
+        $rehabServices = Clinic::where('province_id', $request->get('province_id'))->get();
+
+        return response()->json(['data' => ClinicResource::collection($rehabServices)], 200);
+    }
 }
