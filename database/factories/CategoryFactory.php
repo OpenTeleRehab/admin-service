@@ -27,10 +27,5 @@ class CategoryFactory extends Factory
             'type' => 'exercise',
             'parent_id' => null
         ];
-        [
-            'title' => 'Cerebral palsy',
-            'type' => 'exercise',
-            'parent_id' => 1
-        ];
     }
 }
