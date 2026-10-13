@@ -206,14 +206,15 @@ class User extends Authenticatable
 
     /**
      * @param int $patientId
+     * @param string|null $countryCode Hosting country ISO code, e.g. VN; null for the default patient service.
      * @return false|\GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response
      * @throws \Illuminate\Http\Client\ConnectionException
      */
-    public static function getPatientById(int $patientId)
+    public static function getPatientById(int $patientId, $countryCode = null)
     {
-        $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE);
+        $access_token = Forwarder::getAccessToken(Forwarder::PATIENT_SERVICE, $countryCode);
 
-        $response = Http::withToken($access_token)->get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $patientId);
+        $response = Http::withToken($access_token)->withHeaders(['country' => $countryCode])->get(env('PATIENT_SERVICE_URL') . '/patient/id/' . $patientId);
 
         if ($response->successful()) {
             return json_decode($response->body());
