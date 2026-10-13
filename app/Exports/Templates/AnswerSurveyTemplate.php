@@ -34,7 +34,6 @@ class AnswerSurveyTemplate
         $columns = self::headerColumns($survey);
 
         $headerColIndex = 1;
-        $rowHeight = 20;
         $row = 3;
         $startRow = 3;
 
@@ -101,25 +100,26 @@ class AnswerSurveyTemplate
         // Render row data.
         foreach ($surveyResults as $userSurvey) {
             $surveyInfo = self::getRowData($survey, $userSurvey, $translations);
-            $maxAnswerRow = $row;
             $answerColIndex = count($columns) + 1;
             $answerStartRow = $row;
-            foreach ($survey->questionnaire->questions as $index => $question) {
+            $maxAnswerRow = $row;
+
+            foreach ($surveyInfo as $key => $value) {
+                $sheet->setCellValue(Coordinate::stringFromColumnIndex($key + 1) . $row, $value);
+            }
+
+            foreach ($survey->questionnaire->questions as $question) {
                 switch ($question->type) {
                     case Question::QUESTION_TYPE_CHECKBOX:
-                        // Increase row height based on answers.
+                        // One row per selected answer.
                         $userAswer = collect($userSurvey->answer)->first(fn($surveyAnswer) => $surveyAnswer['question_id'] === $question->id);
                         $answer = SurveyHelper::getAnswerData($question, $userAswer['answer'] ?? null);
-                        $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
                         $answerRow = $answerStartRow;
                         foreach ($answer['description'] as $index => $description) {
-                            $startCol = Coordinate::stringFromColumnIndex($answerColIndex);
-                            $sheet->setCellValue($startCol . $answerRow, $description ?? '');
+                            $sheet->setCellValue(Coordinate::stringFromColumnIndex($answerColIndex) . $answerRow, $description ?? '');
                             $sheet->setCellValue(Coordinate::stringFromColumnIndex($answerColIndex + 1) . $answerRow, $answer['value'][$index] ?? '');
-                            $sheet->getRowDimension($answerRow)->setRowHeight(20);
                             $answerRow++;
                         }
-                        // Set the max answer row for multiple answers.
                         $maxAnswerRow = max($maxAnswerRow, $answerRow - 1);
                         break;
                     case Question::QUESTION_TYPE_MULTIPLE:
@@ -156,22 +156,17 @@ class AnswerSurveyTemplate
                 }
 
                 $answerColIndex = self::getDynamicColIndex($answerColIndex, $question->type);
-
-                // Write the survey info to the sheet and merge cells of multiple answer rows.
-                foreach ($surveyInfo as $key => $value) {
-                    $startCol = Coordinate::stringFromColumnIndex($key + 1);
-
-                    if ($answerStartRow !== $maxAnswerRow) {
-                        $sheet->mergeCells($startCol . $answerStartRow . ':' . $startCol . $maxAnswerRow);
-                    }
-
-                    $sheet->setCellValue($startCol . $answerStartRow, $value);
-                }
-
-                $row = $maxAnswerRow + 1;
             }
 
-            $sheet->getRowDimension($row)->setRowHeight($rowHeight);
+            // Merge the survey info columns once, after the submission's full height is known.
+            if ($maxAnswerRow > $answerStartRow) {
+                foreach (array_keys($surveyInfo) as $key) {
+                    $col = Coordinate::stringFromColumnIndex($key + 1);
+                    $sheet->mergeCells($col . $answerStartRow . ':' . $col . $maxAnswerRow);
+                }
+            }
+
+            $row = $maxAnswerRow + 1;
         }
         // Apply borders and align center to all data rows.
         $sheet->getStyle('A2:' . $endCol . ($row === $startRow ? $row : $row - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
@@ -249,7 +244,7 @@ class AnswerSurveyTemplate
     {
         $data = [];
         $baseData = [
-            $survey->createdBy->first_name . ' ' . $survey->createdBy->last_name,
+            trim($survey->createdBy?->first_name . ' ' . $survey->createdBy?->last_name),
             $translations["survey.status.$survey->status"] ?? 'N/A',
             Organization::findMany($survey->organization)->pluck('name')->implode(', '),
             $translations["common.$survey->role"] ?? 'N/A',
