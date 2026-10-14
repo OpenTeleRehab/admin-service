@@ -302,7 +302,12 @@ class AnswerSurveyTemplate
             if ($survey->role === User::GROUP_THERAPIST || $survey->role === User::GROUP_PHC_WORKER) {
                 $surveyor = User::getTherapistById($userSurvey->user_id);
             } else if ($survey->role === User::GROUP_PATIENT) {
-                $surveyor = User::getPatientById($userSurvey->user_id);
+                // Patients of a hosting country (e.g. VN) live in that country's patient service.
+                // ponytail: a survey mixing hosted and non-hosted countries resolves all patients on the hosted one.
+                $countryCode = Country::whereIn('id', (array)$survey->country)
+                    ->whereIn('iso_code', config('settings.hosting_country'))
+                    ->value('iso_code');
+                $surveyor = User::getPatientById($userSurvey->user_id, $countryCode);
             } else {
                 $surveyor = $userSurvey->user;
             }
